@@ -1,0 +1,613 @@
+-- dps meter for monster hunter rise
+-- written by github.com/coavins
+
+--
+-- configuration
+--
+
+-- general settings
+local UPDATE_RATE = 0.5; -- in seconds, so 0.5 means two updates per second
+
+-- when true, damage from palicoes and palamutes will be counted as if dealt by their hunter
+-- when false, damage from palicoes and palamutes will be ignored completely
+local OTOMO_DMG_IS_PLAYER_DMG = true;
+
+-- table settings
+local DRAW_BAR_BACKGROUNDS = true;
+local DRAW_BAR_OUTLINES = false;
+
+-- table position
+-- X/Y here is expressed as a percentage
+-- 0 is left/top of screen, 1 is right/bottom
+local TABLE_X = 0.65;
+local TABLE_Y = 0.0;
+local TABLE_SCALE = 1.0; -- multiplier for width and height
+
+-- pixels
+local TABLE_WIDTH = 350;
+local TABLE_ROWH = 18;
+
+-- colors
+-- 0x 12345678
+-- 12 = alpha
+-- 34 = green
+-- 56 = blue
+-- 78 = red
+
+local COLOR_WHITE = 0xFFFFFFFF;
+local COLOR_GRAY  = 0xFFAFAFAF;
+local COLOR_BLACK = 0xFF000000;
+
+-- players
+local COLOR_RED    = 0xFF0000FF;
+local COLOR_BLUE   = 0xFFFF0000;
+local COLOR_GREEN  = 0xFF00FF00;
+local COLOR_YELLOW = 0xFF00FFFF;
+
+-- table colors
+local COLOR_TITLE_BG         = 0xCC000000;
+local COLOR_TITLE_FG         = 0xFFAFAFAF;
+local COLOR_BAR_BG           = 0x88000000;
+local COLOR_BAR_OUTLINE      = 0x88000000;
+local COLOR_BAR_DMG_PHYSICAL = 0xFF616658;
+local COLOR_BAR_DMG_PHYSICAL_RED    = 0xFF050AA1;
+local COLOR_BAR_DMG_PHYSICAL_BLUE   = 0xFFA1050E;
+local COLOR_BAR_DMG_PHYSICAL_GREEN  = 0xFF12A105;
+local COLOR_BAR_DMG_PHYSICAL_YELLOW = 0xFF00A0A0;
+local COLOR_BAR_DMG_ELEMENT  = 0xFFE053A5;
+local COLOR_BAR_DMG_AILMENT  = 0xFF3E37A3;
+local COLOR_BAR_DMG_OTOMO    = 0xFFFCC500;
+local COLOR_BAR_DMG_OTHER    = 0xFF616658;
+
+local TEST_MODE = false;
+
+--
+-- end configuration
+--
+
+-- globals
+
+local SCREEN_W = 0;
+local SCREEN_H = 0;
+local DEBUG_Y = 0;
+
+local LARGE_MONSTERS = {};
+local DAMAGE_REPORTS = {};
+local LAST_UPDATE_TIME = 0;
+
+-- initialized later when they become available
+local ENEMY_MANAGER   = nil;
+local QUEST_MANAGER   = nil;
+local MESSAGE_MANAGER = nil;
+
+local SCENE_MANAGER      = sdk.get_native_singleton("via.SceneManager");
+local SCENE_MANAGER_TYPE = sdk.find_type_definition("via.SceneManager");
+local SCENE_MANAGER_VIEW = sdk.call_native_func(SCENE_MANAGER, SCENE_MANAGER_TYPE, "get_MainView");
+
+local SNOW_ENEMY_ENEMYCHARACTERBASE = sdk.find_type_definition("snow.enemy.EnemyCharacterBase");
+local SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE = SNOW_ENEMY_ENEMYCHARACTERBASE:get_method("afterCalcDamage_DamageSide");
+
+-- helper functions
+
+function debug_line(text)
+	DEBUG_Y = DEBUG_Y + 20;
+	draw.text(text, 0, DEBUG_Y, 0xFFFFFFFF);
+end
+
+function log_info(text)
+	log.info('mhrise-coavins-dps: ' .. text);
+end
+
+function log_error(text)
+	log.error('mhrise-coavins-dps: ' .. text);
+end
+
+-- sanity checking
+
+if not SCENE_MANAGER then
+	log_error('could not find scene manager');
+	return;
+end
+
+if not SCENE_MANAGER_TYPE then
+	log_error('could not find scene manager type');
+	return;
+end
+
+if not SCENE_MANAGER_VIEW then
+	log_error('could not find scene manager view');
+	return;
+end
+
+if not SNOW_ENEMY_ENEMYCHARACTERBASE then
+	log_error('could not find type snow.enemy.EnemyCharacterBase');
+	return;
+end
+
+if not SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE then
+	log_error('could not find method snow.enemy.EnemyCharacterBase::afterCalcDamage_DamageSide');
+	return;
+end
+
+if not UPDATE_RATE or tonumber(UPDATE_RATE) == nil then
+	UPDATE_RATE = 0.5;
+end
+if UPDATE_RATE < 0.01 then
+	UPDATE_RATE = 0.01;
+end
+if UPDATE_RATE > 3 then
+	UPDATE_RATE = 3;
+end
+
+-- system functions
+function readScreenDimensions()
+	local size = SCENE_MANAGER_VIEW:call("get_Size");
+	if not size then
+		log_error('could not get screen size');
+	end;
+
+	SCREEN_W = size:get_field("w");
+	SCREEN_H = size:get_field("h");
+end
+
+function getScreenXFromX(x)
+	return SCREEN_W * x;
+end
+
+function getScreenYFromY(y)
+	return SCREEN_H * y;
+end
+
+-- callback functions
+
+-- used to track damage taken by monsters
+function read_AfterCalcInfo_DamageSide(args)
+	local enemy = sdk.to_managed_object(args[2]);
+	if not enemy then
+		return;
+	end
+
+	local boss = LARGE_MONSTERS[enemy];
+	if not boss then
+		return;
+	end
+
+	local info = sdk.to_managed_object(args[3]); -- snow.hit.EnemyCalcDamageInfo.AfterCalcInfo_DamageSide
+	local attackerId     = info:call("get_AttackerID");
+	local attackerType   = info:call("get_DamageAttackerType");
+	local isPlayer  = (attackerType == 0);
+	local isOtomo   = (attackerType == 19);
+	local isMonster = (attackerType == 23);
+
+	local totalDamage    = info:call("get_TotalDamage");
+	local physicalDamage = info:call("get_PhysicalDamage");
+	local elementDamage  = info:call("get_ElementDamage");
+	local ailmentDamage  = info:call("get_ConditionDamage");
+
+	local sources = boss.damageSources;
+	if isPlayer or isOtomo then
+		if not sources[attackerId] then
+			sources[attackerId] = initializeDamageSource();
+		end
+
+		-- get this damage source
+		local s = sources[attackerId];
+
+		-- add damage facts
+		if isPlayer then
+			s.damageTotal     = s.damageTotal + totalDamage + ailmentDamage;
+			s.damagePhysical  = s.damagePhysical  + physicalDamage;
+			s.damageElemental = s.damageElemental + elementDamage;
+			s.damageAilment   = s.damageAilment   + ailmentDamage;
+		elseif isOtomo and OTOMO_DMG_IS_PLAYER_DMG then
+			s.damageTotal     = s.damageTotal + totalDamage + ailmentDamage
+			s.damageOtomo = s.damageOtomo + totalDamage + ailmentDamage;
+		end
+	end
+end
+
+-- hook into afterCalcDamage_DamageSide function to track incoming damage on monster
+-- stockDamage function also works, for host only
+sdk.hook(SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE,
+function(args)
+	read_AfterCalcInfo_DamageSide(args);
+end,
+function(retval)
+	return retval
+end);
+
+-- main
+
+-- initializes a new damageSource
+function initializeDamageSource()
+	local damageSource = {};
+	damageSource.damageTotal     = 0;
+	damageSource.damagePhysical  = 0;
+	damageSource.damageElemental = 0;
+	damageSource.damageAilment   = 0;
+	damageSource.damageOtomo     = 0;
+	return damageSource;
+end
+
+function initializeDamageSourceWithDummyData()
+	local s = initializeDamageSource();
+	s.damagePhysical  = math.random(1,1000);
+	s.damageElemental = math.random(1,1000);
+	s.damageAilment   = math.random(1,1000);
+	s.damageOtomo     = math.random(1,1000);
+	s.damageTotal     = s.damagePhysical + s.damageElemental + s.damageAilment + s.damageOtomo;
+	return s;
+end
+
+-- initializes a new boss object
+function initializeBossMonster(bossEnemy)
+	local boss = {};
+
+	boss.enemy = bossEnemy;
+
+	boss.species = bossEnemy:call("get_EnemySpecies");
+	boss.genus   = bossEnemy:call("get_BossEnemyGenus");
+
+	-- get name
+	local enemyType = bossEnemy:get_field("<EnemyType>k__BackingField");
+	boss.name = MESSAGE_MANAGER:call("getEnemyNameMessage", enemyType);
+
+	local sources = {};
+
+	if TEST_MODE then
+		-- some dummy data
+		sources[0] = initializeDamageSourceWithDummyData();
+		sources[1] = initializeDamageSourceWithDummyData();
+		sources[2] = initializeDamageSourceWithDummyData();
+		sources[3] = initializeDamageSourceWithDummyData();
+	end
+
+	boss.damageSources = sources;
+
+	-- store it in the table
+	LARGE_MONSTERS[bossEnemy] = boss;
+
+	log_info(string.format('initialized new %s', boss.name));
+end
+
+-- compares two damage sources
+function sortFn(a, b)
+	return a.source.damageTotal > b.source.damageTotal;
+end
+
+-- returns a report item (for rendering) from the specified damage source (from boss cache)
+function generateReportItemFromDamageSource(source, id)
+	-- init player
+	local item = {};
+	item.id = id;
+	item.source = source;
+	return item;
+end
+
+-- parse damage sources from the boss cache and save them in a way that is useful for drawing a graph
+function generateReportFromDamageSources(enemy, damageSources)
+	local report = {};
+	report.items = {};
+
+	local topDamage = 0;
+	local totalDamage = 0;
+
+	-- parse damage sources from the boss cache
+	for id,source in pairs(damageSources) do
+		local item = generateReportItemFromDamageSource(source, id);
+
+		-- remember what the highest damage was
+		if item.source.damageTotal > topDamage then
+			topDamage = item.source.damageTotal;
+		end;
+
+		totalDamage = totalDamage + item.source.damageTotal;
+
+		-- save this item in the report
+		table.insert(report.items, item);
+	end
+
+	report.topDamage = topDamage;
+	report.totalDamage = totalDamage;
+
+	-- sort report items
+	table.sort(report.items, sortFn);
+
+	-- finish writing data
+	for _,item in ipairs(report.items) do
+		item.percentOfTotal = tonumber(string.format("%.3f", item.source.damageTotal / totalDamage));
+		item.percentOfBest  = tonumber(string.format("%.3f", item.source.damageTotal / topDamage));
+	end
+
+	-- save off result to be used by draw functions
+	DAMAGE_REPORTS[enemy] = report;
+end
+
+function generateSummaryReport()
+	local summaryReport = {};
+
+	local totalDamageSources = {};
+
+	-- read all reports
+	for _,report in pairs(DAMAGE_REPORTS) do
+		-- read all report items
+		for i,item in ipairs(report.items) do
+			if not totalDamageSources[item.id] then
+				totalDamageSources[item.id] = initializeDamageSource();
+			end
+			local s = totalDamageSources[item.id];
+			s.damageTotal     = s.damageTotal     + item.source.damageTotal;
+			s.damagePhysical  = s.damagePhysical  + item.source.damagePhysical;
+			s.damageElemental = s.damageElemental + item.source.damageElemental;
+			s.damageAilment   = s.damageAilment   + item.source.damageAilment;
+			s.damageOtomo     = s.damageOtomo     + item.source.damageOtomo;
+		end
+	end
+
+	-- now generate a report from the damageSources
+	generateReportFromDamageSources(0, totalDamageSources);
+end
+
+function generateAllReports()
+	DAMAGE_REPORTS = {};
+
+	-- create reports for all cached bosses
+	for bossEnemy,boss in pairs(LARGE_MONSTERS) do
+		generateReportFromDamageSources(bossEnemy, boss.damageSources);
+	end
+
+	-- now create a report using the sums from the previously generated reports
+	generateSummaryReport();
+end
+
+function drawDamageBar(source, x, y, maxWidth, h, colorPhysical)
+	local w = 0;
+
+	-- draw physical damage
+	debug_line(string.format('damagePhysical: %d', source.damagePhysical));
+	w = (source.damagePhysical / source.damageTotal) * maxWidth;
+	draw.filled_rect(x, y, w, h, colorPhysical);
+	x = x + w;
+	-- draw elemental damage
+	debug_line(string.format('damageElemental: %d', source.damageElemental));
+	w = (source.damageElemental / source.damageTotal) * maxWidth;
+	draw.filled_rect(x, y, w, h, COLOR_BAR_DMG_ELEMENT);
+	x = x + w;
+	-- draw ailment damage
+	debug_line(string.format('damageAilment: %f', source.damageAilment));
+	w = (source.damageAilment / source.damageTotal) * maxWidth;
+	draw.filled_rect(x, y, w, h, COLOR_BAR_DMG_AILMENT);
+	x = x + w;
+	-- draw otomo damage
+	debug_line(string.format('damageOtomo: %d', source.damageOtomo));
+	w = (source.damageOtomo / source.damageTotal) * maxWidth;
+	draw.filled_rect(x, y, w, h, COLOR_BAR_DMG_OTOMO);
+	x = x + w;
+	-- draw whatever's left
+	local remainder = source.damageTotal - source.damagePhysical - source.damageElemental - source.damageAilment - source.damageOtomo;
+	debug_line(string.format('remainder: %d', remainder));
+	w = (remainder / source.damageTotal) * maxWidth;
+	draw.filled_rect(x, y, w, h, COLOR_BAR_DMG_OTHER);
+	debug_line(string.format('total: %d', source.damageTotal));
+end
+
+function drawReport(index)
+	local origin_x = getScreenXFromX(TABLE_X);
+	local origin_y = getScreenYFromY(TABLE_Y);
+	local tableWidth = TABLE_WIDTH * TABLE_SCALE;
+	local rowHeight = TABLE_ROWH * TABLE_SCALE;
+	local colorBlockWidth = 20;
+
+	local report = DAMAGE_REPORTS[index];
+	if not report then
+		return;
+	end
+
+	local boss = LARGE_MONSTERS[index];
+	local title = "All large monsters";
+	if boss then
+		title = boss.name;
+	end
+
+	-- title bar
+	local timeMinutes = QUEST_MANAGER:call("getQuestElapsedTimeMin");
+	local timeSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
+	timeSeconds = timeSeconds - (timeMinutes * 60);
+	draw.filled_rect(origin_x, origin_y, tableWidth, rowHeight, COLOR_TITLE_BG) 
+	local titleText = string.format("%d:%02.0f - %s", timeMinutes, timeSeconds, title);
+	draw.text(titleText, origin_x, origin_y, COLOR_TITLE_FG);
+
+	-- draw report items
+	for i,item in ipairs(report.items) do
+		local y = origin_y + rowHeight * i;
+		local damageBarWidth = tableWidth - colorBlockWidth;
+
+		local playerColor = COLOR_GRAY;
+		if     item.id == 0 then playerColor = COLOR_RED;
+		elseif item.id == 1 then playerColor = COLOR_BLUE;
+		elseif item.id == 2 then playerColor = COLOR_YELLOW;
+		elseif item.id == 3 then playerColor = COLOR_GREEN;
+		end
+
+		local physicalColor = COLOR_BAR_DMG_PHYSICAL;
+		if     item.id == 0 then physicalColor = COLOR_BAR_DMG_PHYSICAL_RED;
+		elseif item.id == 1 then physicalColor = COLOR_BAR_DMG_PHYSICAL_BLUE;
+		elseif item.id == 2 then physicalColor = COLOR_BAR_DMG_PHYSICAL_YELLOW;
+		elseif item.id == 3 then physicalColor = COLOR_BAR_DMG_PHYSICAL_GREEN;
+		end
+
+		if DRAW_BAR_BACKGROUNDS then
+			-- draw background
+			draw.filled_rect(origin_x, y, tableWidth, rowHeight, COLOR_BAR_BG);
+		end
+
+		-- draw color block
+		draw.filled_rect(origin_x, y, colorBlockWidth, rowHeight, playerColor);
+
+		-- draw damage bar
+		drawDamageBar(item.source, origin_x + colorBlockWidth, y, damageBarWidth * item.percentOfBest, rowHeight, physicalColor);
+
+		-- draw text
+		local barText = string.format('%d - %.1f%% (%.1f%%)', item.source.damageTotal, item.percentOfTotal * 100, item.percentOfBest * 100)
+		draw.text(barText, origin_x + colorBlockWidth + 1, y, COLOR_WHITE);
+
+		if DRAW_BAR_OUTLINES then
+			-- draw outline
+			draw.outline_rect(origin_x, y, tableWidth, rowHeight, COLOR_BAR_OUTLINE);
+		end
+	end
+end
+
+-- main update function
+function dpsUpdate()
+	-- update screen dimensions
+	readScreenDimensions();
+
+	-- update bosses
+	local bossCount = ENEMY_MANAGER:call("getBossEnemyCount");
+	for i = 0, bossCount-1 do
+		local bossEnemy = ENEMY_MANAGER:call("getBossEnemy", i);
+
+		if not LARGE_MONSTERS[bossEnemy] then
+			-- initialize data for this boss
+			initializeBossMonster(bossEnemy);
+		end
+
+		-- get this boss from the table
+		local boss = LARGE_MONSTERS[bossEnemy];
+
+		-- update boss
+		boss.isInCombat = bossEnemy:call("get_IsCombatMode");
+	end
+
+	-- update all reports
+	generateAllReports();
+end
+
+-- main draw function
+function dpsDraw()
+	DEBUG_Y = 0;
+
+	-- just draw the summary report
+	drawReport(0);
+
+	--drawDebugStats();
+end
+
+-- debug info stuff
+function drawDebugStats()
+	--local kpiData         = QUEST_MANAGER:call("get_KpiData");
+	--local playerPhysical  = kpiData:call("get_PlayerTotalAttackDamage");
+	--local playerElemental = kpiData:call("get_PlayerTotalElementalAttackDamage");
+	--local playerAilment   = kpiData:call("get_PlayerTotalStatusAilmentsDamage");
+	--local playerDamage    = playerPhysical + playerElemental + playerAilment;
+
+	-- get player
+	local PLAYER_MANAGER  = sdk.get_managed_singleton("snow.player.PlayerManager");
+	if not PLAYER_MANAGER then
+		log_error('could not find player manager')
+		return;
+	end
+
+	local myPlayerId = PLAYER_MANAGER:call("getMasterPlayerID");
+	local myPlayer = PLAYER_MANAGER:call("getPlayer", myPlayerId);
+
+	-- get enemy
+	local bossCount = ENEMY_MANAGER:call("getBossEnemyCount");
+
+	for i = 0, bossCount-1 do
+		local bossEnemy = ENEMY_MANAGER:call("getBossEnemy", i);
+
+		-- get this boss from the table
+		local boss = LARGE_MONSTERS[bossEnemy];
+		if not boss then
+			return;
+		end
+
+		local is_combat_str = "";
+		if boss.isInCombat then is_combat_str = " (In Combat)";
+		                   else is_combat_str = "";
+		end
+
+		debug_line(string.format("%s%s", boss.name, is_combat_str));
+
+		for key,value in pairs(boss.damageSources) do
+			if key == myPlayerId then
+				debug_line(string.format("  YOU     : %d", value));
+			else
+				debug_line(string.format("  Player %s: %d", key+1, value));
+			end
+		end
+	end
+
+	debug_line('');
+	debug_line(string.format('Total damage (KPI): %d', playerDamage));
+
+	-- monster state
+	-- isEnableFastTravelCondition
+
+	--[[
+		snow.enemy.EnemyCombatSystemData
+		snow.enemy.EnemyCombatSystemData.CombatTimeInfo
+
+		EnemyManager.get_CombatMonsterSystem()
+			returns:
+		snow.enemy.EnemyCombatMonsterManager
+			getGroupInfo(EnemyCharacterBase)
+			returns:
+		snow.enemy.EnemyCombatMonsterManager.GroupInfo
+			get_CombatTime()
+			getSelfCombatMonsterResult(EnemyCharacterBase)
+	]]
+end
+
+-- runs every frame
+function dpsFrame()
+	-- make sure managed resources are initialized
+	if not QUEST_MANAGER then
+		QUEST_MANAGER = sdk.get_managed_singleton("snow.QuestManager");
+		if not QUEST_MANAGER then
+			return;
+		end
+	end
+
+	if not ENEMY_MANAGER then
+		ENEMY_MANAGER = sdk.get_managed_singleton("snow.enemy.EnemyManager");
+		if not ENEMY_MANAGER then
+			return;
+		end
+	end
+
+	if not MESSAGE_MANAGER then
+		MESSAGE_MANAGER = sdk.get_managed_singleton("snow.gui.MessageManager");
+		if not MESSAGE_MANAGER then
+			return;
+		end
+	end
+
+	local questStatus = QUEST_MANAGER:get_field("_QuestStatus");
+
+	-- only when a quest is active
+	if questStatus >= 2 then
+		-- update occasionally
+		local totalSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
+		if totalSeconds > LAST_UPDATE_TIME + UPDATE_RATE then
+			dpsUpdate();
+			LAST_UPDATE_TIME = totalSeconds;
+		end
+
+		-- draw on every frame
+		dpsDraw();
+	else
+		-- clean up some things in between quests
+		LAST_UPDATE_TIME = 0;
+		LARGE_MONSTERS = {};
+		DAMAGE_REPORTS = {};
+	end
+end
+
+re.on_frame(function()
+	dpsFrame();
+end)
+
+log_info('mhrise-coavins-dps: init complete');
