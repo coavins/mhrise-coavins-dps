@@ -25,8 +25,6 @@ local DRAW_BAR_TEXT_NAME_USE_REAL_NAMES = false; -- show real player names inste
 local DRAW_BAR_TEXT_TOTAL_DAMAGE        = false; -- shows total damage dealt
 local DRAW_BAR_TEXT_PERCENT_OF_PARTY    = true; -- shows your share of party damage
 local DRAW_BAR_TEXT_PERCENT_OF_BEST     = false; -- shows how close you are to the top damage dealer
-local DRAW_BAR_TEXT_HIT_COUNT           = false; -- shows how many hits you've landed
-local DRAW_BAR_TEXT_BIGGEST_HIT         = false; -- shows how much damage your biggest hit did
 
 -- rows will be added on top of the title bar instead of underneath, making it easier to place the table at the bottom of the screen
 local TABLE_GROWS_UPWARD = false;
@@ -38,7 +36,7 @@ local TABLE_SORT_ASC = false;
 -- X/Y here is expressed as a percentage
 -- 0 is left/top of screen, 1 is right/bottom
 local TABLE_X = 0.65;
-local TABLE_Y = 0.0;
+local TABLE_Y = 0.00;
 local TABLE_SCALE = 1.0; -- multiplier for width and height
 
 -- pixels
@@ -106,7 +104,10 @@ local LARGE_MONSTERS = {};
 local DAMAGE_REPORTS = {};
 local LAST_UPDATE_TIME = 0;
 
+local MY_PLAYER_ID = nil;
+
 -- initialized later when they become available
+local PLAYER_MANAGER  = nil;
 local ENEMY_MANAGER   = nil;
 local QUEST_MANAGER   = nil;
 local MESSAGE_MANAGER = nil;
@@ -302,8 +303,12 @@ function initializeBossMonster(bossEnemy)
 end
 
 -- compares two damage sources
-function sortFn(a, b)
+function sortFn_DESC(a, b)
 	return a.source.damageTotal > b.source.damageTotal;
+end
+
+function sortFn_ASC(a, b)
+	return a.source.damageTotal < b.source.damageTotal;
 end
 
 -- returns a report item (for rendering) from the specified damage source (from boss cache)
@@ -342,7 +347,11 @@ function generateReportFromDamageSources(enemy, damageSources)
 	report.totalDamage = totalDamage;
 
 	-- sort report items
-	table.sort(report.items, sortFn);
+	if TABLE_SORT_ASC then
+		table.sort(report.items, sortFn_ASC);
+	else
+		table.sort(report.items, sortFn_DESC);
+	end
 
 	-- finish writing data
 	for _,item in ipairs(report.items) do
@@ -423,21 +432,25 @@ function drawDamageBar(source, x, y, maxWidth, h, colorPhysical, colorElemental)
 end
 
 function drawReport(index)
+	local report = DAMAGE_REPORTS[index];
+	if not report then
+		return;
+	end
+
 	local origin_x = getScreenXFromX(TABLE_X);
 	local origin_y = getScreenYFromY(TABLE_Y);
 	local tableWidth = TABLE_WIDTH * TABLE_SCALE;
 	local rowHeight = TABLE_ROWH * TABLE_SCALE;
 	local colorBlockWidth = 20;
 
-	local report = DAMAGE_REPORTS[index];
-	if not report then
-		return;
-	end
-
 	local boss = LARGE_MONSTERS[index];
 	local title = "All large monsters";
 	if boss then
 		title = boss.name;
+	end
+
+	if TABLE_GROWS_UPWARD then
+		origin_y = origin_y - rowHeight;
 	end
 
 	-- title bar
@@ -448,9 +461,15 @@ function drawReport(index)
 	local titleText = string.format("%d:%02.0f - %s", timeMinutes, timeSeconds, title);
 	draw.text(titleText, origin_x, origin_y, COLOR_TITLE_FG);
 
+	if TABLE_GROWS_UPWARD then
+		-- adjust starting position for drawing report items
+		origin_y = origin_y - rowHeight * (#report.items + 1);
+	end
+
 	-- draw report items
 	for i,item in ipairs(report.items) do
 		local y = origin_y + rowHeight * i;
+
 		local damageBarWidth = tableWidth - colorBlockWidth;
 
 		local playerColor = COLOR_PLAYER[item.id];
@@ -480,8 +499,33 @@ function drawReport(index)
 		drawDamageBar(item.source, origin_x + colorBlockWidth, y, damageBarWidth * item.percentOfBest, rowHeight, physicalColor, elementalColor);
 
 		-- draw text
-		local barText = string.format('%.0f - %.1f%% (%.1f%%)', item.source.damageTotal, item.percentOfTotal * 100.0, item.percentOfBest * 100.0)
-		draw.text(barText, origin_x + colorBlockWidth + 1, y, COLOR_WHITE);
+		local barText = '';
+
+		if DRAW_BAR_TEXT_NAME then
+			-- player names
+			if item.id >= 0 and item.id <= 3 then
+				if DRAW_BAR_TEXT_NAME_YOU and item.id == MY_PLAYER_ID then
+					barText = barText .. 'YOU          ';
+				else
+					barText = barText .. string.format('Player %.0f   ', item.id + 1);
+				end
+			end
+			-- TODO: otomo, monster
+		end
+
+		if DRAW_BAR_TEXT_TOTAL_DAMAGE then
+			barText = barText .. string.format('%.0f   ', item.source.damageTotal);
+		end
+
+		if DRAW_BAR_TEXT_PERCENT_OF_PARTY then
+			barText = barText .. string.format('%.1f%%   ', item.percentOfTotal * 100.0);
+		end
+
+		if DRAW_BAR_TEXT_PERCENT_OF_BEST then
+			barText = barText .. string.format('(%.1f%%)   ', item.percentOfBest * 100.0);
+		end
+
+		draw.text(barText, origin_x + colorBlockWidth + 2, y, COLOR_WHITE);
 
 		if DRAW_BAR_OUTLINES then
 			-- draw outline
@@ -494,6 +538,9 @@ end
 function dpsUpdate()
 	-- update screen dimensions
 	readScreenDimensions();
+
+	-- get player id
+	MY_PLAYER_ID = PLAYER_MANAGER:call("getMasterPlayerID");
 
 	-- update bosses
 	local bossCount = ENEMY_MANAGER:call("getBossEnemyCount");
@@ -535,12 +582,6 @@ function drawDebugStats()
 	--local playerDamage    = playerPhysical + playerElemental + playerAilment;
 
 	-- get player
-	local PLAYER_MANAGER  = sdk.get_managed_singleton("snow.player.PlayerManager");
-	if not PLAYER_MANAGER then
-		log_error('could not find player manager')
-		return;
-	end
-
 	local myPlayerId = PLAYER_MANAGER:call("getMasterPlayerID");
 	local myPlayer = PLAYER_MANAGER:call("getPlayer", myPlayerId);
 
@@ -593,28 +634,43 @@ function drawDebugStats()
 	]]
 end
 
--- runs every frame
-function dpsFrame()
-	-- make sure managed resources are initialized
+function hasManagedResources()
+	if not PLAYER_MANAGER then
+		PLAYER_MANAGER = sdk.get_managed_singleton("snow.player.PlayerManager");
+		if not PLAYER_MANAGER then
+			return false;
+		end
+	end
+
 	if not QUEST_MANAGER then
 		QUEST_MANAGER = sdk.get_managed_singleton("snow.QuestManager");
 		if not QUEST_MANAGER then
-			return;
+			return false;
 		end
 	end
 
 	if not ENEMY_MANAGER then
 		ENEMY_MANAGER = sdk.get_managed_singleton("snow.enemy.EnemyManager");
 		if not ENEMY_MANAGER then
-			return;
+			return false;
 		end
 	end
 
 	if not MESSAGE_MANAGER then
 		MESSAGE_MANAGER = sdk.get_managed_singleton("snow.gui.MessageManager");
 		if not MESSAGE_MANAGER then
-			return;
+			return false;
 		end
+	end
+
+	return true;
+end
+
+-- runs every frame
+function dpsFrame()
+	-- make sure managed resources are initialized
+	if not hasManagedResources() then
+		return;
 	end
 
 	local questStatus = QUEST_MANAGER:get_field("_QuestStatus");
