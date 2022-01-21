@@ -364,31 +364,31 @@ function drawDamageBar(source, x, y, maxWidth, h, colorPhysical)
 	local w = 0;
 
 	-- draw physical damage
-	debug_line(string.format('damagePhysical: %d', source.damagePhysical));
+	--debug_line(string.format('damagePhysical: %d', source.damagePhysical));
 	w = (source.damagePhysical / source.damageTotal) * maxWidth;
 	draw.filled_rect(x, y, w, h, colorPhysical);
 	x = x + w;
 	-- draw elemental damage
-	debug_line(string.format('damageElemental: %d', source.damageElemental));
+	--debug_line(string.format('damageElemental: %d', source.damageElemental));
 	w = (source.damageElemental / source.damageTotal) * maxWidth;
 	draw.filled_rect(x, y, w, h, COLOR_BAR_DMG_ELEMENT);
 	x = x + w;
 	-- draw ailment damage
-	debug_line(string.format('damageAilment: %f', source.damageAilment));
+	--debug_line(string.format('damageAilment: %f', source.damageAilment));
 	w = (source.damageAilment / source.damageTotal) * maxWidth;
 	draw.filled_rect(x, y, w, h, COLOR_BAR_DMG_AILMENT);
 	x = x + w;
 	-- draw otomo damage
-	debug_line(string.format('damageOtomo: %d', source.damageOtomo));
+	--debug_line(string.format('damageOtomo: %d', source.damageOtomo));
 	w = (source.damageOtomo / source.damageTotal) * maxWidth;
 	draw.filled_rect(x, y, w, h, COLOR_BAR_DMG_OTOMO);
 	x = x + w;
 	-- draw whatever's left
 	local remainder = source.damageTotal - source.damagePhysical - source.damageElemental - source.damageAilment - source.damageOtomo;
-	debug_line(string.format('remainder: %d', remainder));
+	--debug_line(string.format('remainder: %d', remainder));
 	w = (remainder / source.damageTotal) * maxWidth;
 	draw.filled_rect(x, y, w, h, COLOR_BAR_DMG_OTHER);
-	debug_line(string.format('total: %d', source.damageTotal));
+	--debug_line(string.format('total: %d', source.damageTotal));
 end
 
 function drawReport(index)
@@ -610,4 +610,4 @@ re.on_frame(function()
 	dpsFrame();
 end)
 
-log_info('mhrise-coavins-dps: init complete');
+log_info('init complete');
