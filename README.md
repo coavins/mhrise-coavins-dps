@@ -1,6 +1,7 @@
 # coavins dps meter for Monster Hunter Rise (PC)
 
-![Large screenshot](https://i.imgur.com/chRblme.png)
+![Small screenshot 1](https://i.imgur.com/fSoDNnL.png)
+![Small screenshot 2](https://i.imgur.com/Bt1Aro8.png)
 
 This mod adds an overlay that displays different types of damage dealt by your party members, and ranks them by total damage output.
 
@@ -22,8 +23,7 @@ The size of the table will vary greatly depending on the screen resolution. Use 
 
 The overlay will display each party member using the same color-coding that is shown with the player names on the left side of the screen.
 Some additional colors are used to indicate other types of damage. By default:
-* Primary colors are physical damage
-* Purple is elemental damage
+* Primary colors are physical (dark) and elemental (light) damage
 * Dark red is ailment damage
 * Light blue is damage dealt by your palico or palamute
 
@@ -33,6 +33,8 @@ The following additional information is printed inside the bars for each player:
 3. How much damage you're doing compared to the party's top damage dealer
 
 Currently, the table only displays a summary of damage dealt to all large monsters.
+
+![Large screenshot](https://i.imgur.com/3yhX77g.png)
 
 ### TODO:
 * Allow filtering by monster
