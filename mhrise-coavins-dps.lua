@@ -206,6 +206,10 @@ function read_AfterCalcInfo_DamageSide(args)
 		return;
 	end
 
+	if enemy:call('getHpVital') == 0 then
+		return;
+	end
+
 	local info = sdk.to_managed_object(args[3]); -- snow.hit.EnemyCalcDamageInfo.AfterCalcInfo_DamageSide
 	local attackerId     = info:call("get_AttackerID");
 	local attackerType   = info:call("get_DamageAttackerType");
