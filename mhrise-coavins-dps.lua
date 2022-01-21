@@ -221,11 +221,11 @@ end);
 -- initializes a new damageSource
 function initializeDamageSource()
 	local damageSource = {};
-	damageSource.damageTotal     = 0;
-	damageSource.damagePhysical  = 0;
-	damageSource.damageElemental = 0;
-	damageSource.damageAilment   = 0;
-	damageSource.damageOtomo     = 0;
+	damageSource.damageTotal     = 0.0;
+	damageSource.damagePhysical  = 0.0;
+	damageSource.damageElemental = 0.0;
+	damageSource.damageAilment   = 0.0;
+	damageSource.damageOtomo     = 0.0;
 	return damageSource;
 end
 
@@ -448,7 +448,7 @@ function drawReport(index)
 		drawDamageBar(item.source, origin_x + colorBlockWidth, y, damageBarWidth * item.percentOfBest, rowHeight, physicalColor);
 
 		-- draw text
-		local barText = string.format('%d - %.1f%% (%.1f%%)', item.source.damageTotal, item.percentOfTotal * 100, item.percentOfBest * 100)
+		local barText = string.format('%.0f - %.1f%% (%.1f%%)', item.source.damageTotal, item.percentOfTotal * 100.0, item.percentOfBest * 100.0)
 		draw.text(barText, origin_x + colorBlockWidth + 1, y, COLOR_WHITE);
 
 		if DRAW_BAR_OUTLINES then
