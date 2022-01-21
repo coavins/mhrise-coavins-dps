@@ -20,7 +20,7 @@ local DRAW_BAR_BACKGROUNDS = true;
 local DRAW_BAR_OUTLINES    = false;
 
 local DRAW_BAR_TEXT_NAME                = true; -- shows name of combatant
-local DRAW_BAR_TEXT_NAME_YOU            = true; -- shows "YOU" on your bar instead of your name
+local DRAW_BAR_TEXT_YOU                 = true; -- shows "YOU" on your bar
 local DRAW_BAR_TEXT_NAME_USE_REAL_NAMES = false; -- show real player names instead of IDs (NOT YET IMPLEMENTED)
 local DRAW_BAR_TEXT_TOTAL_DAMAGE        = false; -- shows total damage dealt
 local DRAW_BAR_TEXT_PERCENT_OF_PARTY    = true; -- shows your share of party damage
@@ -535,13 +535,19 @@ function drawReport(index)
 		if DRAW_BAR_TEXT_NAME then
 			-- player names
 			if item.id >= 0 and item.id <= 3 then
-				if DRAW_BAR_TEXT_NAME_YOU and item.id == MY_PLAYER_ID then
+				if DRAW_BAR_TEXT_YOU and item.id == MY_PLAYER_ID then
 					barText = barText .. 'YOU          ';
 				else
 					barText = barText .. string.format('Player %.0f   ', item.id + 1);
 				end
 			end
 			-- TODO: otomo, monster
+		elseif DRAW_BAR_TEXT_YOU then
+			if item.id == MY_PLAYER_ID then
+				barText = barText .. 'YOU  ';
+			else
+				barText = barText .. '          ';
+			end
 		end
 
 		if DRAW_BAR_TEXT_TOTAL_DAMAGE then
