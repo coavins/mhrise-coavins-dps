@@ -14,7 +14,22 @@ local OTOMO_DMG_IS_PLAYER_DMG = true;
 
 -- table settings
 local DRAW_BAR_BACKGROUNDS = true;
-local DRAW_BAR_OUTLINES = false;
+local DRAW_BAR_OUTLINES    = false;
+
+local DRAW_BAR_TEXT_NAME                = true; -- shows name of combatant
+local DRAW_BAR_TEXT_NAME_YOU            = true; -- shows "YOU" on your bar instead of your name
+local DRAW_BAR_TEXT_NAME_USE_REAL_NAMES = false; -- show real player names instead of IDs (NOT YET IMPLEMENTED)
+local DRAW_BAR_TEXT_TOTAL_DAMAGE        = false; -- shows total damage dealt
+local DRAW_BAR_TEXT_PERCENT_OF_PARTY    = true; -- shows your share of party damage
+local DRAW_BAR_TEXT_PERCENT_OF_BEST     = false; -- shows how close you are to the top damage dealer
+local DRAW_BAR_TEXT_HIT_COUNT           = false; -- shows how many hits you've landed
+local DRAW_BAR_TEXT_BIGGEST_HIT         = false; -- shows how much damage your biggest hit did
+
+-- rows will be added on top of the title bar instead of underneath, making it easier to place the table at the bottom of the screen
+local TABLE_GROWS_UPWARD = false;
+
+-- when true, the row with the highest damage will be on bottom. you might want to use this with TABLE_GROWS_UPWARD
+local TABLE_SORT_ASC = false;
 
 -- table position
 -- X/Y here is expressed as a percentage
@@ -38,10 +53,10 @@ local TABLE_ROWH = 18;
 local COLOR_WHITE  = 0xFFFFFFFF;
 local COLOR_GRAY   = 0xFFAFAFAF;
 local COLOR_BLACK  = 0xFF000000;
-local COLOR_RED    = 0xFF0000FF;
-local COLOR_BLUE   = 0xFFFF0000;
-local COLOR_YELLOW = 0xFF00FFFF;
-local COLOR_GREEN  = 0xFF00FF00;
+local COLOR_RED    = 0xAF3232FF;
+local COLOR_BLUE   = 0xAFFF3232;
+local COLOR_YELLOW = 0xAF32FFFF;
+local COLOR_GREEN  = 0xAF32FF32;
 
 -- players
 local COLOR_PLAYER = {};
@@ -51,28 +66,28 @@ COLOR_PLAYER[2] = COLOR_YELLOW;
 COLOR_PLAYER[3] = COLOR_GREEN;
 
 -- table colors
-local COLOR_TITLE_BG         = 0xCC000000;
-local COLOR_TITLE_FG         = 0xFFAFAFAF;
-local COLOR_BAR_BG           = 0x88000000;
-local COLOR_BAR_OUTLINE      = 0x88000000;
+local COLOR_TITLE_BG         = 0x88000000;
+local COLOR_TITLE_FG         = 0xFFDADADA;
+local COLOR_BAR_BG           = 0x44000000;
+local COLOR_BAR_OUTLINE      = 0x44000000;
 
-local COLOR_BAR_DMG_PHYSICAL = 0xFF616658;
+local COLOR_BAR_DMG_PHYSICAL = 0xAF616658;
 local COLOR_BAR_DMG_PHYSICAL_UNIQUE = {};
-COLOR_BAR_DMG_PHYSICAL_UNIQUE[0] = 0xFF050AA1; -- red
-COLOR_BAR_DMG_PHYSICAL_UNIQUE[1] = 0xFFA1050E; -- blue
-COLOR_BAR_DMG_PHYSICAL_UNIQUE[2] = 0xFF00A0A0; -- yellow
-COLOR_BAR_DMG_PHYSICAL_UNIQUE[3] = 0xFF12A105; -- green
+COLOR_BAR_DMG_PHYSICAL_UNIQUE[0] = 0xAF2828CC; -- red
+COLOR_BAR_DMG_PHYSICAL_UNIQUE[1] = 0xAFCC2828; -- blue
+COLOR_BAR_DMG_PHYSICAL_UNIQUE[2] = 0xAF28CCCC; -- yellow
+COLOR_BAR_DMG_PHYSICAL_UNIQUE[3] = 0xAF28CC28; -- green
 
-local COLOR_BAR_DMG_ELEMENT  = 0xFF919984;
+local COLOR_BAR_DMG_ELEMENT  = 0xAF919984;
 local COLOR_BAR_DMG_ELEMENT_UNIQUE = {};
-COLOR_BAR_DMG_ELEMENT_UNIQUE[0] = 0xFF060BBF; -- red
-COLOR_BAR_DMG_ELEMENT_UNIQUE[1] = 0xFFBF0611; -- blue
-COLOR_BAR_DMG_ELEMENT_UNIQUE[2] = 0xFF00BFBF; -- yellow
-COLOR_BAR_DMG_ELEMENT_UNIQUE[3] = 0xFF15BF06; -- green
+COLOR_BAR_DMG_ELEMENT_UNIQUE[0] = 0xAF1C1C8C; -- red
+COLOR_BAR_DMG_ELEMENT_UNIQUE[1] = 0xAF8C1C1C; -- blue
+COLOR_BAR_DMG_ELEMENT_UNIQUE[2] = 0xAF1C8C8C; -- yellow
+COLOR_BAR_DMG_ELEMENT_UNIQUE[3] = 0xAF1C8C1C; -- green
 
-local COLOR_BAR_DMG_AILMENT  = 0xFF3E37A3;
-local COLOR_BAR_DMG_OTOMO    = 0xFFFCC500;
-local COLOR_BAR_DMG_OTHER    = 0xFF616658;
+local COLOR_BAR_DMG_AILMENT  = 0xAF3E37A3;
+local COLOR_BAR_DMG_OTOMO    = 0xAFFCC500;
+local COLOR_BAR_DMG_OTHER    = 0xAF616658;
 
 local TEST_MODE = false;
 
