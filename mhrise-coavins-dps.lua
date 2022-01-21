@@ -25,6 +25,8 @@ local DRAW_BAR_TEXT_NAME_USE_REAL_NAMES = false; -- show real player names inste
 local DRAW_BAR_TEXT_TOTAL_DAMAGE        = false; -- shows total damage dealt
 local DRAW_BAR_TEXT_PERCENT_OF_PARTY    = true; -- shows your share of party damage
 local DRAW_BAR_TEXT_PERCENT_OF_BEST     = false; -- shows how close you are to the top damage dealer
+local DRAW_BAR_TEXT_HIT_COUNT           = false; -- shows how many hits you've landed
+local DRAW_BAR_TEXT_BIGGEST_HIT         = false; -- shows how much damage your biggest hit did
 
 -- rows will be added on top of the title bar instead of underneath, making it easier to place the table at the bottom of the screen
 local TABLE_GROWS_UPWARD = false;
@@ -231,9 +233,17 @@ function read_AfterCalcInfo_DamageSide(args)
 			s.damagePhysical  = s.damagePhysical  + physicalDamage;
 			s.damageElemental = s.damageElemental + elementDamage;
 			s.damageAilment   = s.damageAilment   + ailmentDamage;
+			s.numHit = s.numHit + 1;
+			if totalDamage > s.maxHit then
+				s.maxHit = totalDamage;
+			end
 		elseif isOtomo and OTOMO_DMG_IS_PLAYER_DMG then
 			s.damageTotal     = s.damageTotal + totalDamage + ailmentDamage
 			s.damageOtomo = s.damageOtomo + totalDamage + ailmentDamage;
+			s.numHit = s.numHit + 1;
+			if totalDamage > s.maxHit then
+				s.maxHit = totalDamage;
+			end
 		end
 	end
 end
@@ -252,13 +262,17 @@ end);
 
 -- initializes a new damageSource
 function initializeDamageSource()
-	local damageSource = {};
-	damageSource.damageTotal     = 0.0;
-	damageSource.damagePhysical  = 0.0;
-	damageSource.damageElemental = 0.0;
-	damageSource.damageAilment   = 0.0;
-	damageSource.damageOtomo     = 0.0;
-	return damageSource;
+	local s = {};
+	s.damageTotal     = 0.0;
+	s.damagePhysical  = 0.0;
+	s.damageElemental = 0.0;
+	s.damageAilment   = 0.0;
+	s.damageOtomo     = 0.0;
+
+	s.numHit = 0; -- how many hits
+	s.maxHit = 0; -- biggest hit
+
+	return s;
 end
 
 function initializeDamageSourceWithDummyData()
@@ -268,6 +282,24 @@ function initializeDamageSourceWithDummyData()
 	s.damageAilment   = math.random(1,100);
 	s.damageOtomo     = math.random(1,400);
 	s.damageTotal     = s.damagePhysical + s.damageElemental + s.damageAilment + s.damageOtomo;
+
+	s.numHit = math.random(1,1000);
+	s.maxHit = math.random(1,1000);
+
+	return s;
+end
+
+function combineDamageSourcess(a, b)
+	local s = initializeDamageSource();
+	s.damageTotal     = a.damageTotal     + b.damageTotal;
+	s.damagePhysical  = a.damagePhysical  + b.damagePhysical;
+	s.damageElemental = a.damageElemental + b.damageElemental;
+	s.damageAilment   = a.damageAilment   + b.damageAilment;
+	s.damageOtomo     = a.damageOtomo     + b.damageOtomo;
+
+	s.numHit = a.numHit + b.numHit;
+	s.maxHit = math.max(a.maxHit, b.maxHit);
+
 	return s;
 end
 
@@ -375,12 +407,7 @@ function generateSummaryReport()
 			if not totalDamageSources[item.id] then
 				totalDamageSources[item.id] = initializeDamageSource();
 			end
-			local s = totalDamageSources[item.id];
-			s.damageTotal     = s.damageTotal     + item.source.damageTotal;
-			s.damagePhysical  = s.damagePhysical  + item.source.damagePhysical;
-			s.damageElemental = s.damageElemental + item.source.damageElemental;
-			s.damageAilment   = s.damageAilment   + item.source.damageAilment;
-			s.damageOtomo     = s.damageOtomo     + item.source.damageOtomo;
+			totalDamageSources[item.id] = combineDamageSourcess(totalDamageSources[item.id], item.source);
 		end
 	end
 
@@ -523,6 +550,14 @@ function drawReport(index)
 
 		if DRAW_BAR_TEXT_PERCENT_OF_BEST then
 			barText = barText .. string.format('(%.1f%%)   ', item.percentOfBest * 100.0);
+		end
+
+		if DRAW_BAR_TEXT_HIT_COUNT then
+			barText = barText .. string.format('%d   ', item.source.numHit);
+		end
+
+		if DRAW_BAR_TEXT_BIGGEST_HIT then
+			barText = barText .. string.format('[%d]   ', item.source.maxHit);
 		end
 
 		draw.text(barText, origin_x + colorBlockWidth + 2, y, COLOR_WHITE);
