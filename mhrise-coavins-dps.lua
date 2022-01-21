@@ -34,27 +34,42 @@ local TABLE_ROWH = 18;
 -- 56 = blue
 -- 78 = red
 
-local COLOR_WHITE = 0xFFFFFFFF;
-local COLOR_GRAY  = 0xFFAFAFAF;
-local COLOR_BLACK = 0xFF000000;
-
--- players
+-- basic palette
+local COLOR_WHITE  = 0xFFFFFFFF;
+local COLOR_GRAY   = 0xFFAFAFAF;
+local COLOR_BLACK  = 0xFF000000;
 local COLOR_RED    = 0xFF0000FF;
 local COLOR_BLUE   = 0xFFFF0000;
-local COLOR_GREEN  = 0xFF00FF00;
 local COLOR_YELLOW = 0xFF00FFFF;
+local COLOR_GREEN  = 0xFF00FF00;
+
+-- players
+local COLOR_PLAYER = {};
+COLOR_PLAYER[0] = COLOR_RED;
+COLOR_PLAYER[1] = COLOR_BLUE;
+COLOR_PLAYER[2] = COLOR_YELLOW;
+COLOR_PLAYER[3] = COLOR_GREEN;
 
 -- table colors
 local COLOR_TITLE_BG         = 0xCC000000;
 local COLOR_TITLE_FG         = 0xFFAFAFAF;
 local COLOR_BAR_BG           = 0x88000000;
 local COLOR_BAR_OUTLINE      = 0x88000000;
+
 local COLOR_BAR_DMG_PHYSICAL = 0xFF616658;
-local COLOR_BAR_DMG_PHYSICAL_RED    = 0xFF050AA1;
-local COLOR_BAR_DMG_PHYSICAL_BLUE   = 0xFFA1050E;
-local COLOR_BAR_DMG_PHYSICAL_GREEN  = 0xFF12A105;
-local COLOR_BAR_DMG_PHYSICAL_YELLOW = 0xFF00A0A0;
-local COLOR_BAR_DMG_ELEMENT  = 0xFFE053A5;
+local COLOR_BAR_DMG_PHYSICAL_UNIQUE = {};
+COLOR_BAR_DMG_PHYSICAL_UNIQUE[0] = 0xFF050AA1; -- red
+COLOR_BAR_DMG_PHYSICAL_UNIQUE[1] = 0xFFA1050E; -- blue
+COLOR_BAR_DMG_PHYSICAL_UNIQUE[2] = 0xFF00A0A0; -- yellow
+COLOR_BAR_DMG_PHYSICAL_UNIQUE[3] = 0xFF12A105; -- green
+
+local COLOR_BAR_DMG_ELEMENT  = 0xFF919984;
+local COLOR_BAR_DMG_ELEMENT_UNIQUE = {};
+COLOR_BAR_DMG_ELEMENT_UNIQUE[0] = 0xFF060BBF; -- red
+COLOR_BAR_DMG_ELEMENT_UNIQUE[1] = 0xFFBF0611; -- blue
+COLOR_BAR_DMG_ELEMENT_UNIQUE[2] = 0xFF00BFBF; -- yellow
+COLOR_BAR_DMG_ELEMENT_UNIQUE[3] = 0xFF15BF06; -- green
+
 local COLOR_BAR_DMG_AILMENT  = 0xFF3E37A3;
 local COLOR_BAR_DMG_OTOMO    = 0xFFFCC500;
 local COLOR_BAR_DMG_OTHER    = 0xFF616658;
@@ -360,7 +375,7 @@ function generateAllReports()
 	generateSummaryReport();
 end
 
-function drawDamageBar(source, x, y, maxWidth, h, colorPhysical)
+function drawDamageBar(source, x, y, maxWidth, h, colorPhysical, colorElemental)
 	local w = 0;
 
 	-- draw physical damage
@@ -371,7 +386,7 @@ function drawDamageBar(source, x, y, maxWidth, h, colorPhysical)
 	-- draw elemental damage
 	--debug_line(string.format('damageElemental: %d', source.damageElemental));
 	w = (source.damageElemental / source.damageTotal) * maxWidth;
-	draw.filled_rect(x, y, w, h, COLOR_BAR_DMG_ELEMENT);
+	draw.filled_rect(x, y, w, h, colorElemental);
 	x = x + w;
 	-- draw ailment damage
 	--debug_line(string.format('damageAilment: %f', source.damageAilment));
@@ -422,18 +437,19 @@ function drawReport(index)
 		local y = origin_y + rowHeight * i;
 		local damageBarWidth = tableWidth - colorBlockWidth;
 
-		local playerColor = COLOR_GRAY;
-		if     item.id == 0 then playerColor = COLOR_RED;
-		elseif item.id == 1 then playerColor = COLOR_BLUE;
-		elseif item.id == 2 then playerColor = COLOR_YELLOW;
-		elseif item.id == 3 then playerColor = COLOR_GREEN;
+		local playerColor = COLOR_PLAYER[item.id];
+		if not playerColor then
+			playerColor = COLOR_GRAY;
 		end
 
-		local physicalColor = COLOR_BAR_DMG_PHYSICAL;
-		if     item.id == 0 then physicalColor = COLOR_BAR_DMG_PHYSICAL_RED;
-		elseif item.id == 1 then physicalColor = COLOR_BAR_DMG_PHYSICAL_BLUE;
-		elseif item.id == 2 then physicalColor = COLOR_BAR_DMG_PHYSICAL_YELLOW;
-		elseif item.id == 3 then physicalColor = COLOR_BAR_DMG_PHYSICAL_GREEN;
+		local physicalColor = COLOR_BAR_DMG_PHYSICAL_UNIQUE[item.id];
+		if not physicalColor then
+			physicalColor = COLOR_BAR_DMG_PHYSICAL;
+		end
+
+		local elementalColor = COLOR_BAR_DMG_ELEMENT_UNIQUE[item.id];
+		if not elementalColor then
+			elementalColor = COLOR_BAR_DMG_ELEMENT;
 		end
 
 		if DRAW_BAR_BACKGROUNDS then
@@ -445,7 +461,7 @@ function drawReport(index)
 		draw.filled_rect(origin_x, y, colorBlockWidth, rowHeight, playerColor);
 
 		-- draw damage bar
-		drawDamageBar(item.source, origin_x + colorBlockWidth, y, damageBarWidth * item.percentOfBest, rowHeight, physicalColor);
+		drawDamageBar(item.source, origin_x + colorBlockWidth, y, damageBarWidth * item.percentOfBest, rowHeight, physicalColor, elementalColor);
 
 		-- draw text
 		local barText = string.format('%.0f - %.1f%% (%.1f%%)', item.source.damageTotal, item.percentOfTotal * 100.0, item.percentOfBest * 100.0)
