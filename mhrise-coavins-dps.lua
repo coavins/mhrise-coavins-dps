@@ -8,6 +8,9 @@
 -- general settings
 local UPDATE_RATE = 0.5; -- in seconds, so 0.5 means two updates per second
 
+-- generates random data for the chart so you can easily test your changes
+local SHOW_TEST_DATA = false;
+
 -- when true, damage from palicoes and palamutes will be counted as if dealt by their hunter
 -- when false, damage from palicoes and palamutes will be ignored completely
 local OTOMO_DMG_IS_PLAYER_DMG = true;
@@ -88,8 +91,6 @@ COLOR_BAR_DMG_ELEMENT_UNIQUE[3] = 0xAF1C8C1C; -- green
 local COLOR_BAR_DMG_AILMENT  = 0xAF3E37A3;
 local COLOR_BAR_DMG_OTOMO    = 0xAFFCC500;
 local COLOR_BAR_DMG_OTHER    = 0xAF616658;
-
-local TEST_MODE = false;
 
 --
 -- end configuration
@@ -262,9 +263,9 @@ end
 function initializeDamageSourceWithDummyData()
 	local s = initializeDamageSource();
 	s.damagePhysical  = math.random(1,1000);
-	s.damageElemental = math.random(1,1000);
-	s.damageAilment   = math.random(1,1000);
-	s.damageOtomo     = math.random(1,1000);
+	s.damageElemental = math.random(1,600);
+	s.damageAilment   = math.random(1,100);
+	s.damageOtomo     = math.random(1,400);
 	s.damageTotal     = s.damagePhysical + s.damageElemental + s.damageAilment + s.damageOtomo;
 	return s;
 end
@@ -284,7 +285,7 @@ function initializeBossMonster(bossEnemy)
 
 	local sources = {};
 
-	if TEST_MODE then
+	if SHOW_TEST_DATA then
 		-- some dummy data
 		sources[0] = initializeDamageSourceWithDummyData();
 		sources[1] = initializeDamageSourceWithDummyData();
