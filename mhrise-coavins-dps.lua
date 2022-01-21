@@ -632,9 +632,11 @@ function dpsFrame()
 		dpsDraw();
 	else
 		-- clean up some things in between quests
-		LAST_UPDATE_TIME = 0;
-		LARGE_MONSTERS = {};
-		DAMAGE_REPORTS = {};
+		if LAST_UPDATE_TIME ~= 0 then
+			LAST_UPDATE_TIME = 0;
+			LARGE_MONSTERS = {};
+			DAMAGE_REPORTS = {};
+		end;
 	end
 end
 
