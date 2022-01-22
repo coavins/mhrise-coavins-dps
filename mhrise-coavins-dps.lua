@@ -938,6 +938,19 @@ function dpsWindow()
 	if changed then
 		DPS_ENABLED = wantsIt;
 	end
+	--[[
+	imgui.same_line();
+	if imgui.button('Save settings') then
+
+	end
+	imgui.same_line();
+	if imgui.button('Load settings') then
+	end;
+	]]
+
+	if imgui.button('Refresh') then
+		dpsUpdate();
+	end
 
 	-- Show test data
 	local changed, wantsIt = imgui.checkbox('Show test data while menu is open', CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN']);
