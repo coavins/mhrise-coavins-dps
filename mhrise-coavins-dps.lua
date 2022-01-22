@@ -106,6 +106,9 @@ local COLOR_BAR_DMG_OTHER    = 0xAF616658;
 
 -- globals
 
+local DPS_ENABLED = true;
+local DRAW_WINDOW = false;
+
 local SCREEN_W = 0;
 local SCREEN_H = 0;
 local DEBUG_Y = 0;
@@ -181,18 +184,19 @@ if UPDATE_RATE > 3 then
 	UPDATE_RATE = 3;
 end
 
--- apply preset
-if PRESET_MINIMAL then
-	DRAW_BAR_TEXT_NAME = false;
-	DRAW_BAR_TEXT_YOU = false;
-	DRAW_BAR_TEXT_NAME_USE_REAL_NAMES = false;
-	DRAW_BAR_TEXT_TOTAL_DAMAGE = true;
-	DRAW_BAR_TEXT_PERCENT_OF_PARTY = true;
-	DRAW_BAR_TEXT_PERCENT_OF_BEST = true;
-	DRAW_BAR_TEXT_HIT_COUNT = false;
-	DRAW_BAR_TEXT_BIGGEST_HIT = false;
-	USE_MINIMAL_BARS = true;
-	TABLE_SORT_IN_ORDER = true;
+function applySelectedPreset()
+	if PRESET_MINIMAL then
+		DRAW_BAR_TEXT_NAME = false;
+		DRAW_BAR_TEXT_YOU = false;
+		DRAW_BAR_TEXT_NAME_USE_REAL_NAMES = false;
+		DRAW_BAR_TEXT_TOTAL_DAMAGE = true;
+		DRAW_BAR_TEXT_PERCENT_OF_PARTY = true;
+		DRAW_BAR_TEXT_PERCENT_OF_BEST = true;
+		DRAW_BAR_TEXT_HIT_COUNT = false;
+		DRAW_BAR_TEXT_BIGGEST_HIT = false;
+		USE_MINIMAL_BARS = true;
+		TABLE_SORT_IN_ORDER = true;
+	end
 end
 
 -- system functions
@@ -783,8 +787,71 @@ function dpsFrame()
 	end
 end
 
+function dpsWindow()
+	DRAW_WINDOW = imgui.begin_window('coavins dps meter', DRAW_WINDOW, 65602);
+
+	local changed, wantsEnabled = imgui.checkbox('Enabled', DPS_ENABLED);
+	if changed then
+		DPS_ENABLED = wantsEnabled;
+	end
+
+	local changed, wantsTestMode = imgui.checkbox('Test mode', SHOW_TEST_DATA);
+	if changed then
+		SHOW_TEST_DATA = wantsTestMode;
+		if SHOW_TEST_DATA then
+			LARGE_MONSTERS = {};
+		else
+			-- gotta clear all the junk data
+			for _,boss in pairs(LARGE_MONSTERS) do
+				boss.damageSources = {};
+			end
+		end
+	end
+
+	imgui.text('Presets');
+
+	if imgui.button('Apply') then
+		applySelectedPreset();
+	end
+
+	imgui.same_line();
+
+	local presetOptions = {};
+	presetOptions[1] = 'Choose a preset';
+	presetOptions[2] = 'Minimal';
+	local changed, value = imgui.combo('', PRESET_SELECTED, presetOptions);
+
+	if changed then
+		PRESET_SELECTED = value;
+		PRESET_MINIMAL = false;
+		if PRESET_SELECTED == 2 then
+			PRESET_MINIMAL = true;
+		end
+	end
+
+	imgui.end_window();
+end
+
 re.on_frame(function()
-	dpsFrame();
+	if DRAW_WINDOW then
+		dpsWindow();
+	end
+
+	if DPS_ENABLED then
+		dpsFrame();
+	end
 end)
+
+local PRESET_SELECTED = 1;
+
+re.on_draw_ui(function()
+	imgui.text('coavins dps meter');
+	imgui.same_line();
+	if imgui.button('open settings') then
+		DRAW_WINDOW = true;
+	end;
+end)
+
+applySelectedPreset();
 
 log_info('init complete');
