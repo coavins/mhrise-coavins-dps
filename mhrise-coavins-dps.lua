@@ -23,7 +23,7 @@ CFG['DRAW_BAR_OUTLINES']    = false;
 
 CFG['DRAW_BAR_TEXT_NAME']                = true; -- shows name of combatant
 CFG['DRAW_BAR_TEXT_YOU']                 = true; -- shows "YOU" on your bar
-CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = false; -- show real player names instead of IDs (NOT YET IMPLEMENTED)
+CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = false; -- show real player names instead of IDs
 CFG['DRAW_BAR_TEXT_TOTAL_DAMAGE']        = false; -- shows total damage dealt
 CFG['DRAW_BAR_TEXT_PERCENT_OF_PARTY']    = true; -- shows your share of party damage
 CFG['DRAW_BAR_TEXT_PERCENT_OF_BEST']     = false; -- shows how close you are to the top damage dealer
@@ -136,18 +136,19 @@ local SCREEN_H = 0;
 local DEBUG_Y = 0;
 
 local LARGE_MONSTERS = {};
+local TEST_MONSTERS = nil; -- like LARGE_MONSTERS, but holds dummy/test data
 local DAMAGE_REPORTS = {};
 local LAST_UPDATE_TIME = 0;
 
-local TEST_MONSTERS = nil; -- like LARGE_MONSTERS, but holds dummy/test data
-
 local MY_PLAYER_ID = nil;
+local PLAYER_NAMES = {};
 
 -- initialized later when they become available
 local PLAYER_MANAGER  = nil;
 local ENEMY_MANAGER   = nil;
 local QUEST_MANAGER   = nil;
 local MESSAGE_MANAGER = nil;
+local LOBBY_MANAGER   = nil;
 
 local SCENE_MANAGER      = sdk.get_native_singleton("via.SceneManager");
 local SCENE_MANAGER_TYPE = sdk.find_type_definition("via.SceneManager");
@@ -247,6 +248,37 @@ function getScreenYFromY(y)
 	return SCREEN_H * y;
 end
 
+function updatePlayerNames()
+	local hunterInfo = LOBBY_MANAGER:get_field("_questHunterInfo");
+	if not hunterInfo then
+		return nil;
+	end
+
+	-- get my hunter info first, in case i'm playing single player
+	local myHunter = LOBBY_MANAGER:get_field("_myHunterInfo");
+	if myHunter then
+		PLAYER_NAMES[MY_PLAYER_ID + 1] = myHunter:get_field("_name");
+	end
+
+
+	local hunterCount = hunterInfo:call("get_Count");
+	if not hunterCount then
+		return nil;
+	end
+
+	for i = 0, hunterCount-1 do
+		local hunter = hunterInfo:call("get_Item", i);
+		if hunter then
+			local playerId = hunter:get_field("_memberIndex");
+			local name = hunter:get_field("_name");
+
+			if playerId and name then
+				PLAYER_NAMES[playerId + 1] = name;
+			end
+		end
+	end
+end
+
 -- callback functions
 
 -- used to track damage taken by monsters
@@ -280,7 +312,7 @@ function read_AfterCalcInfo_DamageSide(args)
 	local sources = boss.damageSources;
 	if isPlayer or isOtomo then
 		if not sources[attackerId] then
-			sources[attackerId] = initializeDamageSource();
+			sources[attackerId] = initializeDamageSource(attackerId);
 		end
 
 		-- get this damage source
@@ -320,8 +352,10 @@ end);
 -- main
 
 -- initializes a new damageSource
-function initializeDamageSource()
+function initializeDamageSource(attackerId)
 	local s = {};
+	s.id = attackerId;
+
 	s.damageTotal     = 0.0;
 	s.damagePhysical  = 0.0;
 	s.damageElemental = 0.0;
@@ -334,8 +368,8 @@ function initializeDamageSource()
 	return s;
 end
 
-function initializeDamageSourceWithDummyData()
-	local s = initializeDamageSource();
+function initializeDamageSourceWithDummyData(attackerId)
+	local s = initializeDamageSource(attackerId);
 	s.damagePhysical  = math.random(1,1000);
 	s.damageElemental = math.random(1,600);
 	s.damageAilment   = math.random(1,100);
@@ -348,16 +382,22 @@ function initializeDamageSourceWithDummyData()
 	return s;
 end
 
-function combineDamageSourcess(a, b)
+function combineDamageSources(a, b)
 	local s = initializeDamageSource();
-	s.damageTotal     = a.damageTotal     + b.damageTotal;
-	s.damagePhysical  = a.damagePhysical  + b.damagePhysical;
-	s.damageElemental = a.damageElemental + b.damageElemental;
-	s.damageAilment   = a.damageAilment   + b.damageAilment;
-	s.damageOtomo     = a.damageOtomo     + b.damageOtomo;
+	if a.id == b.id then
+		s.id = a.id;
 
-	s.numHit = a.numHit + b.numHit;
-	s.maxHit = math.max(a.maxHit, b.maxHit);
+		s.damageTotal     = a.damageTotal     + b.damageTotal;
+		s.damagePhysical  = a.damagePhysical  + b.damagePhysical;
+		s.damageElemental = a.damageElemental + b.damageElemental;
+		s.damageAilment   = a.damageAilment   + b.damageAilment;
+		s.damageOtomo     = a.damageOtomo     + b.damageOtomo;
+
+		s.numHit = a.numHit + b.numHit;
+		s.maxHit = math.max(a.maxHit, b.maxHit);
+	else
+		log_error('tried to combine damage sources belonging to different attackers');
+	end
 
 	return s;
 end
@@ -392,10 +432,10 @@ function initializeBossMonsterWithDummyData(fakeId, name)
 	boss.name = name;
 
 	local s = {};
-	s[0] = initializeDamageSourceWithDummyData();
-	s[1] = initializeDamageSourceWithDummyData();
-	s[2] = initializeDamageSourceWithDummyData();
-	s[3] = initializeDamageSourceWithDummyData();
+	s[0] = initializeDamageSourceWithDummyData(0);
+	s[1] = initializeDamageSourceWithDummyData(1);
+	s[2] = initializeDamageSourceWithDummyData(2);
+	s[3] = initializeDamageSourceWithDummyData(3);
 	boss.damageSources = s;
 
 	TEST_MONSTERS[fakeId] = boss;
@@ -430,11 +470,23 @@ function sortFn_Player(a, b)
 end
 
 -- returns a report item (for rendering) from the specified damage source (from boss cache)
-function generateReportItemFromDamageSource(source, id)
-	-- init player
+function generateReportItemFromDamageSource(source)
+	-- init report item
 	local item = {};
-	item.id = id;
+
+	-- id
+	item.id = source.id;
+
+	if item.id >= 0 and item.id <= 3 then
+		item.playerNumber = item.id + 1;
+	end
+
+	-- name
+	item.name = PLAYER_NAMES[item.playerNumber];
+
+	-- damage source
 	item.source = source;
+
 	return item;
 end
 
@@ -448,7 +500,7 @@ function generateReportFromDamageSources(enemy, damageSources)
 
 	-- parse damage sources from the boss cache
 	for id,source in pairs(damageSources) do
-		local item = generateReportItemFromDamageSource(source, id);
+		local item = generateReportItemFromDamageSource(source);
 
 		-- remember what the highest damage was
 		if item.source.damageTotal > topDamage then
@@ -493,9 +545,9 @@ function generateSummaryReport()
 		-- read all report items
 		for i,item in ipairs(report.items) do
 			if not totalDamageSources[item.id] then
-				totalDamageSources[item.id] = initializeDamageSource();
+				totalDamageSources[item.id] = initializeDamageSource(item.id);
 			end
-			totalDamageSources[item.id] = combineDamageSourcess(totalDamageSources[item.id], item.source);
+			totalDamageSources[item.id] = combineDamageSources(totalDamageSources[item.id], item.source);
 		end
 	end
 
@@ -634,15 +686,25 @@ function drawReport(index)
 
 		-- draw text
 		local barText = '';
+		local spacer = '   ';
 
 		if CFG['DRAW_BAR_TEXT_NAME'] then
 			-- player names
-			if item.id >= 0 and item.id <= 3 then
+			if item.playerNumber then
 				if CFG['DRAW_BAR_TEXT_YOU'] and item.id == MY_PLAYER_ID then
-					barText = barText .. 'YOU          ';
+					if not CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] then
+						barText = barText .. 'YOU          ';
+					else
+						barText = barText .. 'YOU' .. spacer;
+					end
+				elseif CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] and item.name then
+					barText = barText .. string.format('%s', item.name)  .. spacer;
 				else
-					barText = barText .. string.format('Player %.0f   ', item.id + 1);
+					barText = barText .. string.format('Player %.0f', item.id + 1) .. spacer;
 				end
+			else
+				-- it's not a player, just draw the name
+				barText = barText .. string.format('%s', item.name or '') .. spacer;
 			end
 			-- TODO: otomo, monster
 		elseif CFG['DRAW_BAR_TEXT_YOU'] then
@@ -654,23 +716,23 @@ function drawReport(index)
 		end
 
 		if CFG['DRAW_BAR_TEXT_TOTAL_DAMAGE'] then
-			barText = barText .. string.format('%.0f   ', item.source.damageTotal);
+			barText = barText .. string.format('%.0f', item.source.damageTotal)  .. spacer;
 		end
 
 		if CFG['DRAW_BAR_TEXT_PERCENT_OF_PARTY'] then
-			barText = barText .. string.format('%.1f%%   ', item.percentOfTotal * 100.0);
+			barText = barText .. string.format('%.1f%%', item.percentOfTotal * 100.0)  .. spacer;
 		end
 
 		if CFG['DRAW_BAR_TEXT_PERCENT_OF_BEST'] then
-			barText = barText .. string.format('(%.1f%%)   ', item.percentOfBest * 100.0);
+			barText = barText .. string.format('(%.1f%%)', item.percentOfBest * 100.0)  .. spacer;
 		end
 
 		if CFG['DRAW_BAR_TEXT_HIT_COUNT'] then
-			barText = barText .. string.format('%d   ', item.source.numHit);
+			barText = barText .. string.format('%d', item.source.numHit)  .. spacer;
 		end
 
 		if CFG['DRAW_BAR_TEXT_BIGGEST_HIT'] then
-			barText = barText .. string.format('[%d]   ', item.source.maxHit);
+			barText = barText .. string.format('[%d]', item.source.maxHit)  .. spacer;
 		end
 
 		draw.text(barText, origin_x + colorBlockWidth + 2, y, CFG['COLOR_WHITE']);
@@ -689,6 +751,11 @@ function dpsUpdate()
 
 	-- get player id
 	MY_PLAYER_ID = PLAYER_MANAGER:call("getMasterPlayerID");
+
+	if CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] then
+		-- get player names
+		updatePlayerNames();
+	end
 
 	-- update bosses
 	local bossCount = ENEMY_MANAGER:call("getBossEnemyCount");
@@ -811,6 +878,13 @@ function hasManagedResources()
 		end
 	end
 
+	if not LOBBY_MANAGER then
+		LOBBY_MANAGER = sdk.get_managed_singleton("snow.LobbyManager");
+		if not LOBBY_MANAGER then
+			return false;
+		end
+	end
+
 	return true;
 end
 
@@ -904,7 +978,7 @@ end)
 re.on_draw_ui(function()
 	imgui.text('coavins dps meter');
 	imgui.same_line();
-	if imgui.button('settings') then
+	if imgui.button('settings') and not DRAW_WINDOW then
 		DRAW_WINDOW = true;
 
 		if CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] then
