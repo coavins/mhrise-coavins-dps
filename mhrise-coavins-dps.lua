@@ -125,6 +125,7 @@ PRESET_FYLEX['TABLE_SORT_IN_ORDER']               = true;
 
 local DPS_ENABLED = true;
 local DRAW_WINDOW = false;
+local WINDOW_FLAGS = 0x10062;
 
 local PRESETS = {};
 local PRESET_OPTIONS = {};
@@ -849,7 +850,7 @@ function dpsWindow()
 	local changed, wantsIt = false;
 	local value = nil;
 
-	wantsIt = imgui.begin_window('coavins dps meter', DRAW_WINDOW, 65602);
+	wantsIt = imgui.begin_window('coavins dps meter', DRAW_WINDOW, WINDOW_FLAGS);
 	if DRAW_WINDOW and not wantsIt then
 		DRAW_WINDOW = false;
 
@@ -878,13 +879,13 @@ function dpsWindow()
 	-- Presets
 	imgui.text('Presets');
 
-	if imgui.button('Apply') then
-		applySelectedPreset();
-	end
-	imgui.same_line();
 	changed, value = imgui.combo('', PRESET_OPTIONS_SELECTED, PRESET_OPTIONS);
 	if changed then
 		PRESET_OPTIONS_SELECTED = value;
+	end
+	imgui.same_line();
+	if imgui.button('Apply') then
+		applySelectedPreset();
 	end
 
 	imgui.end_window();
