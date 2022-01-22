@@ -25,6 +25,9 @@ TXT['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] = 'Show test data while menu is open';
 CFG['OTOMO_DMG_IS_PLAYER_DMG'] = true;
 TXT['OTOMO_DMG_IS_PLAYER_DMG'] = 'Partner damage is counted as if dealt by the player';
 
+CFG['DRAW_BAR_RELATIVE_TO_PARTY'] = false;
+TXT['DRAW_BAR_RELATIVE_TO_PARTY'] = 'Damage bars will represent share of overall party DPS';
+
 -- table settings
 CFG['DRAW_BAR_BACKGROUNDS'] = true;
 TXT['DRAW_BAR_BACKGROUNDS'] = 'Show background';
@@ -722,8 +725,6 @@ function drawReport(index)
 	for i,item in ipairs(report.items) do
 		local y = origin_y + rowHeight * i;
 
-		local damageBarWidth = tableWidth - colorBlockWidth;
-
 		local playerColor = CFG['COLOR_PLAYER'][item.id];
 		if not playerColor then
 			playerColor = CFG['COLOR_GRAY'];
@@ -739,12 +740,18 @@ function drawReport(index)
 			elementalColor = CFG['COLOR_BAR_DMG_ELEMENT'];
 		end
 
+		local damageBarWidthMultiplier = item.percentOfBest;
+		if CFG['DRAW_BAR_RELATIVE_TO_PARTY'] then
+			damageBarWidthMultiplier = item.percentOfTotal;
+		end
+
 		if CFG['USE_MINIMAL_BARS'] then
 			-- color block
 			draw.filled_rect(origin_x, y, colorBlockWidth, rowHeight, elementalColor);
 
 			-- damage bar
-			draw.filled_rect(origin_x, y, colorBlockWidth * item.percentOfBest, rowHeight, playerColor);
+			local damageBarWidth = colorBlockWidth * damageBarWidthMultiplier;
+			draw.filled_rect(origin_x, y, damageBarWidth, rowHeight, playerColor);
 		else
 			if CFG['DRAW_BAR_BACKGROUNDS'] then
 				-- draw background
@@ -755,7 +762,8 @@ function drawReport(index)
 			draw.filled_rect(origin_x, y, colorBlockWidth, rowHeight, playerColor);
 
 			-- damage bar
-			drawRichDamageBar(item.source, origin_x + colorBlockWidth, y, damageBarWidth * item.percentOfBest, rowHeight, physicalColor, elementalColor);
+			local damageBarWidth = (tableWidth - colorBlockWidth) * damageBarWidthMultiplier;
+			drawRichDamageBar(item.source, origin_x + colorBlockWidth, y, damageBarWidth, rowHeight, physicalColor, elementalColor);
 		end
 
 		-- draw text
@@ -1087,6 +1095,7 @@ function dpsWindow()
 
 	--showSliderForFloatSetting('UPDATE_RATE');
 	showCheckboxForSetting('OTOMO_DMG_IS_PLAYER_DMG');
+	showCheckboxForSetting('DRAW_BAR_RELATIVE_TO_PARTY');
 
 	imgui.new_line();
 
