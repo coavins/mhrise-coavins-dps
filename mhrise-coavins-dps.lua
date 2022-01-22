@@ -13,8 +13,8 @@ CFG['PRESET_MINIMAL'] = false;
 -- general settings
 CFG['UPDATE_RATE'] = 0.5; -- in seconds, so 0.5 means two updates per second
 
--- generates random data for the chart so you can easily test your changes
-CFG['SHOW_TEST_DATA'] = false;
+-- when the settings window is open, test data will be shown in the graph
+CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] = true;
 
 -- when true, damage from palicoes and palamutes will be counted as if dealt by their hunter
 -- when false, damage from palicoes and palamutes will be ignored completely
@@ -118,6 +118,8 @@ local DEBUG_Y = 0;
 local LARGE_MONSTERS = {};
 local DAMAGE_REPORTS = {};
 local LAST_UPDATE_TIME = 0;
+
+local TEST_MONSTERS = nil; -- like LARGE_MONSTERS, but holds dummy/test data
 
 local MY_PLAYER_ID = nil;
 
@@ -348,22 +350,45 @@ function initializeBossMonster(bossEnemy)
 	local enemyType = bossEnemy:get_field("<EnemyType>k__BackingField");
 	boss.name = MESSAGE_MANAGER:call("getEnemyNameMessage", enemyType);
 
-	local sources = {};
-
-	if CFG['SHOW_TEST_DATA'] then
-		-- some dummy data
-		sources[0] = initializeDamageSourceWithDummyData();
-		sources[1] = initializeDamageSourceWithDummyData();
-		sources[2] = initializeDamageSourceWithDummyData();
-		sources[3] = initializeDamageSourceWithDummyData();
-	end
-
-	boss.damageSources = sources;
+	boss.damageSources = {};
 
 	-- store it in the table
 	LARGE_MONSTERS[bossEnemy] = boss;
+end
 
-	log_info(string.format('initialized new %s', boss.name));
+function initializeBossMonsterWithDummyData(fakeId, name)
+	local boss = {};
+
+	boss.enemy = fakeId;
+
+	boss.genus = 999;
+	boss.species = 0;
+
+	boss.name = name;
+
+	local s = {};
+	s[0] = initializeDamageSourceWithDummyData();
+	s[1] = initializeDamageSourceWithDummyData();
+	s[2] = initializeDamageSourceWithDummyData();
+	s[3] = initializeDamageSourceWithDummyData();
+	boss.damageSources = s;
+
+	TEST_MONSTERS[fakeId] = boss;
+end
+
+function initializeTestData()
+	TEST_MONSTERS = {};
+	initializeBossMonsterWithDummyData(1, 'Sample Monster A');
+	initializeBossMonsterWithDummyData(2, 'Sample Monster B');
+	initializeBossMonsterWithDummyData(3, 'Sample Monster C');
+
+	dpsUpdate();
+end
+
+function clearTestData()
+	TEST_MONSTERS = nil;
+
+	dpsUpdate();
 end
 
 -- compares two damage sources
@@ -456,8 +481,13 @@ end
 function generateAllReports()
 	DAMAGE_REPORTS = {};
 
+	local monsterCollection = LARGE_MONSTERS;
+	if TEST_MONSTERS then
+		monsterCollection = TEST_MONSTERS;
+	end
+
 	-- create reports for all cached bosses
-	for bossEnemy,boss in pairs(LARGE_MONSTERS) do
+	for bossEnemy,boss in pairs(monsterCollection) do
 		generateReportFromDamageSources(bossEnemy, boss.damageSources);
 	end
 
@@ -768,48 +798,58 @@ function dpsFrame()
 
 	local questStatus = QUEST_MANAGER:get_field("_QuestStatus");
 
-	-- only when a quest is active
+	-- update only when a quest is active
 	if questStatus >= 2 then
-		-- update occasionally
 		local totalSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
+
+		-- update occasionally
 		if totalSeconds > LAST_UPDATE_TIME + CFG['UPDATE_RATE'] then
 			dpsUpdate();
 			LAST_UPDATE_TIME = totalSeconds;
 		end
-
-		-- draw on every frame
-		dpsDraw();
 	else
 		-- clean up some things in between quests
 		if LAST_UPDATE_TIME ~= 0 then
 			LAST_UPDATE_TIME = 0;
 			LARGE_MONSTERS = {};
-			DAMAGE_REPORTS = {};
-		end;
+		end
+	end
+
+	-- draw on every frame
+	if DRAW_WINDOW or TEST_MONSTERS or questStatus >= 2 then
+		dpsDraw();
 	end
 end
 
 function dpsWindow()
-	DRAW_WINDOW = imgui.begin_window('coavins dps meter', DRAW_WINDOW, 65602);
+	local changed, wantsIt = false;
+	wantsIt = imgui.begin_window('coavins dps meter', DRAW_WINDOW, 65602);
+	if DRAW_WINDOW and not wantsIt then
+		DRAW_WINDOW = false;
 
-	local changed, wantsEnabled = imgui.checkbox('Enabled', DPS_ENABLED);
-	if changed then
-		DPS_ENABLED = wantsEnabled;
-	end
-
-	local changed, wantsTestMode = imgui.checkbox('Test mode', CFG['SHOW_TEST_DATA']);
-	if changed then
-		CFG['SHOW_TEST_DATA'] = wantsTestMode;
-		if CFG['SHOW_TEST_DATA'] then
-			LARGE_MONSTERS = {};
-		else
-			-- gotta clear all the junk data
-			for _,boss in pairs(LARGE_MONSTERS) do
-				boss.damageSources = {};
-			end
+		if TEST_MONSTERS then
+			clearTestData();
 		end
 	end
 
+	-- Enabled
+	changed, wantsIt = imgui.checkbox('Enabled', DPS_ENABLED);
+	if changed then
+		DPS_ENABLED = wantsIt;
+	end
+
+	-- Show test data
+	local changed, wantsIt = imgui.checkbox('Show test data while menu is open', CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN']);
+	if changed then
+		CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] = wantsIt;
+		if wantsIt then
+			initializeTestData();
+		else
+			clearTestData();
+		end
+	end
+
+	-- Presets
 	imgui.text('Presets');
 
 	if imgui.button('Apply') then
@@ -849,9 +889,13 @@ local PRESET_SELECTED = 1;
 re.on_draw_ui(function()
 	imgui.text('coavins dps meter');
 	imgui.same_line();
-	if imgui.button('open settings') then
+	if imgui.button('settings') then
 		DRAW_WINDOW = true;
-	end;
+
+		if CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] then
+			initializeTestData();
+		end
+	end
 end)
 
 applySelectedPreset();
