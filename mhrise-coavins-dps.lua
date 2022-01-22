@@ -7,9 +7,6 @@
 
 local CFG = {};
 
--- this preset will override some settings to make the overlay smaller and less distracting
-CFG['PRESET_MINIMAL'] = false;
-
 -- general settings
 CFG['UPDATE_RATE'] = 0.5; -- in seconds, so 0.5 means two updates per second
 
@@ -106,10 +103,32 @@ CFG['COLOR_BAR_DMG_OTHER']    = 0xAF616658;
 -- end configuration
 --
 
+--
+-- presets
+--
+
+local PRESET_FYLEX = {};
+PRESET_FYLEX['DRAW_BAR_TEXT_NAME']                = false;
+PRESET_FYLEX['DRAW_BAR_TEXT_YOU']                 = false;
+PRESET_FYLEX['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = false;
+PRESET_FYLEX['DRAW_BAR_TEXT_TOTAL_DAMAGE']        = true;
+PRESET_FYLEX['DRAW_BAR_TEXT_PERCENT_OF_PARTY']    = true;
+PRESET_FYLEX['DRAW_BAR_TEXT_PERCENT_OF_BEST']     = true;
+PRESET_FYLEX['DRAW_BAR_TEXT_HIT_COUNT']           = false;
+PRESET_FYLEX['DRAW_BAR_TEXT_BIGGEST_HIT']         = false;
+PRESET_FYLEX['USE_MINIMAL_BARS']                  = true;
+PRESET_FYLEX['TABLE_SORT_IN_ORDER']               = true;
+
+--
 -- globals
+--
 
 local DPS_ENABLED = true;
 local DRAW_WINDOW = false;
+
+local PRESETS = {};
+local PRESET_OPTIONS = {};
+local PRESET_OPTIONS_SELECTED = 1;
 
 local SCREEN_W = 0;
 local SCREEN_H = 0;
@@ -188,18 +207,23 @@ if CFG['UPDATE_RATE'] > 3 then
 	CFG['UPDATE_RATE'] = 3;
 end
 
+-- load presets
+PRESETS['Fylex'] = PRESET_FYLEX;
+
+-- build preset options list
+for name,_ in pairs(PRESETS) do
+	table.insert(PRESET_OPTIONS, name);
+end
+table.sort(PRESET_OPTIONS);
+table.insert(PRESET_OPTIONS, 1, 'Select a preset');
+
 function applySelectedPreset()
-	if PRESET_MINIMAL then
-		DRAW_BAR_TEXT_NAME = false;
-		DRAW_BAR_TEXT_YOU = false;
-		DRAW_BAR_TEXT_NAME_USE_REAL_NAMES = false;
-		DRAW_BAR_TEXT_TOTAL_DAMAGE = true;
-		DRAW_BAR_TEXT_PERCENT_OF_PARTY = true;
-		DRAW_BAR_TEXT_PERCENT_OF_BEST = true;
-		DRAW_BAR_TEXT_HIT_COUNT = false;
-		DRAW_BAR_TEXT_BIGGEST_HIT = false;
-		USE_MINIMAL_BARS = true;
-		TABLE_SORT_IN_ORDER = true;
+	local name = PRESET_OPTIONS[PRESET_OPTIONS_SELECTED];
+	local preset = PRESETS[name];
+	if preset then
+		for setting,value in pairs(preset) do
+			CFG[setting] = value;
+		end
 	end
 end
 
@@ -823,6 +847,8 @@ end
 
 function dpsWindow()
 	local changed, wantsIt = false;
+	local value = nil;
+
 	wantsIt = imgui.begin_window('coavins dps meter', DRAW_WINDOW, 65602);
 	if DRAW_WINDOW and not wantsIt then
 		DRAW_WINDOW = false;
@@ -855,20 +881,10 @@ function dpsWindow()
 	if imgui.button('Apply') then
 		applySelectedPreset();
 	end
-
 	imgui.same_line();
-
-	local presetOptions = {};
-	presetOptions[1] = 'Choose a preset';
-	presetOptions[2] = 'Minimal';
-	local changed, value = imgui.combo('', PRESET_SELECTED, presetOptions);
-
+	changed, value = imgui.combo('', PRESET_OPTIONS_SELECTED, PRESET_OPTIONS);
 	if changed then
-		PRESET_SELECTED = value;
-		PRESET_MINIMAL = false;
-		if PRESET_SELECTED == 2 then
-			PRESET_MINIMAL = true;
-		end
+		PRESET_OPTIONS_SELECTED = value;
 	end
 
 	imgui.end_window();
@@ -884,8 +900,6 @@ re.on_frame(function()
 	end
 end)
 
-local PRESET_SELECTED = 1;
-
 re.on_draw_ui(function()
 	imgui.text('coavins dps meter');
 	imgui.same_line();
@@ -897,7 +911,5 @@ re.on_draw_ui(function()
 		end
 	end
 end)
-
-applySelectedPreset();
 
 log_info('init complete');
