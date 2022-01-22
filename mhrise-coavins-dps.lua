@@ -5,6 +5,9 @@
 -- configuration
 --
 
+-- this preset will override some settings to make the overlay smaller and less distracting
+local PRESET_MINIMAL = false;
+
 -- general settings
 local UPDATE_RATE = 0.5; -- in seconds, so 0.5 means two updates per second
 
@@ -28,11 +31,16 @@ local DRAW_BAR_TEXT_PERCENT_OF_BEST     = false; -- shows how close you are to t
 local DRAW_BAR_TEXT_HIT_COUNT           = false; -- shows how many hits you've landed
 local DRAW_BAR_TEXT_BIGGEST_HIT         = false; -- shows how much damage your biggest hit did
 
+-- the damage bars will be removed, and the player blocks will receive shading instead
+local USE_MINIMAL_BARS = false;
+
 -- rows will be added on top of the title bar instead of underneath, making it easier to place the table at the bottom of the screen
 local TABLE_GROWS_UPWARD = false;
 
 -- when true, the row with the highest damage will be on bottom. you might want to use this with TABLE_GROWS_UPWARD
 local TABLE_SORT_ASC = false;
+-- when true, player 1 will be first and player 4 will be last
+local TABLE_SORT_IN_ORDER = false;
 
 -- table position
 -- X/Y here is expressed as a percentage
@@ -171,6 +179,20 @@ if UPDATE_RATE < 0.01 then
 end
 if UPDATE_RATE > 3 then
 	UPDATE_RATE = 3;
+end
+
+-- apply preset
+if PRESET_MINIMAL then
+	DRAW_BAR_TEXT_NAME = false;
+	DRAW_BAR_TEXT_YOU = false;
+	DRAW_BAR_TEXT_NAME_USE_REAL_NAMES = false;
+	DRAW_BAR_TEXT_TOTAL_DAMAGE = true;
+	DRAW_BAR_TEXT_PERCENT_OF_PARTY = true;
+	DRAW_BAR_TEXT_PERCENT_OF_BEST = true;
+	DRAW_BAR_TEXT_HIT_COUNT = false;
+	DRAW_BAR_TEXT_BIGGEST_HIT = false;
+	USE_MINIMAL_BARS = true;
+	TABLE_SORT_IN_ORDER = true;
 end
 
 -- system functions
@@ -347,6 +369,10 @@ function sortFn_ASC(a, b)
 	return a.source.damageTotal < b.source.damageTotal;
 end
 
+function sortFn_Player(a, b)
+	return a.id < b.id;
+end
+
 -- returns a report item (for rendering) from the specified damage source (from boss cache)
 function generateReportItemFromDamageSource(source, id)
 	-- init player
@@ -383,7 +409,9 @@ function generateReportFromDamageSources(enemy, damageSources)
 	report.totalDamage = totalDamage;
 
 	-- sort report items
-	if TABLE_SORT_ASC then
+	if TABLE_SORT_IN_ORDER then
+		table.sort(report.items, sortFn_Player);
+	elseif TABLE_SORT_ASC then
 		table.sort(report.items, sortFn_ASC);
 	else
 		table.sort(report.items, sortFn_DESC);
@@ -431,7 +459,7 @@ function generateAllReports()
 	generateSummaryReport();
 end
 
-function drawDamageBar(source, x, y, maxWidth, h, colorPhysical, colorElemental)
+function drawRichDamageBar(source, x, y, maxWidth, h, colorPhysical, colorElemental)
 	local w = 0;
 
 	-- draw physical damage
@@ -488,7 +516,13 @@ function drawReport(index)
 	local timeMinutes = QUEST_MANAGER:call("getQuestElapsedTimeMin");
 	local timeSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
 	timeSeconds = timeSeconds - (timeMinutes * 60);
-	draw.filled_rect(origin_x, origin_y, tableWidth, rowHeight, COLOR_TITLE_BG) 
+
+	if not USE_MINIMAL_BARS then
+		-- title background
+		draw.filled_rect(origin_x, origin_y, tableWidth, rowHeight, COLOR_TITLE_BG)
+	end
+
+	-- title text
 	local titleText = string.format("%d:%02.0f - %s", timeMinutes, timeSeconds, title);
 	draw.text(titleText, origin_x, origin_y, COLOR_TITLE_FG);
 
@@ -518,16 +552,24 @@ function drawReport(index)
 			elementalColor = COLOR_BAR_DMG_ELEMENT;
 		end
 
-		if DRAW_BAR_BACKGROUNDS then
-			-- draw background
-			draw.filled_rect(origin_x, y, tableWidth, rowHeight, COLOR_BAR_BG);
+		if USE_MINIMAL_BARS then
+			-- color block
+			draw.filled_rect(origin_x, y, colorBlockWidth, rowHeight, elementalColor);
+
+			-- damage bar
+			draw.filled_rect(origin_x, y, colorBlockWidth * item.percentOfBest, rowHeight, playerColor);
+		else
+			if DRAW_BAR_BACKGROUNDS then
+				-- draw background
+				draw.filled_rect(origin_x, y, tableWidth, rowHeight, COLOR_BAR_BG);
+			end
+
+			-- color block
+			draw.filled_rect(origin_x, y, colorBlockWidth, rowHeight, playerColor);
+
+			-- damage bar
+			drawRichDamageBar(item.source, origin_x + colorBlockWidth, y, damageBarWidth * item.percentOfBest, rowHeight, physicalColor, elementalColor);
 		end
-
-		-- draw color block
-		draw.filled_rect(origin_x, y, colorBlockWidth, rowHeight, playerColor);
-
-		-- draw damage bar
-		drawDamageBar(item.source, origin_x + colorBlockWidth, y, damageBarWidth * item.percentOfBest, rowHeight, physicalColor, elementalColor);
 
 		-- draw text
 		local barText = '';
