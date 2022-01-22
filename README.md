@@ -17,9 +17,15 @@ If the game is running, you will have to either restart the game or use the Rese
 
 ## Configuration
 
-There are a few settings available at the top of the `.lua` file.
+There is a settings menu located in the REFramework window.
+1. Expand "Script Generated UI"
+2. Click on the coavins dps meter settings button
 
-The size of the table will vary greatly depending on the screen resolution. Use these settings to adjust the table as needed.
+![Settings button](https://i.imgur.com/hYgwYE3.png)
+
+![Settings menu](https://i.imgur.com/7i02AqR.png)
+
+There are a few more settings available at the top of the `.lua` file. Saving and loading is not yet implemented, so if you want to change the default values, you will have to edit the lua file directly.
 
 ## Usage
 
@@ -29,7 +35,7 @@ The overlay will display each party member using the same color-coding that is s
 Some additional colors are used to indicate other types of damage.
 
 By default:
-* Primary colors are physical and elemental damage
+* Primary colors are physical (light) and elemental damage (dark)
 * Pale red is ailment damage
 * Light blue is damage dealt by your palico or palamute
 
@@ -48,5 +54,4 @@ Currently, the table only displays a summary of damage dealt to all large monste
 ### TODO:
 * Actually track DPS
 * Allow filtering by monster
-* Implement settings UI
 * Unit testing
