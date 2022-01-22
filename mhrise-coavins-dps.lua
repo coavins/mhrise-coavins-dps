@@ -6,51 +6,88 @@
 --
 
 local CFG = {};
+local TXT = {};
+local MIN = {};
+local MAX = {};
 
 -- general settings
 CFG['UPDATE_RATE'] = 0.5; -- in seconds, so 0.5 means two updates per second
+TXT['UPDATE_RATE'] = 'Update frequency (in seconds)';
+MIN['UPDATE_RATE'] = 0.01;
+MAX['UPDATE_RATE'] = 10.00;
 
 -- when the settings window is open, test data will be shown in the graph
 CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] = true;
+TXT['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] = 'Show test data while menu is open';
 
 -- when true, damage from palicoes and palamutes will be counted as if dealt by their hunter
 -- when false, damage from palicoes and palamutes will be ignored completely
 CFG['OTOMO_DMG_IS_PLAYER_DMG'] = true;
+TXT['OTOMO_DMG_IS_PLAYER_DMG'] = 'Partner damage is counted as if dealt by the player';
 
 -- table settings
 CFG['DRAW_BAR_BACKGROUNDS'] = true;
+TXT['DRAW_BAR_BACKGROUNDS'] = 'Show background';
 CFG['DRAW_BAR_OUTLINES']    = false;
+TXT['DRAW_BAR_OUTLINES'] = 'Show bar outlines';
 
 CFG['DRAW_BAR_TEXT_NAME']                = true; -- shows name of combatant
+TXT['DRAW_BAR_TEXT_NAME'] = 'Show names';
 CFG['DRAW_BAR_TEXT_YOU']                 = true; -- shows "YOU" on your bar
+TXT['DRAW_BAR_TEXT_YOU'] = 'Show "YOU" on your row"';
 CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = false; -- show real player names instead of IDs
+TXT['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = 'Reveal player names';
 CFG['DRAW_BAR_TEXT_TOTAL_DAMAGE']        = false; -- shows total damage dealt
+TXT['DRAW_BAR_TEXT_TOTAL_DAMAGE'] = 'Show total damage done';
 CFG['DRAW_BAR_TEXT_PERCENT_OF_PARTY']    = true; -- shows your share of party damage
+TXT['DRAW_BAR_TEXT_PERCENT_OF_PARTY'] = 'Show percent of party damage';
 CFG['DRAW_BAR_TEXT_PERCENT_OF_BEST']     = false; -- shows how close you are to the top damage dealer
+TXT['DRAW_BAR_TEXT_PERCENT_OF_BEST'] = 'Show percent of leader\'s damage';
 CFG['DRAW_BAR_TEXT_HIT_COUNT']           = false; -- shows how many hits you've landed
+TXT['DRAW_BAR_TEXT_HIT_COUNT'] = 'Show number of hits';
 CFG['DRAW_BAR_TEXT_BIGGEST_HIT']         = false; -- shows how much damage your biggest hit did
+TXT['DRAW_BAR_TEXT_BIGGEST_HIT'] = 'Show damage dealt by biggest hit';
 
 -- the damage bars will be removed, and the player blocks will receive shading instead
 CFG['USE_MINIMAL_BARS'] = false;
+TXT['USE_MINIMAL_BARS'] = 'Use a minimalist style for the damage bars';
 
 -- rows will be added on top of the title bar instead of underneath, making it easier to place the table at the bottom of the screen
 CFG['TABLE_GROWS_UPWARD'] = false;
+TXT['TABLE_GROWS_UPWARD'] = 'Table grows upward instead of down';
 
 -- when true, the row with the highest damage will be on bottom. you might want to use this with TABLE_GROWS_UPWARD
 CFG['TABLE_SORT_ASC'] = false;
+TXT['TABLE_SORT_ASC'] = 'Sort ascending';
 -- when true, player 1 will be first and player 4 will be last
 CFG['TABLE_SORT_IN_ORDER'] = false;
+TXT['TABLE_SORT_IN_ORDER'] = 'Sort by player';
 
 -- table position
 -- X/Y here is expressed as a percentage
 -- 0 is left/top of screen, 1 is right/bottom
 CFG['TABLE_X'] = 0.65;
+TXT['TABLE_X'] = 'Horizontal position';
+MIN['TABLE_X'] = 0.0;
+MAX['TABLE_X'] = 1.0;
 CFG['TABLE_Y'] = 0.00;
+TXT['TABLE_Y'] = 'Vertical position';
+MIN['TABLE_Y'] = 0.0;
+MAX['TABLE_Y'] = 1.0;
 CFG['TABLE_SCALE'] = 1.0; -- multiplier for width and height
+TXT['TABLE_SCALE'] = 'Scaling factor';
+MIN['TABLE_SCALE'] = 0.0;
+MAX['TABLE_SCALE'] = 10.00;
 
 -- pixels
 CFG['TABLE_WIDTH'] = 350;
+TXT['TABLE_WIDTH'] = 'Table width in pixels';
+MIN['TABLE_WIDTH'] = 0;
+MAX['TABLE_WIDTH'] = 3000;
 CFG['TABLE_ROWH'] = 18;
+TXT['TABLE_ROWH'] = 'Row height in pixels';
+MIN['TABLE_ROWH'] = 0;
+MAX['TABLE_ROWH'] = 100;
 
 -- colors
 -- 0x 12345678
@@ -107,17 +144,50 @@ CFG['COLOR_BAR_DMG_OTHER']    = 0xAF616658;
 -- presets
 --
 
+local PRESET_STANDARD = {};
+PRESET_STANDARD['OTOMO_DMG_IS_PLAYER_DMG'] = true;
+PRESET_STANDARD['DRAW_BAR_BACKGROUNDS'] = true;
+PRESET_STANDARD['DRAW_BAR_OUTLINES'] = false;
+PRESET_STANDARD['DRAW_BAR_TEXT_NAME'] = true;
+PRESET_STANDARD['DRAW_BAR_TEXT_YOU'] = true;
+PRESET_STANDARD['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = false;
+PRESET_STANDARD['DRAW_BAR_TEXT_TOTAL_DAMAGE'] = false;
+PRESET_STANDARD['DRAW_BAR_TEXT_PERCENT_OF_PARTY'] = true;
+PRESET_STANDARD['DRAW_BAR_TEXT_PERCENT_OF_BEST'] = false;
+PRESET_STANDARD['DRAW_BAR_TEXT_HIT_COUNT'] = false;
+PRESET_STANDARD['DRAW_BAR_TEXT_BIGGEST_HIT'] = false;
+PRESET_STANDARD['USE_MINIMAL_BARS'] = false;
+PRESET_STANDARD['TABLE_WIDTH'] = 350;
+PRESET_STANDARD['TABLE_ROWH'] = 18;
+
+local PRESET_DETAILED = {};
+PRESET_DETAILED['OTOMO_DMG_IS_PLAYER_DMG'] = true;
+PRESET_DETAILED['DRAW_BAR_BACKGROUNDS'] = true;
+PRESET_DETAILED['DRAW_BAR_OUTLINES'] = false;
+PRESET_DETAILED['DRAW_BAR_TEXT_NAME'] = true;
+PRESET_DETAILED['DRAW_BAR_TEXT_YOU'] = true;
+PRESET_DETAILED['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = false;
+PRESET_DETAILED['DRAW_BAR_TEXT_TOTAL_DAMAGE'] = true;
+PRESET_DETAILED['DRAW_BAR_TEXT_PERCENT_OF_PARTY'] = true;
+PRESET_DETAILED['DRAW_BAR_TEXT_PERCENT_OF_BEST'] = true;
+PRESET_DETAILED['DRAW_BAR_TEXT_HIT_COUNT'] = true;
+PRESET_DETAILED['DRAW_BAR_TEXT_BIGGEST_HIT'] = true;
+PRESET_DETAILED['USE_MINIMAL_BARS'] = false;
+PRESET_DETAILED['TABLE_SORT_ASC'] = false;
+PRESET_DETAILED['TABLE_WIDTH'] = 350;
+PRESET_DETAILED['TABLE_ROWH'] = 18;
+
 local PRESET_FYLEX = {};
-PRESET_FYLEX['DRAW_BAR_TEXT_NAME']                = false;
-PRESET_FYLEX['DRAW_BAR_TEXT_YOU']                 = false;
+PRESET_FYLEX['DRAW_BAR_TEXT_NAME'] = false;
+PRESET_FYLEX['DRAW_BAR_TEXT_YOU'] = false;
 PRESET_FYLEX['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = false;
-PRESET_FYLEX['DRAW_BAR_TEXT_TOTAL_DAMAGE']        = true;
-PRESET_FYLEX['DRAW_BAR_TEXT_PERCENT_OF_PARTY']    = true;
-PRESET_FYLEX['DRAW_BAR_TEXT_PERCENT_OF_BEST']     = true;
-PRESET_FYLEX['DRAW_BAR_TEXT_HIT_COUNT']           = false;
-PRESET_FYLEX['DRAW_BAR_TEXT_BIGGEST_HIT']         = false;
-PRESET_FYLEX['USE_MINIMAL_BARS']                  = true;
-PRESET_FYLEX['TABLE_SORT_IN_ORDER']               = true;
+PRESET_FYLEX['DRAW_BAR_TEXT_TOTAL_DAMAGE'] = true;
+PRESET_FYLEX['DRAW_BAR_TEXT_PERCENT_OF_PARTY'] = true;
+PRESET_FYLEX['DRAW_BAR_TEXT_PERCENT_OF_BEST'] = true;
+PRESET_FYLEX['DRAW_BAR_TEXT_HIT_COUNT'] = false;
+PRESET_FYLEX['DRAW_BAR_TEXT_BIGGEST_HIT'] = false;
+PRESET_FYLEX['USE_MINIMAL_BARS'] = true;
+PRESET_FYLEX['TABLE_SORT_IN_ORDER'] = true;
 
 --
 -- globals
@@ -125,7 +195,7 @@ PRESET_FYLEX['TABLE_SORT_IN_ORDER']               = true;
 
 local DPS_ENABLED = true;
 local DRAW_WINDOW = false;
-local WINDOW_FLAGS = 0x10062;
+local WINDOW_FLAGS = 0x10120;
 
 local PRESETS = {};
 local PRESET_OPTIONS = {};
@@ -210,6 +280,8 @@ if CFG['UPDATE_RATE'] > 3 then
 end
 
 -- load presets
+PRESETS['Standard'] = PRESET_STANDARD;
+PRESETS['Detailed'] = PRESET_DETAILED;
 PRESETS['Fylex'] = PRESET_FYLEX;
 
 -- build preset options list
@@ -373,7 +445,9 @@ function initializeDamageSourceWithDummyData(attackerId)
 	s.damagePhysical  = math.random(1,1000);
 	s.damageElemental = math.random(1,600);
 	s.damageAilment   = math.random(1,100);
-	s.damageOtomo     = math.random(1,400);
+	if CFG['OTOMO_DMG_IS_PLAYER_DMG'] then
+		s.damageOtomo     = math.random(1,400);
+	end
 	s.damageTotal     = s.damagePhysical + s.damageElemental + s.damageAilment + s.damageOtomo;
 
 	s.numHit = math.random(1,1000);
@@ -920,6 +994,31 @@ function dpsFrame()
 	end
 end
 
+--
+-- settings window
+--
+
+function showCheckboxForSetting(setting)
+	local changed, value = imgui.checkbox(TXT[setting], CFG[setting]);
+	if changed then
+		CFG[setting] = value;
+	end
+end
+
+function showSliderForFloatSetting(setting)
+	local changed, value = imgui.slider_float(TXT[setting], CFG[setting], MIN[setting], MAX[setting], '%.2f');
+	if changed then
+		CFG[setting] = value;
+	end
+end
+
+function showSliderForIntSetting(setting)
+	local changed, value = imgui.slider_int(TXT[setting], CFG[setting], MIN[setting], MAX[setting], '%d');
+	if changed then
+		CFG[setting] = value;
+	end
+end
+
 function dpsWindow()
 	local changed, wantsIt = false;
 	local value = nil;
@@ -948,12 +1047,8 @@ function dpsWindow()
 	end;
 	]]
 
-	if imgui.button('Refresh') then
-		dpsUpdate();
-	end
-
 	-- Show test data
-	local changed, wantsIt = imgui.checkbox('Show test data while menu is open', CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN']);
+	changed, wantsIt = imgui.checkbox('Show test data while menu is open', CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN']);
 	if changed then
 		CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] = wantsIt;
 		if wantsIt then
@@ -964,6 +1059,7 @@ function dpsWindow()
 	end
 
 	-- Presets
+	imgui.new_line();
 	imgui.text('Presets');
 
 	changed, value = imgui.combo('', PRESET_OPTIONS_SELECTED, PRESET_OPTIONS);
@@ -974,6 +1070,56 @@ function dpsWindow()
 	if imgui.button('Apply') then
 		applySelectedPreset();
 	end
+
+	-- Settings
+	imgui.new_line();
+	imgui.text('Settings');
+
+	imgui.same_line();
+	if imgui.button('Refresh') then
+		if TEST_MONSTERS then
+			-- reinitialize test data
+			initializeTestData();
+		end
+
+		dpsUpdate();
+	end
+
+	--showSliderForFloatSetting('UPDATE_RATE');
+	showCheckboxForSetting('OTOMO_DMG_IS_PLAYER_DMG');
+
+	imgui.new_line();
+
+	showCheckboxForSetting('DRAW_BAR_BACKGROUNDS');
+	showCheckboxForSetting('DRAW_BAR_OUTLINES');
+
+	imgui.new_line();
+
+	showCheckboxForSetting('DRAW_BAR_TEXT_NAME');
+	showCheckboxForSetting('DRAW_BAR_TEXT_YOU');
+	showCheckboxForSetting('DRAW_BAR_TEXT_NAME_USE_REAL_NAMES');
+	showCheckboxForSetting('DRAW_BAR_TEXT_TOTAL_DAMAGE');
+	showCheckboxForSetting('DRAW_BAR_TEXT_PERCENT_OF_PARTY');
+	showCheckboxForSetting('DRAW_BAR_TEXT_PERCENT_OF_BEST');
+	showCheckboxForSetting('DRAW_BAR_TEXT_HIT_COUNT');
+	showCheckboxForSetting('DRAW_BAR_TEXT_BIGGEST_HIT');
+
+	imgui.new_line();
+
+	showCheckboxForSetting('USE_MINIMAL_BARS');
+	showCheckboxForSetting('TABLE_GROWS_UPWARD');
+	showCheckboxForSetting('TABLE_SORT_ASC');
+	showCheckboxForSetting('TABLE_SORT_IN_ORDER');
+
+	imgui.new_line();
+
+	showSliderForFloatSetting('TABLE_X');
+	showSliderForFloatSetting('TABLE_Y');
+	showSliderForFloatSetting('TABLE_SCALE');
+	showSliderForIntSetting('TABLE_WIDTH');
+	showSliderForIntSetting('TABLE_ROWH');
+
+	imgui.new_line();
 
 	imgui.end_window();
 end
