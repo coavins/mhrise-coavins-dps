@@ -5,53 +5,55 @@
 -- configuration
 --
 
+local CFG = {};
+
 -- this preset will override some settings to make the overlay smaller and less distracting
-local PRESET_MINIMAL = false;
+CFG['PRESET_MINIMAL'] = false;
 
 -- general settings
-local UPDATE_RATE = 0.5; -- in seconds, so 0.5 means two updates per second
+CFG['UPDATE_RATE'] = 0.5; -- in seconds, so 0.5 means two updates per second
 
 -- generates random data for the chart so you can easily test your changes
-local SHOW_TEST_DATA = false;
+CFG['SHOW_TEST_DATA'] = false;
 
 -- when true, damage from palicoes and palamutes will be counted as if dealt by their hunter
 -- when false, damage from palicoes and palamutes will be ignored completely
-local OTOMO_DMG_IS_PLAYER_DMG = true;
+CFG['OTOMO_DMG_IS_PLAYER_DMG'] = true;
 
 -- table settings
-local DRAW_BAR_BACKGROUNDS = true;
-local DRAW_BAR_OUTLINES    = false;
+CFG['DRAW_BAR_BACKGROUNDS'] = true;
+CFG['DRAW_BAR_OUTLINES']    = false;
 
-local DRAW_BAR_TEXT_NAME                = true; -- shows name of combatant
-local DRAW_BAR_TEXT_YOU                 = true; -- shows "YOU" on your bar
-local DRAW_BAR_TEXT_NAME_USE_REAL_NAMES = false; -- show real player names instead of IDs (NOT YET IMPLEMENTED)
-local DRAW_BAR_TEXT_TOTAL_DAMAGE        = false; -- shows total damage dealt
-local DRAW_BAR_TEXT_PERCENT_OF_PARTY    = true; -- shows your share of party damage
-local DRAW_BAR_TEXT_PERCENT_OF_BEST     = false; -- shows how close you are to the top damage dealer
-local DRAW_BAR_TEXT_HIT_COUNT           = false; -- shows how many hits you've landed
-local DRAW_BAR_TEXT_BIGGEST_HIT         = false; -- shows how much damage your biggest hit did
+CFG['DRAW_BAR_TEXT_NAME']                = true; -- shows name of combatant
+CFG['DRAW_BAR_TEXT_YOU']                 = true; -- shows "YOU" on your bar
+CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = false; -- show real player names instead of IDs (NOT YET IMPLEMENTED)
+CFG['DRAW_BAR_TEXT_TOTAL_DAMAGE']        = false; -- shows total damage dealt
+CFG['DRAW_BAR_TEXT_PERCENT_OF_PARTY']    = true; -- shows your share of party damage
+CFG['DRAW_BAR_TEXT_PERCENT_OF_BEST']     = false; -- shows how close you are to the top damage dealer
+CFG['DRAW_BAR_TEXT_HIT_COUNT']           = false; -- shows how many hits you've landed
+CFG['DRAW_BAR_TEXT_BIGGEST_HIT']         = false; -- shows how much damage your biggest hit did
 
 -- the damage bars will be removed, and the player blocks will receive shading instead
-local USE_MINIMAL_BARS = false;
+CFG['USE_MINIMAL_BARS'] = false;
 
 -- rows will be added on top of the title bar instead of underneath, making it easier to place the table at the bottom of the screen
-local TABLE_GROWS_UPWARD = false;
+CFG['TABLE_GROWS_UPWARD'] = false;
 
 -- when true, the row with the highest damage will be on bottom. you might want to use this with TABLE_GROWS_UPWARD
-local TABLE_SORT_ASC = false;
+CFG['TABLE_SORT_ASC'] = false;
 -- when true, player 1 will be first and player 4 will be last
-local TABLE_SORT_IN_ORDER = false;
+CFG['TABLE_SORT_IN_ORDER'] = false;
 
 -- table position
 -- X/Y here is expressed as a percentage
 -- 0 is left/top of screen, 1 is right/bottom
-local TABLE_X = 0.65;
-local TABLE_Y = 0.00;
-local TABLE_SCALE = 1.0; -- multiplier for width and height
+CFG['TABLE_X'] = 0.65;
+CFG['TABLE_Y'] = 0.00;
+CFG['TABLE_SCALE'] = 1.0; -- multiplier for width and height
 
 -- pixels
-local TABLE_WIDTH = 350;
-local TABLE_ROWH = 18;
+CFG['TABLE_WIDTH'] = 350;
+CFG['TABLE_ROWH'] = 18;
 
 -- colors
 -- 0x 12345678
@@ -61,44 +63,44 @@ local TABLE_ROWH = 18;
 -- 78 = red
 
 -- basic palette
-local COLOR_WHITE  = 0xFFFFFFFF;
-local COLOR_GRAY   = 0xFFAFAFAF;
-local COLOR_BLACK  = 0xFF000000;
-local COLOR_RED    = 0xAF3232FF;
-local COLOR_BLUE   = 0xAFFF3232;
-local COLOR_YELLOW = 0xAF32FFFF;
-local COLOR_GREEN  = 0xAF32FF32;
+CFG['COLOR_WHITE']  = 0xFFFFFFFF;
+CFG['COLOR_GRAY']   = 0xFFAFAFAF;
+CFG['COLOR_BLACK']  = 0xFF000000;
+CFG['COLOR_RED']    = 0xAF3232FF;
+CFG['COLOR_BLUE']   = 0xAFFF3232;
+CFG['COLOR_YELLOW'] = 0xAF32FFFF;
+CFG['COLOR_GREEN']  = 0xAF32FF32;
 
 -- players
-local COLOR_PLAYER = {};
-COLOR_PLAYER[0] = COLOR_RED;
-COLOR_PLAYER[1] = COLOR_BLUE;
-COLOR_PLAYER[2] = COLOR_YELLOW;
-COLOR_PLAYER[3] = COLOR_GREEN;
+CFG['COLOR_PLAYER'] = {};
+CFG['COLOR_PLAYER'][0] = CFG['COLOR_RED'];
+CFG['COLOR_PLAYER'][1] = CFG['COLOR_BLUE'];
+CFG['COLOR_PLAYER'][2] = CFG['COLOR_YELLOW'];
+CFG['COLOR_PLAYER'][3] = CFG['COLOR_GREEN'];
 
 -- table colors
-local COLOR_TITLE_BG         = 0x88000000;
-local COLOR_TITLE_FG         = 0xFFDADADA;
-local COLOR_BAR_BG           = 0x44000000;
-local COLOR_BAR_OUTLINE      = 0x44000000;
+CFG['COLOR_TITLE_BG']         = 0x88000000;
+CFG['COLOR_TITLE_FG']         = 0xFFDADADA;
+CFG['COLOR_BAR_BG']           = 0x44000000;
+CFG['COLOR_BAR_OUTLINE']      = 0x44000000;
 
-local COLOR_BAR_DMG_PHYSICAL = 0xAF616658;
-local COLOR_BAR_DMG_PHYSICAL_UNIQUE = {};
-COLOR_BAR_DMG_PHYSICAL_UNIQUE[0] = 0xAF2828CC; -- red
-COLOR_BAR_DMG_PHYSICAL_UNIQUE[1] = 0xAFCC2828; -- blue
-COLOR_BAR_DMG_PHYSICAL_UNIQUE[2] = 0xAF28CCCC; -- yellow
-COLOR_BAR_DMG_PHYSICAL_UNIQUE[3] = 0xAF28CC28; -- green
+CFG['COLOR_BAR_DMG_PHYSICAL'] = 0xAF616658;
+CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'] = {};
+CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][0] = 0xAF2828CC; -- red
+CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][1] = 0xAFCC2828; -- blue
+CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][2] = 0xAF28CCCC; -- yellow
+CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][3] = 0xAF28CC28; -- green
 
-local COLOR_BAR_DMG_ELEMENT  = 0xAF919984;
-local COLOR_BAR_DMG_ELEMENT_UNIQUE = {};
-COLOR_BAR_DMG_ELEMENT_UNIQUE[0] = 0xAF1C1C8C; -- red
-COLOR_BAR_DMG_ELEMENT_UNIQUE[1] = 0xAF8C1C1C; -- blue
-COLOR_BAR_DMG_ELEMENT_UNIQUE[2] = 0xAF1C8C8C; -- yellow
-COLOR_BAR_DMG_ELEMENT_UNIQUE[3] = 0xAF1C8C1C; -- green
+CFG['COLOR_BAR_DMG_ELEMENT']  = 0xAF919984;
+CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'] = {};
+CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][0] = 0xAF1C1C8C; -- red
+CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][1] = 0xAF8C1C1C; -- blue
+CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][2] = 0xAF1C8C8C; -- yellow
+CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][3] = 0xAF1C8C1C; -- green
 
-local COLOR_BAR_DMG_AILMENT  = 0xAF3E37A3;
-local COLOR_BAR_DMG_OTOMO    = 0xAFFCC500;
-local COLOR_BAR_DMG_OTHER    = 0xAF616658;
+CFG['COLOR_BAR_DMG_AILMENT']  = 0xAF3E37A3;
+CFG['COLOR_BAR_DMG_OTOMO']    = 0xAFFCC500;
+CFG['COLOR_BAR_DMG_OTHER']    = 0xAF616658;
 
 --
 -- end configuration
@@ -174,14 +176,14 @@ if not SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE then
 	return;
 end
 
-if not UPDATE_RATE or tonumber(UPDATE_RATE) == nil then
-	UPDATE_RATE = 0.5;
+if not CFG['UPDATE_RATE'] or tonumber(CFG['UPDATE_RATE']) == nil then
+	CFG['UPDATE_RATE'] = 0.5;
 end
-if UPDATE_RATE < 0.01 then
-	UPDATE_RATE = 0.01;
+if CFG['UPDATE_RATE'] < 0.01 then
+	CFG['UPDATE_RATE'] = 0.01;
 end
-if UPDATE_RATE > 3 then
-	UPDATE_RATE = 3;
+if CFG['UPDATE_RATE'] > 3 then
+	CFG['UPDATE_RATE'] = 3;
 end
 
 function applySelectedPreset()
@@ -267,7 +269,7 @@ function read_AfterCalcInfo_DamageSide(args)
 			if totalDamage > s.maxHit then
 				s.maxHit = totalDamage;
 			end
-		elseif isOtomo and OTOMO_DMG_IS_PLAYER_DMG then
+		elseif isOtomo and CFG['OTOMO_DMG_IS_PLAYER_DMG'] then
 			s.damageTotal     = s.damageTotal + totalDamage + ailmentDamage
 			s.damageOtomo = s.damageOtomo + totalDamage + ailmentDamage;
 			s.numHit = s.numHit + 1;
@@ -348,7 +350,7 @@ function initializeBossMonster(bossEnemy)
 
 	local sources = {};
 
-	if SHOW_TEST_DATA then
+	if CFG['SHOW_TEST_DATA'] then
 		-- some dummy data
 		sources[0] = initializeDamageSourceWithDummyData();
 		sources[1] = initializeDamageSourceWithDummyData();
@@ -413,9 +415,9 @@ function generateReportFromDamageSources(enemy, damageSources)
 	report.totalDamage = totalDamage;
 
 	-- sort report items
-	if TABLE_SORT_IN_ORDER then
+	if CFG['TABLE_SORT_IN_ORDER'] then
 		table.sort(report.items, sortFn_Player);
-	elseif TABLE_SORT_ASC then
+	elseif CFG['TABLE_SORT_ASC'] then
 		table.sort(report.items, sortFn_ASC);
 	else
 		table.sort(report.items, sortFn_DESC);
@@ -479,18 +481,18 @@ function drawRichDamageBar(source, x, y, maxWidth, h, colorPhysical, colorElemen
 	-- draw ailment damage
 	--debug_line(string.format('damageAilment: %f', source.damageAilment));
 	w = (source.damageAilment / source.damageTotal) * maxWidth;
-	draw.filled_rect(x, y, w, h, COLOR_BAR_DMG_AILMENT);
+	draw.filled_rect(x, y, w, h, CFG['COLOR_BAR_DMG_AILMENT']);
 	x = x + w;
 	-- draw otomo damage
 	--debug_line(string.format('damageOtomo: %d', source.damageOtomo));
 	w = (source.damageOtomo / source.damageTotal) * maxWidth;
-	draw.filled_rect(x, y, w, h, COLOR_BAR_DMG_OTOMO);
+	draw.filled_rect(x, y, w, h, CFG['COLOR_BAR_DMG_OTOMO']);
 	x = x + w;
 	-- draw whatever's left
 	local remainder = source.damageTotal - source.damagePhysical - source.damageElemental - source.damageAilment - source.damageOtomo;
 	--debug_line(string.format('remainder: %d', remainder));
 	w = (remainder / source.damageTotal) * maxWidth;
-	draw.filled_rect(x, y, w, h, COLOR_BAR_DMG_OTHER);
+	draw.filled_rect(x, y, w, h, CFG['COLOR_BAR_DMG_OTHER']);
 	--debug_line(string.format('total: %d', source.damageTotal));
 end
 
@@ -500,10 +502,10 @@ function drawReport(index)
 		return;
 	end
 
-	local origin_x = getScreenXFromX(TABLE_X);
-	local origin_y = getScreenYFromY(TABLE_Y);
-	local tableWidth = TABLE_WIDTH * TABLE_SCALE;
-	local rowHeight = TABLE_ROWH * TABLE_SCALE;
+	local origin_x = getScreenXFromX(CFG['TABLE_X']);
+	local origin_y = getScreenYFromY(CFG['TABLE_Y']);
+	local tableWidth = CFG['TABLE_WIDTH'] * CFG['TABLE_SCALE'];
+	local rowHeight = CFG['TABLE_ROWH'] * CFG['TABLE_SCALE'];
 	local colorBlockWidth = 20;
 
 	local boss = LARGE_MONSTERS[index];
@@ -512,7 +514,7 @@ function drawReport(index)
 		title = boss.name;
 	end
 
-	if TABLE_GROWS_UPWARD then
+	if CFG['TABLE_GROWS_UPWARD'] then
 		origin_y = origin_y - rowHeight;
 	end
 
@@ -521,16 +523,16 @@ function drawReport(index)
 	local timeSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
 	timeSeconds = timeSeconds - (timeMinutes * 60);
 
-	if not USE_MINIMAL_BARS then
+	if not CFG['USE_MINIMAL_BARS'] then
 		-- title background
-		draw.filled_rect(origin_x, origin_y, tableWidth, rowHeight, COLOR_TITLE_BG)
+		draw.filled_rect(origin_x, origin_y, tableWidth, rowHeight, CFG['COLOR_TITLE_BG'])
 	end
 
 	-- title text
 	local titleText = string.format("%d:%02.0f - %s", timeMinutes, timeSeconds, title);
-	draw.text(titleText, origin_x, origin_y, COLOR_TITLE_FG);
+	draw.text(titleText, origin_x, origin_y, CFG['COLOR_TITLE_FG']);
 
-	if TABLE_GROWS_UPWARD then
+	if CFG['TABLE_GROWS_UPWARD'] then
 		-- adjust starting position for drawing report items
 		origin_y = origin_y - rowHeight * (#report.items + 1);
 	end
@@ -541,31 +543,31 @@ function drawReport(index)
 
 		local damageBarWidth = tableWidth - colorBlockWidth;
 
-		local playerColor = COLOR_PLAYER[item.id];
+		local playerColor = CFG['COLOR_PLAYER'][item.id];
 		if not playerColor then
-			playerColor = COLOR_GRAY;
+			playerColor = CFG['COLOR_GRAY'];
 		end
 
-		local physicalColor = COLOR_BAR_DMG_PHYSICAL_UNIQUE[item.id];
+		local physicalColor = CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][item.id];
 		if not physicalColor then
-			physicalColor = COLOR_BAR_DMG_PHYSICAL;
+			physicalColor = CFG['COLOR_BAR_DMG_PHYSICAL'];
 		end
 
-		local elementalColor = COLOR_BAR_DMG_ELEMENT_UNIQUE[item.id];
+		local elementalColor = CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][item.id];
 		if not elementalColor then
-			elementalColor = COLOR_BAR_DMG_ELEMENT;
+			elementalColor = CFG['COLOR_BAR_DMG_ELEMENT'];
 		end
 
-		if USE_MINIMAL_BARS then
+		if CFG['USE_MINIMAL_BARS'] then
 			-- color block
 			draw.filled_rect(origin_x, y, colorBlockWidth, rowHeight, elementalColor);
 
 			-- damage bar
 			draw.filled_rect(origin_x, y, colorBlockWidth * item.percentOfBest, rowHeight, playerColor);
 		else
-			if DRAW_BAR_BACKGROUNDS then
+			if CFG['DRAW_BAR_BACKGROUNDS'] then
 				-- draw background
-				draw.filled_rect(origin_x, y, tableWidth, rowHeight, COLOR_BAR_BG);
+				draw.filled_rect(origin_x, y, tableWidth, rowHeight, CFG['COLOR_BAR_BG']);
 			end
 
 			-- color block
@@ -578,17 +580,17 @@ function drawReport(index)
 		-- draw text
 		local barText = '';
 
-		if DRAW_BAR_TEXT_NAME then
+		if CFG['DRAW_BAR_TEXT_NAME'] then
 			-- player names
 			if item.id >= 0 and item.id <= 3 then
-				if DRAW_BAR_TEXT_YOU and item.id == MY_PLAYER_ID then
+				if CFG['DRAW_BAR_TEXT_YOU'] and item.id == MY_PLAYER_ID then
 					barText = barText .. 'YOU          ';
 				else
 					barText = barText .. string.format('Player %.0f   ', item.id + 1);
 				end
 			end
 			-- TODO: otomo, monster
-		elseif DRAW_BAR_TEXT_YOU then
+		elseif CFG['DRAW_BAR_TEXT_YOU'] then
 			if item.id == MY_PLAYER_ID then
 				barText = barText .. 'YOU  ';
 			else
@@ -596,31 +598,31 @@ function drawReport(index)
 			end
 		end
 
-		if DRAW_BAR_TEXT_TOTAL_DAMAGE then
+		if CFG['DRAW_BAR_TEXT_TOTAL_DAMAGE'] then
 			barText = barText .. string.format('%.0f   ', item.source.damageTotal);
 		end
 
-		if DRAW_BAR_TEXT_PERCENT_OF_PARTY then
+		if CFG['DRAW_BAR_TEXT_PERCENT_OF_PARTY'] then
 			barText = barText .. string.format('%.1f%%   ', item.percentOfTotal * 100.0);
 		end
 
-		if DRAW_BAR_TEXT_PERCENT_OF_BEST then
+		if CFG['DRAW_BAR_TEXT_PERCENT_OF_BEST'] then
 			barText = barText .. string.format('(%.1f%%)   ', item.percentOfBest * 100.0);
 		end
 
-		if DRAW_BAR_TEXT_HIT_COUNT then
+		if CFG['DRAW_BAR_TEXT_HIT_COUNT'] then
 			barText = barText .. string.format('%d   ', item.source.numHit);
 		end
 
-		if DRAW_BAR_TEXT_BIGGEST_HIT then
+		if CFG['DRAW_BAR_TEXT_BIGGEST_HIT'] then
 			barText = barText .. string.format('[%d]   ', item.source.maxHit);
 		end
 
-		draw.text(barText, origin_x + colorBlockWidth + 2, y, COLOR_WHITE);
+		draw.text(barText, origin_x + colorBlockWidth + 2, y, CFG['COLOR_WHITE']);
 
-		if DRAW_BAR_OUTLINES then
+		if CFG['DRAW_BAR_OUTLINES'] then
 			-- draw outline
-			draw.outline_rect(origin_x, y, tableWidth, rowHeight, COLOR_BAR_OUTLINE);
+			draw.outline_rect(origin_x, y, tableWidth, rowHeight, CFG['COLOR_BAR_OUTLINE']);
 		end
 	end
 end
@@ -770,7 +772,7 @@ function dpsFrame()
 	if questStatus >= 2 then
 		-- update occasionally
 		local totalSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
-		if totalSeconds > LAST_UPDATE_TIME + UPDATE_RATE then
+		if totalSeconds > LAST_UPDATE_TIME + CFG['UPDATE_RATE'] then
 			dpsUpdate();
 			LAST_UPDATE_TIME = totalSeconds;
 		end
@@ -795,10 +797,10 @@ function dpsWindow()
 		DPS_ENABLED = wantsEnabled;
 	end
 
-	local changed, wantsTestMode = imgui.checkbox('Test mode', SHOW_TEST_DATA);
+	local changed, wantsTestMode = imgui.checkbox('Test mode', CFG['SHOW_TEST_DATA']);
 	if changed then
-		SHOW_TEST_DATA = wantsTestMode;
-		if SHOW_TEST_DATA then
+		CFG['SHOW_TEST_DATA'] = wantsTestMode;
+		if CFG['SHOW_TEST_DATA'] then
 			LARGE_MONSTERS = {};
 		else
 			-- gotta clear all the junk data
