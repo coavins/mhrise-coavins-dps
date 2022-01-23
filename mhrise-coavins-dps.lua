@@ -933,6 +933,12 @@ function drawReport(index)
 			barText = barText .. string.format('[%d]', item.source.maxHit)  .. spacer;
 		end
 
+		if fixedSpacing then
+			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
+			text_x = text_x + (5 * paddingCount);
+			barText = '';
+		end
+
 		if not fixedSpacing then
 			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
 		end
