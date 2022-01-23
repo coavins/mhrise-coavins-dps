@@ -564,6 +564,7 @@ function initializeBossMonster(bossEnemy)
 
 	-- store it in the table
 	LARGE_MONSTERS[bossEnemy] = boss;
+	log_info('initialized new ' .. boss.name);
 end
 
 function initializeBossMonsterWithDummyData(fakeId, name)
@@ -1103,7 +1104,7 @@ function dpsFrame()
 
 	local questStatus = QUEST_MANAGER:get_field("_QuestStatus");
 
-	-- update only when a quest is active
+	-- when a quest is active
 	if questStatus >= 2 then
 		local totalSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
 
@@ -1112,6 +1113,10 @@ function dpsFrame()
 			dpsUpdate();
 			LAST_UPDATE_TIME = totalSeconds;
 		end
+	-- if the window is open outside of a quest
+	elseif DRAW_WINDOW then
+		-- update every frame
+		dpsUpdate();
 	else
 		-- clean up some things in between quests
 		if LAST_UPDATE_TIME ~= 0 then
