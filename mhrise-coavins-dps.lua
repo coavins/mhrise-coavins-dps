@@ -264,8 +264,11 @@ PRESET_MHROVERLAY['COLOR_BAR_DMG_PHYSICAL'] = 0xAFE069AE;
 --
 
 local DPS_ENABLED = true;
-local DRAW_WINDOW = false;
+local LAST_UPDATE_TIME = 0;
+local DRAW_WINDOW_SETTINGS = false;
+local DRAW_WINDOW_REPORT = false;
 local WINDOW_FLAGS = 0x10120;
+
 
 local PRESETS = {};
 local PRESET_OPTIONS = {};
@@ -278,7 +281,10 @@ local DEBUG_Y = 0;
 local LARGE_MONSTERS = {};
 local TEST_MONSTERS = nil; -- like LARGE_MONSTERS, but holds dummy/test data
 local DAMAGE_REPORTS = {};
-local LAST_UPDATE_TIME = 0;
+
+local REPORT_MONSTERS = {}; -- a subset of LARGE_MONSTERS or TEST_MONSTERS that will appear in reports
+local REPORT_ATTACKER_TYPES = {}; -- a subset of ATTACKER_TYPES that will appear in reports
+local REPORT_NONPLAYERS = false; -- show nonplayers in the report
 
 local MY_PLAYER_ID = nil;
 local PLAYER_NAMES = {};
@@ -289,6 +295,7 @@ local ENEMY_MANAGER   = nil;
 local QUEST_MANAGER   = nil;
 local MESSAGE_MANAGER = nil;
 local LOBBY_MANAGER   = nil;
+local AREA_MANAGER    = nil;
 
 local SCENE_MANAGER      = sdk.get_native_singleton("via.SceneManager");
 local SCENE_MANAGER_TYPE = sdk.find_type_definition("via.SceneManager");
@@ -423,6 +430,30 @@ function updatePlayerNames()
 end
 
 -- callback functions
+local ATTACKER_TYPES = {};
+ATTACKER_TYPES[0] = 'weapon';
+ATTACKER_TYPES[1] = 'barrelbombl';
+ATTACKER_TYPES[2] = 'makimushi';
+ATTACKER_TYPES[3] = 'nitro';
+ATTACKER_TYPES[4] = 'onibimine';
+ATTACKER_TYPES[5] = 'ballistahate';
+ATTACKER_TYPES[6] = 'capturesmokebomb';
+ATTACKER_TYPES[7] = 'capturebullet';
+ATTACKER_TYPES[8] = 'barrelbombs';
+ATTACKER_TYPES[9] = 'kunai';
+ATTACKER_TYPES[10] = 'waterbeetle';
+ATTACKER_TYPES[11] = 'detonationgrenade';
+ATTACKER_TYPES[12] = 'hmballista';
+ATTACKER_TYPES[13] = 'hmcannon';
+ATTACKER_TYPES[14] = 'hmgatling';
+ATTACKER_TYPES[15] = 'hmtrap';
+ATTACKER_TYPES[16] = 'hmnpc';
+ATTACKER_TYPES[17] = 'hmflamethrower';
+ATTACKER_TYPES[18] = 'hmdragonator';
+ATTACKER_TYPES[19] = 'otomo';
+ATTACKER_TYPES[20] = 'fg005';
+ATTACKER_TYPES[21] = 'ecbatexplode';
+ATTACKER_TYPES[23] = 'monster';
 
 -- used to track damage taken by monsters
 function read_AfterCalcInfo_DamageSide(args)
@@ -442,43 +473,47 @@ function read_AfterCalcInfo_DamageSide(args)
 
 	local info = sdk.to_managed_object(args[3]); -- snow.hit.EnemyCalcDamageInfo.AfterCalcInfo_DamageSide
 	local attackerId     = info:call("get_AttackerID");
-	local attackerType   = info:call("get_DamageAttackerType");
-	local isPlayer  = (attackerType == 0);
-	local isOtomo   = (attackerType == 19);
-	local isMonster = (attackerType == 23);
+	local attackerTypeId = info:call("get_DamageAttackerType");
+	local attackerType   = ATTACKER_TYPES[attackerTypeId];
 
-	local totalDamage    = info:call("get_TotalDamage");
-	local physicalDamage = info:call("get_PhysicalDamage");
-	local elementDamage  = info:call("get_ElementDamage");
-	local ailmentDamage  = info:call("get_ConditionDamage");
+	local isPlayer  = (attackerTypeId == 0);
+	local isOtomo   = (attackerTypeId == 19);
+	local isMonster = (attackerTypeId == 23);
+
+	--log_info(string.format('damage instance from attacker %d of type %s', attackerId, attackerType));
 
 	local sources = boss.damageSources;
-	if isPlayer or isOtomo then
-		if not sources[attackerId] then
-			sources[attackerId] = initializeDamageSource(attackerId);
-		end
+	-- get the damage source for this attacker
+	if not sources[attackerId] then
+		sources[attackerId] = initializeDamageSource(attackerId);
+	end
+	local s = sources[attackerId];
 
-		-- get this damage source
-		local s = sources[attackerId];
+	-- get the damage counter for this type
+	if not s.damageCounters[attackerType] then
+		s.damageCounters[attackerType] = initializeDamageCounter();
+	end
+	local c = s.damageCounters[attackerType];
 
-		-- add damage facts
-		if isPlayer then
-			s.damageTotal     = s.damageTotal + totalDamage + ailmentDamage;
-			s.damagePhysical  = s.damagePhysical  + physicalDamage;
-			s.damageElemental = s.damageElemental + elementDamage;
-			s.damageAilment   = s.damageAilment   + ailmentDamage;
-			s.numHit = s.numHit + 1;
-			if totalDamage > s.maxHit then
-				s.maxHit = totalDamage;
-			end
-		elseif isOtomo and CFG['OTOMO_DMG_IS_PLAYER_DMG'] then
-			s.damageTotal     = s.damageTotal + totalDamage + ailmentDamage
-			s.damageOtomo = s.damageOtomo + totalDamage + ailmentDamage;
-			s.numHit = s.numHit + 1;
-			if totalDamage > s.maxHit then
-				s.maxHit = totalDamage;
-			end
-		end
+	local totalDamage     = tonumber(info:call("get_TotalDamage"));
+	local physicalDamage  = tonumber(info:call("get_PhysicalDamage"));
+	local elementDamage   = tonumber(info:call("get_ElementDamage"));
+	local conditionDamage = tonumber(info:call("get_ConditionDamage"));
+
+	--log_info(string.format('total: %f physical: %f element: %f ailment: %f', totalDamage, physicalDamage, elementDamage, conditionDamage));
+
+	-- add damage facts to counter
+	c.total     = c.total     + totalDamage;
+	c.physical  = c.physical  + physicalDamage;
+	c.elemental = c.elemental + elementDamage;
+	c.condition = c.condition + conditionDamage;
+
+	-- hit count
+	s.numHit = s.numHit + 1;
+
+	-- biggest hit
+	if totalDamage > s.maxHit then
+		s.maxHit = totalDamage;
 	end
 end
 
@@ -492,60 +527,9 @@ function(retval)
 	return retval
 end);
 
--- main
-
--- initializes a new damageSource
-function initializeDamageSource(attackerId)
-	local s = {};
-	s.id = attackerId;
-
-	s.damageTotal     = 0.0;
-	s.damagePhysical  = 0.0;
-	s.damageElemental = 0.0;
-	s.damageAilment   = 0.0;
-	s.damageOtomo     = 0.0;
-
-	s.numHit = 0; -- how many hits
-	s.maxHit = 0; -- biggest hit
-
-	return s;
-end
-
-function initializeDamageSourceWithDummyData(attackerId)
-	local s = initializeDamageSource(attackerId);
-	s.damagePhysical  = math.random(1,1000);
-	s.damageElemental = math.random(1,600);
-	s.damageAilment   = math.random(1,100);
-	if CFG['OTOMO_DMG_IS_PLAYER_DMG'] then
-		s.damageOtomo     = math.random(1,400);
-	end
-	s.damageTotal     = s.damagePhysical + s.damageElemental + s.damageAilment + s.damageOtomo;
-
-	s.numHit = math.random(1,1000);
-	s.maxHit = math.random(1,1000);
-
-	return s;
-end
-
-function combineDamageSources(a, b)
-	local s = initializeDamageSource();
-	if a.id == b.id then
-		s.id = a.id;
-
-		s.damageTotal     = a.damageTotal     + b.damageTotal;
-		s.damagePhysical  = a.damagePhysical  + b.damagePhysical;
-		s.damageElemental = a.damageElemental + b.damageElemental;
-		s.damageAilment   = a.damageAilment   + b.damageAilment;
-		s.damageOtomo     = a.damageOtomo     + b.damageOtomo;
-
-		s.numHit = a.numHit + b.numHit;
-		s.maxHit = math.max(a.maxHit, b.maxHit);
-	else
-		log_error('tried to combine damage sources belonging to different attackers');
-	end
-
-	return s;
-end
+--
+-- Damage sources
+--
 
 -- initializes a new boss object
 function initializeBossMonster(bossEnemy)
@@ -564,18 +548,40 @@ function initializeBossMonster(bossEnemy)
 
 	-- store it in the table
 	LARGE_MONSTERS[bossEnemy] = boss;
+
+	-- all monsters are in the report by default
+	AddMonsterToReport(bossEnemy, boss);
+
 	log_info('initialized new ' .. boss.name);
 end
 
-function initializeBossMonsterWithDummyData(fakeId, name)
+function initializeTestData()
+	TEST_MONSTERS = {};
+	REPORT_MONSTERS = {};
+
+	initializeBossMonsterWithDummyData(111, 'Sample Monster A');
+	initializeBossMonsterWithDummyData(222, 'Sample Monster B');
+	initializeBossMonsterWithDummyData(333, 'Sample Monster C');
+end
+
+function clearTestData()
+	TEST_MONSTERS = nil;
+	REPORT_MONSTERS = {};
+	for enemy, boss in pairs(LARGE_MONSTERS) do
+		AddMonsterToReport(enemy, boss);
+	end
+	log_info('cleared test data');
+end
+
+function initializeBossMonsterWithDummyData(bossKey, fakeName)
 	local boss = {};
 
-	boss.enemy = fakeId;
+	boss.enemy = bossKey;
 
 	boss.genus = 999;
 	boss.species = 0;
 
-	boss.name = name;
+	boss.name = fakeName;
 
 	local s = {};
 	s[0] = initializeDamageSourceWithDummyData(0);
@@ -584,179 +590,256 @@ function initializeBossMonsterWithDummyData(fakeId, name)
 	s[3] = initializeDamageSourceWithDummyData(3);
 	boss.damageSources = s;
 
-	TEST_MONSTERS[fakeId] = boss;
+	TEST_MONSTERS[bossKey] = boss;
+	AddMonsterToReport(bossKey, boss);
 end
 
-function initializeTestData()
-	TEST_MONSTERS = {};
-	initializeBossMonsterWithDummyData(1, 'Sample Monster A');
-	initializeBossMonsterWithDummyData(2, 'Sample Monster B');
-	initializeBossMonsterWithDummyData(3, 'Sample Monster C');
+-- damage source
+function initializeDamageSource(attackerId)
+	local s = {};
+	s.id = attackerId;
 
-	dpsUpdate();
-end
-
-function clearTestData()
-	TEST_MONSTERS = nil;
-
-	dpsUpdate();
-end
-
--- compares two damage sources
-function sortFn_DESC(a, b)
-	return a.source.damageTotal > b.source.damageTotal;
-end
-
-function sortFn_ASC(a, b)
-	return a.source.damageTotal < b.source.damageTotal;
-end
-
-function sortFn_Player(a, b)
-	return a.id < b.id;
-end
-
--- returns a report item (for rendering) from the specified damage source (from boss cache)
-function generateReportItemFromDamageSource(source)
-	-- init report item
-	local item = {};
-
-	-- id
-	item.id = source.id;
-
-	if item.id >= 0 and item.id <= 3 then
-		item.playerNumber = item.id + 1;
+	s.damageCounters = {};
+	for _,type in pairs(ATTACKER_TYPES) do
+		s.damageCounters[type] = initializeDamageCounter();
 	end
 
-	-- name
-	item.name = PLAYER_NAMES[item.playerNumber];
+	s.numHit = 0; -- how many hits
+	s.maxHit = 0; -- biggest hit
 
-	-- damage source
-	item.source = source;
-
-	return item;
+	return s;
 end
 
--- parse damage sources from the boss cache and save them in a way that is useful for drawing a graph
-function generateReportFromDamageSources(enemy, damageSources)
+function initializeDamageSourceWithDummyData(attackerId)
+	local s = initializeDamageSource(attackerId);
+
+	s.damageCounters['weapon'] = initializeDamageCounterWithDummyData();
+
+	s.numHit = math.random(1,1000);
+	s.maxHit = math.random(1,3000);
+
+	return s;
+end
+
+-- damage counter
+function initializeDamageCounter()
+	local c = {};
+	c['total']     = 0.0;
+	c['physical']  = 0.0;
+	c['elemental'] = 0.0;
+	c['condition'] = 0.0;
+	return c;
+end
+
+function initializeDamageCounterWithDummyData()
+	local c = initializeDamageCounter();
+	c['physical']  = math.random(1,1000);
+	c['elemental'] = math.random(1,600);
+	c['condition'] = math.random(1,100);
+	c['total'] = c.physical + c.elemental;
+	return c;
+end
+
+function getTotalDamageForDamageCounter(c)
+	local total = 0.0;
+
+	total = total + c.total;
+	-- TODO optionally count condition?
+
+	return total;
+end
+
+function mergeDamageCounters(a, b)
+	local c = initializeDamageCounter();
+	c.total     = a.total     + b.total;
+	c.physical  = a.physical  + b.physical;
+	c.elemental = a.elemental + b.elemental;
+	c.condition = a.condition + b.condition;
+	return c;
+end
+
+--
+-- Reports
+--
+
+-- report
+function initializeReport()
 	local report = {};
+
 	report.items = {};
 
-	local topDamage = 0;
-	local totalDamage = 0;
+	report.topDamage = 0.0;
+	report.totalDamage = 0.0;
 
-	-- parse damage sources from the boss cache
-	for id,source in pairs(damageSources) do
-		local item = generateReportItemFromDamageSource(source);
+	return report;
+end
 
-		-- remember what the highest damage was
-		if item.source.damageTotal > topDamage then
-			topDamage = item.source.damageTotal;
-		end;
+function generateReport(filterBosses)
+	DAMAGE_REPORTS = {};
 
-		totalDamage = totalDamage + item.source.damageTotal;
+	local report = initializeReport();
 
-		-- save this item in the report
-		table.insert(report.items, item);
+	for _,boss in pairs(filterBosses) do
+		mergeDamageSourcesIntoReport(report, boss.damageSources);
 	end
 
-	report.topDamage = topDamage;
-	report.totalDamage = totalDamage;
+	table.insert(DAMAGE_REPORTS, report);
+end
 
-	-- sort report items
-	if CFG['TABLE_SORT_IN_ORDER'] then
-		table.sort(report.items, sortFn_Player);
-	elseif CFG['TABLE_SORT_ASC'] then
-		table.sort(report.items, sortFn_ASC);
-	else
-		table.sort(report.items, sortFn_DESC);
+-- main function responsible for loading a boss into a report
+function mergeDamageSourcesIntoReport(report, damageSources)
+	-- merge damage sources
+	for id,source in pairs(damageSources) do
+		if not REPORT_NONPLAYERS and (source.id < 0 or source.id > 3) then
+			goto skip_to_next
+		end
+
+		local item = getItemWithIdFromReport(report, id);
+		if not item then
+			item = initializeReportItem();
+			table.insert(report.items, item);
+		end
+
+		mergeDamageSourceIntoReportItem(item, source);
+
+		-- remember which item has the most damage
+		if item.total > report.topDamage then
+			report.topDamage = item.total;
+		end;
+
+		-- accumulate total overall damage
+		report.totalDamage = report.totalDamage + item.total;
+
+		::skip_to_next::
 	end
 
 	-- finish writing data
 	for _,item in ipairs(report.items) do
-		item.percentOfTotal = tonumber(string.format("%.3f", item.source.damageTotal / totalDamage));
-		item.percentOfBest  = tonumber(string.format("%.3f", item.source.damageTotal / topDamage));
+		item.percentOfTotal = tonumber(string.format("%.3f", item.total / report.totalDamage));
+		item.percentOfBest  = tonumber(string.format("%.3f", item.total / report.topDamage));
 	end
 
-	-- save off result to be used by draw functions
-	DAMAGE_REPORTS[enemy] = report;
+	-- sort report items
+	if CFG['TABLE_SORT_IN_ORDER'] then
+		table.sort(report.items, sortReportItems_Player);
+	elseif CFG['TABLE_SORT_ASC'] then
+		table.sort(report.items, sortReportItems_ASC);
+	else
+		table.sort(report.items, sortReportItems_DESC);
+	end
 end
 
-function generateSummaryReport()
-	local summaryReport = {};
-
-	local totalDamageSources = {};
-
-	-- read all reports
-	for _,report in pairs(DAMAGE_REPORTS) do
-		-- read all report items
-		for i,item in ipairs(report.items) do
-			if not totalDamageSources[item.id] then
-				totalDamageSources[item.id] = initializeDamageSource(item.id);
-			end
-			totalDamageSources[item.id] = combineDamageSources(totalDamageSources[item.id], item.source);
+function getItemWithIdFromReport(report, id)
+	for _,item in ipairs(report.items) do
+		if item.id == id then
+			return item;
 		end
 	end
-
-	-- now generate a report from the damageSources
-	generateReportFromDamageSources(0, totalDamageSources);
+	return nil;
 end
 
-function generateAllReports()
-	DAMAGE_REPORTS = {};
+-- report item
+function initializeReportItem()
+	local item = {};
 
-	local monsterCollection = LARGE_MONSTERS;
-	if TEST_MONSTERS then
-		monsterCollection = TEST_MONSTERS;
-	end
+	item.id = nil;
+	item.playerNumber = nil;
+	item.name = nil;
 
-	-- create reports for all cached bosses
-	for bossEnemy,boss in pairs(monsterCollection) do
-		generateReportFromDamageSources(bossEnemy, boss.damageSources);
-	end
+	item.counters = {};
 
-	-- now create a report using the sums from the previously generated reports
-	generateSummaryReport();
+	item.total = 0.0;
+	item.totalPhysical = 0.0;
+	item.totalElemental = 0.0;
+	item.totalCondition = 0.0;
+	item.totalOtomo = 0.0;
+
+	item.percentOfTotal = 0.0;
+	item.percentOfBest = 0.0;
+
+	item.numHit = 0;
+	item.maxHit = 0;
+
+	return item;
 end
 
-function drawRichDamageBar(source, x, y, maxWidth, h, colorPhysical, colorElemental)
-	local w = 0;
-	local colorAilment = CFG['COLOR_BAR_DMG_AILMENT'];
-	local colorOtomo = CFG['COLOR_BAR_DMG_OTOMO'];
-	local colorOther = CFG['COLOR_BAR_DMG_OTHER'];
+function mergeDamageSourceIntoReportItem(item, source)
+	if not item.id or item.id == source.id then
+		if not item.id then
+			item.id = source.id;
 
-	if not CFG['DRAW_BAR_USE_UNIQUE_COLORS'] then
-		colorElemental = colorPhysical;
-		colorAilment = colorPhysical;
-		colorOtomo = colorPhysical;
-		colorOther = colorPhysical;
+			if item.id >= 0 and item.id <= 3 then
+				item.playerNumber = item.id + 1;
+			end
+
+			item.name = PLAYER_NAMES[item.playerNumber];
+		end
+
+		item.counters = mergeReportItemCounters(item.counters, source.damageCounters);
+
+		-- get totals from counters
+		for type,counter in pairs(item.counters) do
+			if REPORT_ATTACKER_TYPES[type] then
+				if type == 'otomo' then
+					-- count the otomo damage as a special kind of damage inflicted by the player
+					item.total = item.total + counter.total;
+					item.totalOtomo = item.totalOtomo + counter.total;
+				else
+					item.total = item.total + counter.total + counter.condition;
+					item.totalPhysical  = item.totalPhysical  + counter.physical;
+					item.totalElemental = item.totalElemental + counter.elemental;
+					item.totalCondition = item.totalCondition + counter.condition;
+				end
+			end
+		end
+
+		item.numHit = item.numHit + source.numHit;
+		item.maxHit = math.max(item.maxHit, source.maxHit);
+	else
+		log_error('tried to merge a damage source into a report item with a different id');
 	end
+end
 
-	-- draw physical damage
-	--debug_line(string.format('damagePhysical: %d', source.damagePhysical));
-	w = (source.damagePhysical / source.damageTotal) * maxWidth;
-	draw.filled_rect(x, y, w, h, colorPhysical);
-	x = x + w;
-	-- draw elemental damage
-	--debug_line(string.format('damageElemental: %d', source.damageElemental));
-	w = (source.damageElemental / source.damageTotal) * maxWidth;
-	draw.filled_rect(x, y, w, h, colorElemental);
-	x = x + w;
-	-- draw ailment damage
-	--debug_line(string.format('damageAilment: %f', source.damageAilment));
-	w = (source.damageAilment / source.damageTotal) * maxWidth;
-	draw.filled_rect(x, y, w, h, colorAilment);
-	x = x + w;
-	-- draw otomo damage
-	--debug_line(string.format('damageOtomo: %d', source.damageOtomo));
-	w = (source.damageOtomo / source.damageTotal) * maxWidth;
-	draw.filled_rect(x, y, w, h, colorOtomo);
-	x = x + w;
-	-- draw whatever's left
-	local remainder = source.damageTotal - source.damagePhysical - source.damageElemental - source.damageAilment - source.damageOtomo;
-	--debug_line(string.format('remainder: %d', remainder));
-	w = (remainder / source.damageTotal) * maxWidth;
-	draw.filled_rect(x, y, w, h, colorOther);
-	--debug_line(string.format('total: %d', source.damageTotal));
+function mergeReportItemCounters(a, b)
+	local counters = {};
+	for _,type in pairs(ATTACKER_TYPES) do
+		local counterA = a[type];
+		local counterB = b[type];
+		if counterA and not counterB then
+			counters[type] = counterA;
+		elseif counterB and not counterA then
+			counters[type] = counterB;
+		elseif counterA and counterB then
+			counters[type] = mergeDamageCounters(counterA, counterB)
+		end
+	end
+	return counters;
+end
+
+function sortReportItems_DESC(a, b)
+	return a.total > b.total;
+end
+
+function sortReportItems_ASC(a, b)
+	return b.total > a.total;
+end
+
+function sortReportItems_Player(a, b)
+	return a.id < b.id;
+end
+
+--
+-- Draw
+--
+
+-- main draw function
+function dpsDraw()
+	DEBUG_Y = 0;
+
+	-- draw the first report
+	drawReport(1);
+
+	drawDebugStats();
 end
 
 function drawReport(index)
@@ -852,7 +935,8 @@ function drawReport(index)
 
 			-- damage bar
 			local damageBarWidth = (tableWidth - colorBlockWidth) * damageBarWidthMultiplier;
-			drawRichDamageBar(item.source, origin_x + colorBlockWidth, y, damageBarWidth, rowHeight, physicalColor, elementalColor);
+			--draw.filled_rect(origin_x + colorBlockWidth, y, damageBarWidth, rowHeight, physicalColor);
+			drawRichDamageBar(item, origin_x + colorBlockWidth, y, damageBarWidth, rowHeight, physicalColor, elementalColor);
 		end
 
 		-- draw text (TODO: REFACTOR THIS MESS)
@@ -891,7 +975,7 @@ function drawReport(index)
 		end
 
 		if CFG['DRAW_BAR_TEXT_TOTAL_DAMAGE'] then
-			barText = barText .. string.format('%.0f', item.source.damageTotal)  .. spacer;
+			barText = barText .. string.format('%.0f', item.total)  .. spacer;
 		end
 
 		if fixedSpacing and barText ~= '' then
@@ -921,7 +1005,7 @@ function drawReport(index)
 		end
 
 		if CFG['DRAW_BAR_TEXT_HIT_COUNT'] then
-			barText = barText .. string.format('%d', item.source.numHit)  .. spacer;
+			barText = barText .. string.format('%d', item.numHit)  .. spacer;
 		end
 
 		if fixedSpacing and barText ~= '' then
@@ -931,7 +1015,7 @@ function drawReport(index)
 		end
 
 		if CFG['DRAW_BAR_TEXT_BIGGEST_HIT'] then
-			barText = barText .. string.format('[%d]', item.source.maxHit)  .. spacer;
+			barText = barText .. string.format('[%d]', item.maxHit)  .. spacer;
 		end
 
 		if fixedSpacing and barText ~= '' then
@@ -951,48 +1035,45 @@ function drawReport(index)
 	end
 end
 
--- main update function
-function dpsUpdate()
-	-- update screen dimensions
-	readScreenDimensions();
+function drawRichDamageBar(item, x, y, maxWidth, h, colorPhysical, colorElemental)
+	local w = 0;
+	local colorAilment = CFG['COLOR_BAR_DMG_AILMENT'];
+	local colorOtomo = CFG['COLOR_BAR_DMG_OTOMO'];
+	local colorOther = CFG['COLOR_BAR_DMG_OTHER'];
 
-	-- get player id
-	MY_PLAYER_ID = PLAYER_MANAGER:call("getMasterPlayerID");
-
-	if CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] then
-		-- get player names
-		updatePlayerNames();
+	if not CFG['DRAW_BAR_USE_UNIQUE_COLORS'] then
+		colorElemental = colorPhysical;
+		colorAilment = colorPhysical;
+		colorOtomo = colorPhysical;
+		colorOther = colorPhysical;
 	end
 
-	-- update bosses
-	local bossCount = ENEMY_MANAGER:call("getBossEnemyCount");
-	for i = 0, bossCount-1 do
-		local bossEnemy = ENEMY_MANAGER:call("getBossEnemy", i);
-
-		if not LARGE_MONSTERS[bossEnemy] then
-			-- initialize data for this boss
-			initializeBossMonster(bossEnemy);
-		end
-
-		-- get this boss from the table
-		local boss = LARGE_MONSTERS[bossEnemy];
-
-		-- update boss
-		boss.isInCombat = bossEnemy:call("get_IsCombatMode");
-	end
-
-	-- update all reports
-	generateAllReports();
-end
-
--- main draw function
-function dpsDraw()
-	DEBUG_Y = 0;
-
-	-- just draw the summary report
-	drawReport(0);
-
-	--drawDebugStats();
+	-- draw physical damage
+	--debug_line(string.format('damagePhysical: %d', source.damagePhysical));
+	w = (item.totalPhysical / item.total) * maxWidth;
+	draw.filled_rect(x, y, w, h, colorPhysical);
+	x = x + w;
+	-- draw elemental damage
+	--debug_line(string.format('damageElemental: %d', source.damageElemental));
+	w = (item.totalElemental / item.total) * maxWidth;
+	draw.filled_rect(x, y, w, h, colorElemental);
+	x = x + w;
+	-- draw ailment damage
+	--debug_line(string.format('damageAilment: %f', source.damageAilment));
+	w = (item.totalCondition / item.total) * maxWidth;
+	draw.filled_rect(x, y, w, h, colorAilment);
+	x = x + w;
+	-- draw otomo damage
+	--debug_line(string.format('damageOtomo: %d', source.damageOtomo));
+	w = (item.totalOtomo / item.total) * maxWidth;
+	draw.filled_rect(x, y, w, h, colorOtomo);
+	x = x + w;
+	-- draw whatever's left, just in case
+	local remainder = item.total - item.totalPhysical - item.totalElemental - item.totalCondition - item.totalOtomo;
+	--debug_line(string.format('remainder: %d', remainder));
+	w = (remainder / item.total) * maxWidth;
+	draw.filled_rect(x, y, w, h, colorOther);
+	--debug_line(string.format('total: %d', source.damageTotal));
 end
 
 -- debug info stuff
@@ -1026,17 +1107,21 @@ function drawDebugStats()
 
 		debug_line(string.format("%s%s", boss.name, is_combat_str));
 
-		for key,value in pairs(boss.damageSources) do
-			if key == myPlayerId then
-				debug_line(string.format("  YOU     : %d", value));
-			else
-				debug_line(string.format("  Player %s: %d", key+1, value));
+	end
+
+	--debug_line('');
+	--debug_line(string.format('Total damage (KPI): %d', playerDamage));
+
+	debug_line('');
+	local report = DAMAGE_REPORTS[1];
+	for _,item in ipairs(report.items) do
+		debug_line(item.name or 'no name');
+		for type,counter in pairs(item.counters) do
+			if counter.total > 0 then
+				debug_line(string.format('%s\t\t%f',type, counter.total));
 			end
 		end
 	end
-
-	debug_line('');
-	debug_line(string.format('Total damage (KPI): %d', playerDamage));
 
 	-- monster state
 	-- isEnableFastTravelCondition
@@ -1054,6 +1139,44 @@ function drawDebugStats()
 			get_CombatTime()
 			getSelfCombatMonsterResult(EnemyCharacterBase)
 	]]
+end
+
+--
+-- Update
+--
+
+-- main update function
+function dpsUpdate()
+	-- update screen dimensions
+	readScreenDimensions();
+
+	-- get player id
+	MY_PLAYER_ID = PLAYER_MANAGER:call("getMasterPlayerID");
+
+	if CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] then
+		-- get player names
+		updatePlayerNames();
+	end
+
+	-- update bosses
+	local bossCount = ENEMY_MANAGER:call("getBossEnemyCount");
+	for i = 0, bossCount-1 do
+		local bossEnemy = ENEMY_MANAGER:call("getBossEnemy", i);
+
+		if not LARGE_MONSTERS[bossEnemy] then
+			-- initialize data for this boss
+			initializeBossMonster(bossEnemy);
+		end
+
+		-- get this boss from the table
+		local boss = LARGE_MONSTERS[bossEnemy];
+
+		-- update boss
+		boss.isInCombat = bossEnemy:call("get_IsCombatMode");
+	end
+
+	-- generate report for selected bosses
+	generateReport(REPORT_MONSTERS);
 end
 
 function hasManagedResources()
@@ -1092,47 +1215,15 @@ function hasManagedResources()
 		end
 	end
 
+	if not AREA_MANAGER then
+		AREA_MANAGER = sdk.get_managed_singleton("snow.VillageAreaManager");
+	end
+
 	return true;
 end
 
--- runs every frame
-function dpsFrame()
-	-- make sure managed resources are initialized
-	if not hasManagedResources() then
-		return;
-	end
-
-	local questStatus = QUEST_MANAGER:get_field("_QuestStatus");
-
-	-- when a quest is active
-	if questStatus >= 2 then
-		local totalSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
-
-		-- update occasionally
-		if totalSeconds > LAST_UPDATE_TIME + CFG['UPDATE_RATE'] then
-			dpsUpdate();
-			LAST_UPDATE_TIME = totalSeconds;
-		end
-	-- if the window is open outside of a quest
-	elseif DRAW_WINDOW then
-		-- update every frame
-		dpsUpdate();
-	else
-		-- clean up some things in between quests
-		if LAST_UPDATE_TIME ~= 0 then
-			LAST_UPDATE_TIME = 0;
-			LARGE_MONSTERS = {};
-		end
-	end
-
-	-- draw on every frame
-	if DRAW_WINDOW or TEST_MONSTERS or questStatus >= 2 then
-		dpsDraw();
-	end
-end
-
 --
--- settings window
+-- REFramework UI
 --
 
 function showCheckboxForSetting(setting)
@@ -1156,13 +1247,13 @@ function showSliderForIntSetting(setting)
 	end
 end
 
-function dpsWindow()
-	local changed, wantsIt = false;
+function DrawWindowSettings()
+	local changed, wantsIt = false, false;
 	local value = nil;
 
-	wantsIt = imgui.begin_window('coavins dps meter', DRAW_WINDOW, WINDOW_FLAGS);
-	if DRAW_WINDOW and not wantsIt then
-		DRAW_WINDOW = false;
+	wantsIt = imgui.begin_window('coavins dps meter - settings', DRAW_WINDOW_SETTINGS, WINDOW_FLAGS);
+	if DRAW_WINDOW_SETTINGS and not wantsIt then
+		DRAW_WINDOW_SETTINGS = false;
 
 		if TEST_MONSTERS then
 			clearTestData();
@@ -1275,9 +1366,140 @@ function dpsWindow()
 	imgui.end_window();
 end
 
+function AddMonsterToReport(enemyToAdd, bossInfo)
+	REPORT_MONSTERS[enemyToAdd] = bossInfo;
+	log_info(string.format('%s added to report', bossInfo.name));
+end
+
+function RemoveMonsterFromReport(enemyToRemove)
+	for enemy,boss in pairs(REPORT_MONSTERS) do
+		if enemy == enemyToRemove then
+			REPORT_MONSTERS[enemy] = nil;
+			log_info(string.format('%s removed from report', boss.name));
+			return;
+		end
+	end
+end
+
+function AddAttackerTypeToReport(typeToAdd)
+	REPORT_ATTACKER_TYPES[typeToAdd] = true;
+	log_info(string.format('damage type %s added to report', typeToAdd));
+end
+
+function RemoveAttackerTypeFromReport(typeToRemove)
+	REPORT_ATTACKER_TYPES[typeToRemove] = nil;
+	log_info(string.format('damage type %s removed from report', typeToRemove));
+end
+
+function DrawWindowReport()
+	local changed, wantsIt = false, false;
+	local value = nil;
+
+	wantsIt = imgui.begin_window('coavins dps meter - filters', DRAW_WINDOW_REPORT, WINDOW_FLAGS);
+	if DRAW_WINDOW_REPORT and not wantsIt then
+		DRAW_WINDOW_REPORT = false;
+	end
+
+	-- draw buttons for each boss monster in the cache
+	imgui.text('Filter by large monsters');
+
+	local monsterCollection = TEST_MONSTERS or LARGE_MONSTERS;
+	for enemy,boss in pairs(monsterCollection) do
+		local monsterIsInReport = REPORT_MONSTERS[enemy];
+		changed, wantsIt = imgui.checkbox(boss.name, monsterIsInReport);
+		if changed then
+			if wantsIt then
+				AddMonsterToReport(enemy, boss);
+			else
+				RemoveMonsterFromReport(enemy);
+			end
+		end
+	end
+
+	imgui.new_line();
+
+	changed, wantsIt = imgui.checkbox('Show nonplayer combatants', REPORT_NONPLAYERS);
+	if changed then
+		REPORT_NONPLAYERS = wantsIt;
+	end
+
+	imgui.new_line();
+
+	-- draw buttons for damage types
+	imgui.text('Filter by types of damage');
+
+	for _,type in pairs(ATTACKER_TYPES) do
+		local typeIsInReport = REPORT_ATTACKER_TYPES[type];
+		changed, wantsIt = imgui.checkbox(type, typeIsInReport);
+		if changed then
+			if wantsIt then
+				AddAttackerTypeToReport(type);
+			else
+				RemoveAttackerTypeFromReport(type);
+			end
+		end
+	end
+
+	imgui.end_window();
+end
+
+--
+-- REFramework
+--
+
+-- runs every frame
+function dpsFrame()
+	-- make sure managed resources are initialized
+	if not hasManagedResources() then
+		return;
+	end
+
+	local questStatus = QUEST_MANAGER:get_field("_QuestStatus");
+	local villageArea = 0;
+	if AREA_MANAGER then
+		villageArea = AREA_MANAGER:get_field("<_CurrentAreaNo>k__BackingField");
+	end
+
+	-- if the window is open
+	if DRAW_WINDOW_SETTINGS then
+		-- update every frame
+		dpsUpdate();
+	-- when a quest is active
+	elseif questStatus >= 2 then
+		local totalSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
+		dpsUpdateOccasionally(totalSeconds);
+	-- when you are in the training area
+	elseif villageArea == 5 then
+		local totalSeconds = AREA_MANAGER:call("get_TrainingHallStayTime");
+		dpsUpdateOccasionally(totalSeconds);
+	else
+		-- clean up some things in between quests
+		if LAST_UPDATE_TIME ~= 0 then
+			LAST_UPDATE_TIME = 0;
+			LARGE_MONSTERS = {};
+		end
+	end
+
+	-- draw on every frame
+	if DRAW_WINDOW_SETTINGS or TEST_MONSTERS or questStatus >= 2 or villageArea == 5 then
+		dpsDraw();
+	end
+end
+
+function dpsUpdateOccasionally(realSeconds)
+	if realSeconds > LAST_UPDATE_TIME + CFG['UPDATE_RATE'] then
+		dpsUpdate();
+		LAST_UPDATE_TIME = realSeconds;
+	end
+end
+
 re.on_frame(function()
-	if DRAW_WINDOW then
-		dpsWindow();
+	if DRAW_WINDOW_SETTINGS then
+		DrawWindowSettings();
+	end
+
+	if DRAW_WINDOW_REPORT then
+		DrawWindowReport();
 	end
 
 	if DPS_ENABLED then
@@ -1286,15 +1508,28 @@ re.on_frame(function()
 end)
 
 re.on_draw_ui(function()
+	imgui.begin_group();
 	imgui.text('coavins dps meter');
-	imgui.same_line();
-	if imgui.button('settings') and not DRAW_WINDOW then
-		DRAW_WINDOW = true;
+
+	if imgui.button('settings') and not DRAW_WINDOW_SETTINGS then
+		DRAW_WINDOW_SETTINGS = true;
 
 		if CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] then
 			initializeTestData();
 		end
 	end
+
+	imgui.same_line();
+
+	if imgui.button('filters') and not DRAW_WINDOW_REPORT then
+		DRAW_WINDOW_REPORT = true;
+	end
+
+	imgui.end_group();
 end)
+
+for _,type in pairs(ATTACKER_TYPES) do
+	AddAttackerTypeToReport(type);
+end
 
 log_info('init complete');
