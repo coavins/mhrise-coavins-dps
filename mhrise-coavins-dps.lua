@@ -29,10 +29,26 @@ CFG['DRAW_BAR_RELATIVE_TO_PARTY'] = false;
 TXT['DRAW_BAR_RELATIVE_TO_PARTY'] = 'Damage bars will represent share of overall party DPS';
 
 -- table settings
+CFG['DRAW_TITLE_TEXT'] = true;
+TXT['DRAW_TITLE_TEXT'] = 'Show title text';
+CFG['DRAW_TITLE_BACKGROUND'] = true;
+TXT['DRAW_TITLE_BACKGROUND'] = 'Show title background';
 CFG['DRAW_BAR_BACKGROUNDS'] = true;
-TXT['DRAW_BAR_BACKGROUNDS'] = 'Show background';
+TXT['DRAW_BAR_BACKGROUNDS'] = 'Show bar background';
 CFG['DRAW_BAR_OUTLINES']    = false;
 TXT['DRAW_BAR_OUTLINES'] = 'Show bar outlines';
+CFG['DRAW_BAR_COLORBLOCK'] = true; -- shows block at the front of the bar with player's color
+TXT['DRAW_BAR_COLORBLOCK'] = 'Show color block';
+CFG['DRAW_BAR_TEXT_PADDING'] = 3;
+TXT['DRAW_BAR_TEXT_PADDING'] = 'Bar text padding';
+MIN['DRAW_BAR_TEXT_PADDING'] = 0;
+MAX['DRAW_BAR_TEXT_PADDING'] = 35;
+CFG['DRAW_BAR_TEXT_PADDING_FIXED'] = false;
+TXT['DRAW_BAR_TEXT_PADDING_FIXED'] = 'Bar text at fixed positions'
+CFG['DRAW_BAR_USE_PLAYER_COLORS'] = true;
+TXT['DRAW_BAR_USE_PLAYER_COLORS'] = 'Show player bars with their assigned color';
+CFG['DRAW_BAR_USE_UNIQUE_COLORS'] = true;
+TXT['DRAW_BAR_USE_UNIQUE_COLORS'] = 'Show each type of damage in a different color';
 
 CFG['DRAW_BAR_TEXT_NAME']                = true; -- shows name of combatant
 TXT['DRAW_BAR_TEXT_NAME'] = 'Show names';
@@ -84,13 +100,28 @@ MAX['TABLE_SCALE'] = 10.00;
 
 -- pixels
 CFG['TABLE_WIDTH'] = 350;
-TXT['TABLE_WIDTH'] = 'Table width in pixels';
+TXT['TABLE_WIDTH'] = 'Table width';
 MIN['TABLE_WIDTH'] = 0;
 MAX['TABLE_WIDTH'] = 3000;
+
 CFG['TABLE_ROWH'] = 18;
-TXT['TABLE_ROWH'] = 'Row height in pixels';
+TXT['TABLE_ROWH'] = 'Row height';
 MIN['TABLE_ROWH'] = 0;
 MAX['TABLE_ROWH'] = 100;
+
+CFG['TABLE_ROW_PADDING'] = 0;
+TXT['TABLE_ROW_PADDING'] = 'Row padding'
+MIN['TABLE_ROW_PADDING'] = 0;
+MAX['TABLE_ROW_PADDING'] = 150;
+
+CFG['TABLE_ROW_TEXT_OFFSET_X'] = 0; -- x offset for damage bar text
+TXT['TABLE_ROW_TEXT_OFFSET_X'] = 'Text offset X';
+MIN['TABLE_ROW_TEXT_OFFSET_X'] = -100;
+MAX['TABLE_ROW_TEXT_OFFSET_X'] = 100;
+CFG['TABLE_ROW_TEXT_OFFSET_Y'] = 0; -- y offset for damage bar text
+TXT['TABLE_ROW_TEXT_OFFSET_Y'] = 'Text offset Y';
+MIN['TABLE_ROW_TEXT_OFFSET_Y'] = -100;
+MAX['TABLE_ROW_TEXT_OFFSET_Y'] = 100;
 
 -- colors
 -- 0x 12345678
@@ -181,6 +212,8 @@ PRESET_DETAILED['TABLE_WIDTH'] = 350;
 PRESET_DETAILED['TABLE_ROWH'] = 18;
 
 local PRESET_FYLEX = {};
+PRESET_FYLEX['DRAW_TITLE_TEXT'] = false;
+PRESET_FYLEX['DRAW_TITLE_BACKGROUND'] = false;
 PRESET_FYLEX['DRAW_BAR_TEXT_NAME'] = true;
 PRESET_FYLEX['DRAW_BAR_TEXT_YOU'] = false;
 PRESET_FYLEX['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = true;
@@ -193,6 +226,38 @@ PRESET_FYLEX['USE_MINIMAL_BARS'] = true;
 PRESET_FYLEX['TABLE_SORT_IN_ORDER'] = false;
 PRESET_FYLEX['TABLE_X'] = 0.72;
 PRESET_FYLEX['TABLE_Y'] = 0.02;
+
+local PRESET_MHOVERLAY = {};
+PRESET_MHOVERLAY['DRAW_TITLE_TEXT'] = false;
+PRESET_MHOVERLAY['DRAW_TITLE_BACKGROUND'] = false;
+PRESET_MHOVERLAY['DRAW_BAR_BACKGROUNDS'] = true;
+PRESET_MHOVERLAY['DRAW_BAR_COLORBLOCK'] = false;
+PRESET_MHOVERLAY['DRAW_BAR_TEXT_PADDING'] = 26;
+PRESET_MHOVERLAY['DRAW_BAR_TEXT_PADDING_FIXED'] = true;
+PRESET_MHOVERLAY['DRAW_BAR_USE_PLAYER_COLORS'] = false;
+PRESET_MHOVERLAY['DRAW_BAR_USE_UNIQUE_COLORS'] = false;
+PRESET_MHOVERLAY['DRAW_BAR_TEXT_NAME'] = true;
+PRESET_MHOVERLAY['DRAW_BAR_TEXT_YOU'] = false;
+PRESET_MHOVERLAY['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = true;
+PRESET_MHOVERLAY['DRAW_BAR_TEXT_TOTAL_DAMAGE'] = true;
+PRESET_MHOVERLAY['DRAW_BAR_TEXT_PERCENT_OF_PARTY'] = true;
+PRESET_MHOVERLAY['DRAW_BAR_TEXT_PERCENT_OF_BEST'] = false;
+PRESET_MHOVERLAY['DRAW_BAR_TEXT_HIT_COUNT'] = false;
+PRESET_MHOVERLAY['DRAW_BAR_TEXT_BIGGEST_HIT'] = false;
+PRESET_MHOVERLAY['USE_MINIMAL_BARS'] = false;
+PRESET_MHOVERLAY['TABLE_GROWS_UPWARD'] = false;
+PRESET_MHOVERLAY['TABLE_SORT_ASC'] = false;
+PRESET_MHOVERLAY['TABLE_SORT_IN_ORDER'] = true;
+PRESET_MHOVERLAY['TABLE_SORT_ASC'] = false;
+PRESET_MHOVERLAY['TABLE_X'] = 0.23;
+PRESET_MHOVERLAY['TABLE_Y'] = 0.79;
+PRESET_MHOVERLAY['TABLE_SCALE'] = 1;
+PRESET_MHOVERLAY['TABLE_WIDTH'] = 316;
+PRESET_MHOVERLAY['TABLE_ROWH'] = 6;
+PRESET_MHOVERLAY['TABLE_ROW_PADDING'] = 19;
+PRESET_MHOVERLAY['TABLE_ROW_TEXT_OFFSET_X'] = 5;
+PRESET_MHOVERLAY['TABLE_ROW_TEXT_OFFSET_Y'] = -16;
+PRESET_MHOVERLAY['COLOR_BAR_DMG_PHYSICAL'] = 0xAFE069AE;
 
 --
 -- globals
@@ -288,6 +353,7 @@ end
 PRESETS['Standard'] = PRESET_STANDARD;
 PRESETS['Detailed'] = PRESET_DETAILED;
 PRESETS['Fylex'] = PRESET_FYLEX;
+PRESETS['MHOverlay'] = PRESET_MHOVERLAY;
 
 -- build preset options list
 for name,_ in pairs(PRESETS) do
@@ -653,6 +719,16 @@ end
 
 function drawRichDamageBar(source, x, y, maxWidth, h, colorPhysical, colorElemental)
 	local w = 0;
+	local colorAilment = CFG['COLOR_BAR_DMG_AILMENT'];
+	local colorOtomo = CFG['COLOR_BAR_DMG_OTOMO'];
+	local colorOther = CFG['COLOR_BAR_DMG_OTHER'];
+
+	if not CFG['DRAW_BAR_USE_UNIQUE_COLORS'] then
+		colorElemental = colorPhysical;
+		colorAilment = colorPhysical;
+		colorOtomo = colorPhysical;
+		colorOther = colorPhysical;
+	end
 
 	-- draw physical damage
 	--debug_line(string.format('damagePhysical: %d', source.damagePhysical));
@@ -667,18 +743,18 @@ function drawRichDamageBar(source, x, y, maxWidth, h, colorPhysical, colorElemen
 	-- draw ailment damage
 	--debug_line(string.format('damageAilment: %f', source.damageAilment));
 	w = (source.damageAilment / source.damageTotal) * maxWidth;
-	draw.filled_rect(x, y, w, h, CFG['COLOR_BAR_DMG_AILMENT']);
+	draw.filled_rect(x, y, w, h, colorAilment);
 	x = x + w;
 	-- draw otomo damage
 	--debug_line(string.format('damageOtomo: %d', source.damageOtomo));
 	w = (source.damageOtomo / source.damageTotal) * maxWidth;
-	draw.filled_rect(x, y, w, h, CFG['COLOR_BAR_DMG_OTOMO']);
+	draw.filled_rect(x, y, w, h, colorOtomo);
 	x = x + w;
 	-- draw whatever's left
 	local remainder = source.damageTotal - source.damagePhysical - source.damageElemental - source.damageAilment - source.damageOtomo;
 	--debug_line(string.format('remainder: %d', remainder));
 	w = (remainder / source.damageTotal) * maxWidth;
-	draw.filled_rect(x, y, w, h, CFG['COLOR_BAR_DMG_OTHER']);
+	draw.filled_rect(x, y, w, h, colorOther);
 	--debug_line(string.format('total: %d', source.damageTotal));
 end
 
@@ -693,6 +769,12 @@ function drawReport(index)
 	local tableWidth = CFG['TABLE_WIDTH'] * CFG['TABLE_SCALE'];
 	local rowHeight = CFG['TABLE_ROWH'] * CFG['TABLE_SCALE'];
 	local colorBlockWidth = 20;
+	local text_offset_x = CFG['TABLE_ROW_TEXT_OFFSET_X'];
+	local text_offset_y = CFG['TABLE_ROW_TEXT_OFFSET_Y'];
+
+	if not CFG['DRAW_BAR_COLORBLOCK'] then
+		colorBlockWidth = 0;
+	end
 
 	local boss = LARGE_MONSTERS[index];
 	local title = "All large monsters";
@@ -709,14 +791,16 @@ function drawReport(index)
 	local timeSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
 	timeSeconds = timeSeconds - (timeMinutes * 60);
 
-	if not CFG['USE_MINIMAL_BARS'] then
+	if CFG['DRAW_TITLE_BACKGROUND'] then
 		-- title background
 		draw.filled_rect(origin_x, origin_y, tableWidth, rowHeight, CFG['COLOR_TITLE_BG'])
 	end
 
-	-- title text
-	local titleText = string.format("%d:%02.0f - %s", timeMinutes, timeSeconds, title);
-	draw.text(titleText, origin_x, origin_y, CFG['COLOR_TITLE_FG']);
+	if CFG['DRAW_TITLE_TEXT'] then
+		-- title text
+		local titleText = string.format("%d:%02.0f - %s", timeMinutes, timeSeconds, title);
+		draw.text(titleText, origin_x, origin_y, CFG['COLOR_TITLE_FG']);
+	end
 
 	if CFG['TABLE_GROWS_UPWARD'] then
 		-- adjust starting position for drawing report items
@@ -725,7 +809,7 @@ function drawReport(index)
 
 	-- draw report items
 	for i,item in ipairs(report.items) do
-		local y = origin_y + rowHeight * i;
+		local y = origin_y + (rowHeight + CFG['TABLE_ROW_PADDING']) * i;
 
 		local playerColor = CFG['COLOR_PLAYER'][item.id];
 		if not playerColor then
@@ -733,7 +817,7 @@ function drawReport(index)
 		end
 
 		local physicalColor = CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][item.id];
-		if not physicalColor then
+		if not physicalColor or not CFG['DRAW_BAR_USE_PLAYER_COLORS'] then
 			physicalColor = CFG['COLOR_BAR_DMG_PHYSICAL'];
 		end
 
@@ -760,27 +844,29 @@ function drawReport(index)
 				draw.filled_rect(origin_x, y, tableWidth, rowHeight, CFG['COLOR_BAR_BG']);
 			end
 
-			-- color block
-			draw.filled_rect(origin_x, y, colorBlockWidth, rowHeight, playerColor);
+			if CFG['DRAW_BAR_COLORBLOCK'] then
+				-- color block
+				draw.filled_rect(origin_x, y, colorBlockWidth, rowHeight, playerColor);
+			end
 
 			-- damage bar
 			local damageBarWidth = (tableWidth - colorBlockWidth) * damageBarWidthMultiplier;
 			drawRichDamageBar(item.source, origin_x + colorBlockWidth, y, damageBarWidth, rowHeight, physicalColor, elementalColor);
 		end
 
-		-- draw text
+		-- draw text (TODO: REFACTOR THIS MESS)
+		local text_x = origin_x + colorBlockWidth + 2 + text_offset_x;
+		local text_y = y + text_offset_y;
 		local barText = '';
-		local spacer = '   ';
+		local paddingCount = CFG['DRAW_BAR_TEXT_PADDING'];
+		local spacer = string.rep(' ', paddingCount);
+		local fixedSpacing = CFG['DRAW_BAR_TEXT_PADDING_FIXED'];
 
 		if CFG['DRAW_BAR_TEXT_NAME'] then
 			-- player names
 			if item.playerNumber then
 				if CFG['DRAW_BAR_TEXT_YOU'] and item.id == MY_PLAYER_ID then
-					if not CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] then
-						barText = barText .. 'YOU          ';
-					else
-						barText = barText .. 'YOU' .. spacer;
-					end
+					barText = barText .. 'YOU' .. spacer;
 				elseif CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] and item.name then
 					barText = barText .. string.format('%s', item.name)  .. spacer;
 				else
@@ -793,33 +879,63 @@ function drawReport(index)
 			-- TODO: otomo, monster
 		elseif CFG['DRAW_BAR_TEXT_YOU'] then
 			if item.id == MY_PLAYER_ID then
-				barText = barText .. 'YOU  ';
-			else
-				barText = barText .. '          ';
+				barText = barText .. 'YOU' .. spacer;
 			end
+		end
+
+		if fixedSpacing then
+			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
+			text_x = text_x + (5 * paddingCount);
+			barText = '';
 		end
 
 		if CFG['DRAW_BAR_TEXT_TOTAL_DAMAGE'] then
 			barText = barText .. string.format('%.0f', item.source.damageTotal)  .. spacer;
 		end
 
+		if fixedSpacing then
+			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
+			text_x = text_x + (5 * paddingCount);
+			barText = '';
+		end
+
 		if CFG['DRAW_BAR_TEXT_PERCENT_OF_PARTY'] then
 			barText = barText .. string.format('%.1f%%', item.percentOfTotal * 100.0)  .. spacer;
+		end
+
+		if fixedSpacing then
+			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
+			text_x = text_x + (5 * paddingCount);
+			barText = '';
 		end
 
 		if CFG['DRAW_BAR_TEXT_PERCENT_OF_BEST'] then
 			barText = barText .. string.format('(%.1f%%)', item.percentOfBest * 100.0)  .. spacer;
 		end
 
+		if fixedSpacing then
+			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
+			text_x = text_x + (5 * paddingCount);
+			barText = '';
+		end
+
 		if CFG['DRAW_BAR_TEXT_HIT_COUNT'] then
 			barText = barText .. string.format('%d', item.source.numHit)  .. spacer;
+		end
+
+		if fixedSpacing then
+			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
+			text_x = text_x + (5 * paddingCount);
+			barText = '';
 		end
 
 		if CFG['DRAW_BAR_TEXT_BIGGEST_HIT'] then
 			barText = barText .. string.format('[%d]', item.source.maxHit)  .. spacer;
 		end
 
-		draw.text(barText, origin_x + colorBlockWidth + 2, y, CFG['COLOR_WHITE']);
+		if not fixedSpacing then
+			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
+		end
 
 		if CFG['DRAW_BAR_OUTLINES'] then
 			-- draw outline
@@ -1101,8 +1217,15 @@ function dpsWindow()
 
 	imgui.new_line();
 
+	showCheckboxForSetting('DRAW_TITLE_TEXT');
+	showCheckboxForSetting('DRAW_TITLE_BACKGROUND');
 	showCheckboxForSetting('DRAW_BAR_BACKGROUNDS');
 	showCheckboxForSetting('DRAW_BAR_OUTLINES');
+	showCheckboxForSetting('DRAW_BAR_COLORBLOCK');
+	showSliderForIntSetting('DRAW_BAR_TEXT_PADDING');
+	showCheckboxForSetting('DRAW_BAR_TEXT_PADDING_FIXED');
+	showCheckboxForSetting('DRAW_BAR_USE_PLAYER_COLORS');
+	showCheckboxForSetting('DRAW_BAR_USE_UNIQUE_COLORS');
 
 	imgui.new_line();
 
@@ -1128,7 +1251,13 @@ function dpsWindow()
 	showSliderForFloatSetting('TABLE_Y');
 	showSliderForFloatSetting('TABLE_SCALE');
 	showSliderForIntSetting('TABLE_WIDTH');
+
+	imgui.new_line();
+
 	showSliderForIntSetting('TABLE_ROWH');
+	showSliderForIntSetting('TABLE_ROW_PADDING');
+	showSliderForIntSetting('TABLE_ROW_TEXT_OFFSET_X');
+	showSliderForIntSetting('TABLE_ROW_TEXT_OFFSET_Y');
 
 	imgui.new_line();
 
