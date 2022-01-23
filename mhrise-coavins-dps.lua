@@ -883,7 +883,7 @@ function drawReport(index)
 			end
 		end
 
-		if fixedSpacing then
+		if fixedSpacing and barText ~= '' then
 			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
 			text_x = text_x + (5 * paddingCount);
 			barText = '';
@@ -893,7 +893,7 @@ function drawReport(index)
 			barText = barText .. string.format('%.0f', item.source.damageTotal)  .. spacer;
 		end
 
-		if fixedSpacing then
+		if fixedSpacing and barText ~= '' then
 			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
 			text_x = text_x + (5 * paddingCount);
 			barText = '';
@@ -903,7 +903,7 @@ function drawReport(index)
 			barText = barText .. string.format('%.1f%%', item.percentOfTotal * 100.0)  .. spacer;
 		end
 
-		if fixedSpacing then
+		if fixedSpacing and barText ~= '' then
 			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
 			text_x = text_x + (5 * paddingCount);
 			barText = '';
@@ -913,7 +913,7 @@ function drawReport(index)
 			barText = barText .. string.format('(%.1f%%)', item.percentOfBest * 100.0)  .. spacer;
 		end
 
-		if fixedSpacing then
+		if fixedSpacing and barText ~= '' then
 			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
 			text_x = text_x + (5 * paddingCount);
 			barText = '';
@@ -923,7 +923,7 @@ function drawReport(index)
 			barText = barText .. string.format('%d', item.source.numHit)  .. spacer;
 		end
 
-		if fixedSpacing then
+		if fixedSpacing and barText ~= '' then
 			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
 			text_x = text_x + (5 * paddingCount);
 			barText = '';
@@ -933,7 +933,7 @@ function drawReport(index)
 			barText = barText .. string.format('[%d]', item.source.maxHit)  .. spacer;
 		end
 
-		if fixedSpacing then
+		if fixedSpacing and barText ~= '' then
 			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
 			text_x = text_x + (5 * paddingCount);
 			barText = '';
