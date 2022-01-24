@@ -670,6 +670,8 @@ function getTotalDamageForDamageCounter(c)
 end
 
 function mergeDamageCounters(a, b)
+	if not a then a = initializeDamageCounter(); end
+	if not b then b = initializeDamageCounter(); end
 	local c = initializeDamageCounter();
 	c.total     = a.total     + b.total;
 	c.physical  = a.physical  + b.physical;
@@ -708,6 +710,9 @@ end
 
 -- main function responsible for loading a boss into a report
 function mergeDamageSourcesIntoReport(report, damageSources)
+	local totalDamage = 0.0;
+	local bestDamage = 0.0;
+
 	-- merge damage sources
 	for id,source in pairs(damageSources) do
 		if not REPORT_NONPLAYERS and (source.id < 0 or source.id > 3) then
@@ -722,16 +727,19 @@ function mergeDamageSourcesIntoReport(report, damageSources)
 
 		mergeDamageSourceIntoReportItem(item, source);
 
-		-- remember which item has the most damage
-		if item.total > report.topDamage then
-			report.topDamage = item.total;
+		-- remember which combatant has the most damage
+		if item.total > bestDamage then
+			bestDamage = item.total;
 		end;
 
 		-- accumulate total overall damage
-		report.totalDamage = report.totalDamage + item.total;
+		totalDamage = totalDamage + item.total;
 
 		::skip_to_next::
 	end
+
+	report.totalDamage = totalDamage;
+	report.topDamage = bestDamage;
 
 	-- finish writing data
 	for _,item in ipairs(report.items) do
@@ -823,15 +831,7 @@ end
 function mergeReportItemCounters(a, b)
 	local counters = {};
 	for _,type in pairs(ATTACKER_TYPES) do
-		local counterA = a[type];
-		local counterB = b[type];
-		if counterA and not counterB then
-			counters[type] = counterA;
-		elseif counterB and not counterA then
-			counters[type] = counterB;
-		elseif counterA and counterB then
-			counters[type] = mergeDamageCounters(counterA, counterB)
-		end
+		counters[type] = mergeDamageCounters(a[type], b[type]);
 	end
 	return counters;
 end
