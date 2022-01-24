@@ -520,7 +520,6 @@ function read_AfterCalcInfo_DamageSide(args)
 	--log_info(string.format('total: %f physical: %f element: %f ailment: %f', totalDamage, physicalDamage, elementDamage, conditionDamage));
 
 	-- add damage facts to counter
-	c.total     = c.total     + totalDamage;
 	c.physical  = c.physical  + physicalDamage;
 	c.elemental = c.elemental + elementDamage;
 	c.condition = c.condition + conditionDamage;
@@ -644,7 +643,6 @@ end
 -- damage counter
 function initializeDamageCounter()
 	local c = {};
-	c['total']     = 0.0;
 	c['physical']  = 0.0;
 	c['elemental'] = 0.0;
 	c['condition'] = 0.0;
@@ -656,24 +654,17 @@ function initializeDamageCounterWithDummyData()
 	c['physical']  = math.random(1,1000);
 	c['elemental'] = math.random(1,600);
 	c['condition'] = math.random(1,100);
-	c['total'] = c.physical + c.elemental;
 	return c;
 end
 
 function getTotalDamageForDamageCounter(c)
-	local total = 0.0;
-
-	total = total + c.total;
-	-- TODO optionally count condition?
-
-	return total;
+	return c.physical + c.elemental + c.condition;
 end
 
 function mergeDamageCounters(a, b)
 	if not a then a = initializeDamageCounter(); end
 	if not b then b = initializeDamageCounter(); end
 	local c = initializeDamageCounter();
-	c.total     = a.total     + b.total;
 	c.physical  = a.physical  + b.physical;
 	c.elemental = a.elemental + b.elemental;
 	c.condition = a.condition + b.condition;
@@ -777,6 +768,7 @@ function initializeReportItem()
 	item.counters = {};
 
 	item.total = 0.0;
+
 	item.totalPhysical = 0.0;
 	item.totalElemental = 0.0;
 	item.totalCondition = 0.0;
@@ -810,13 +802,15 @@ function mergeDamageSourceIntoReportItem(item, source)
 			if REPORT_ATTACKER_TYPES[type] then
 				if type == 'otomo' then
 					-- count the otomo damage as a special kind of damage inflicted by the player
-					item.total = item.total + counter.total;
-					item.totalOtomo = item.totalOtomo + counter.total;
+					item.totalOtomo = item.totalOtomo + getTotalDamageForDamageCounter(counter);
+
+					item.total = item.total + getTotalDamageForDamageCounter(counter);
 				else
-					item.total = item.total + counter.total + counter.condition;
 					item.totalPhysical  = item.totalPhysical  + counter.physical;
 					item.totalElemental = item.totalElemental + counter.elemental;
 					item.totalCondition = item.totalCondition + counter.condition;
+
+					item.total = item.total + getTotalDamageForDamageCounter(counter);
 				end
 			end
 		end
@@ -841,7 +835,7 @@ function sortReportItems_DESC(a, b)
 end
 
 function sortReportItems_ASC(a, b)
-	return b.total > a.total;
+	return a.total < b.total;
 end
 
 function sortReportItems_Player(a, b)
