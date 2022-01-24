@@ -2,197 +2,12 @@
 -- written by github.com/coavins
 
 --
--- configuration
---
-
-local CFG = {};
-local TXT = {};
-local MIN = {};
-local MAX = {};
-
--- general settings
-CFG['UPDATE_RATE'] = 0.5; -- in seconds, so 0.5 means two updates per second
-TXT['UPDATE_RATE'] = 'Update frequency (in seconds)';
-MIN['UPDATE_RATE'] = 0.01;
-MAX['UPDATE_RATE'] = 10.00;
-
--- when the settings window is open, test data will be shown in the graph
-CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] = true;
-TXT['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] = 'Show test data while menu is open';
-
--- when true, damage from palicoes and palamutes will be counted as if dealt by their hunter
--- when false, damage from palicoes and palamutes will be ignored completely
-CFG['OTOMO_DMG_IS_PLAYER_DMG'] = true;
-TXT['OTOMO_DMG_IS_PLAYER_DMG'] = 'Combine buddies with their hunter';
-
-CFG['DRAW_BAR_RELATIVE_TO_PARTY'] = false;
-TXT['DRAW_BAR_RELATIVE_TO_PARTY'] = 'Damage bars will represent share of overall party DPS';
-
--- table settings
-CFG['DRAW_TITLE_TEXT'] = true;
-TXT['DRAW_TITLE_TEXT'] = 'Show title text';
-CFG['DRAW_TITLE_BACKGROUND'] = true;
-TXT['DRAW_TITLE_BACKGROUND'] = 'Show title background';
-CFG['DRAW_BAR_BACKGROUNDS'] = true;
-TXT['DRAW_BAR_BACKGROUNDS'] = 'Show bar background';
-CFG['DRAW_BAR_OUTLINES']    = false;
-TXT['DRAW_BAR_OUTLINES'] = 'Show bar outlines';
-CFG['DRAW_BAR_COLORBLOCK'] = true; -- shows block at the front of the bar with player's color
-TXT['DRAW_BAR_COLORBLOCK'] = 'Show color block';
-CFG['DRAW_BAR_TEXT_PADDING'] = 3;
-TXT['DRAW_BAR_TEXT_PADDING'] = 'Bar text padding';
-MIN['DRAW_BAR_TEXT_PADDING'] = 0;
-MAX['DRAW_BAR_TEXT_PADDING'] = 35;
-CFG['DRAW_BAR_TEXT_PADDING_FIXED'] = false;
-TXT['DRAW_BAR_TEXT_PADDING_FIXED'] = 'Bar text at fixed positions'
-CFG['DRAW_BAR_USE_PLAYER_COLORS'] = true;
-TXT['DRAW_BAR_USE_PLAYER_COLORS'] = 'Show player bars with their assigned color';
-CFG['DRAW_BAR_USE_UNIQUE_COLORS'] = true;
-TXT['DRAW_BAR_USE_UNIQUE_COLORS'] = 'Show each type of damage in a different color';
-
-CFG['DRAW_BAR_TEXT_NAME']                = true; -- shows name of combatant
-TXT['DRAW_BAR_TEXT_NAME'] = 'Show names';
-CFG['DRAW_BAR_TEXT_YOU']                 = false; -- shows "YOU" on your bar
-TXT['DRAW_BAR_TEXT_YOU'] = 'Show "YOU" on your row';
-CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = true; -- show real player names instead of IDs
-TXT['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = 'Reveal character names';
-CFG['DRAW_BAR_TEXT_TOTAL_DAMAGE']        = false; -- shows total damage dealt
-TXT['DRAW_BAR_TEXT_TOTAL_DAMAGE'] = 'Show total damage done';
-CFG['DRAW_BAR_TEXT_PERCENT_OF_PARTY']    = true; -- shows your share of party damage
-TXT['DRAW_BAR_TEXT_PERCENT_OF_PARTY'] = 'Show percent of party damage';
-CFG['DRAW_BAR_TEXT_PERCENT_OF_BEST']     = false; -- shows how close you are to the top damage dealer
-TXT['DRAW_BAR_TEXT_PERCENT_OF_BEST'] = 'Show percent of leader\'s damage';
-CFG['DRAW_BAR_TEXT_HIT_COUNT']           = false; -- shows how many hits you've landed
-TXT['DRAW_BAR_TEXT_HIT_COUNT'] = 'Show number of hits';
-CFG['DRAW_BAR_TEXT_BIGGEST_HIT']         = false; -- shows how much damage your biggest hit did
-TXT['DRAW_BAR_TEXT_BIGGEST_HIT'] = 'Show damage dealt by biggest hit';
-
--- the damage bars will be removed, and the player blocks will receive shading instead
-CFG['USE_MINIMAL_BARS'] = false;
-TXT['USE_MINIMAL_BARS'] = 'Use a minimalist style for the damage bars';
-
--- rows will be added on top of the title bar instead of underneath, making it easier to place the table at the bottom of the screen
-CFG['TABLE_GROWS_UPWARD'] = false;
-TXT['TABLE_GROWS_UPWARD'] = 'Table grows upward instead of down';
-
--- when true, the row with the highest damage will be on bottom. you might want to use this with TABLE_GROWS_UPWARD
-CFG['TABLE_SORT_ASC'] = false;
-TXT['TABLE_SORT_ASC'] = 'Sort ascending';
--- when true, player 1 will be first and player 4 will be last
-CFG['TABLE_SORT_IN_ORDER'] = false;
-TXT['TABLE_SORT_IN_ORDER'] = 'Sort by player';
-
--- table position
--- X/Y here is expressed as a percentage
--- 0 is left/top of screen, 1 is right/bottom
-CFG['TABLE_X'] = 0.65;
-TXT['TABLE_X'] = 'Horizontal position';
-MIN['TABLE_X'] = 0.0;
-MAX['TABLE_X'] = 1.0;
-CFG['TABLE_Y'] = 0.00;
-TXT['TABLE_Y'] = 'Vertical position';
-MIN['TABLE_Y'] = 0.0;
-MAX['TABLE_Y'] = 1.0;
-CFG['TABLE_SCALE'] = 1.0; -- multiplier for width and height
-TXT['TABLE_SCALE'] = 'Scaling factor';
-MIN['TABLE_SCALE'] = 0.0;
-MAX['TABLE_SCALE'] = 10.00;
-
--- pixels
-CFG['TABLE_WIDTH'] = 350;
-TXT['TABLE_WIDTH'] = 'Table width';
-MIN['TABLE_WIDTH'] = 0;
-MAX['TABLE_WIDTH'] = 3000;
-
-CFG['TABLE_ROWH'] = 18;
-TXT['TABLE_ROWH'] = 'Row height';
-MIN['TABLE_ROWH'] = 0;
-MAX['TABLE_ROWH'] = 100;
-
-CFG['TABLE_ROW_PADDING'] = 0;
-TXT['TABLE_ROW_PADDING'] = 'Row padding'
-MIN['TABLE_ROW_PADDING'] = 0;
-MAX['TABLE_ROW_PADDING'] = 150;
-
-CFG['TABLE_ROW_TEXT_OFFSET_X'] = 0; -- x offset for damage bar text
-TXT['TABLE_ROW_TEXT_OFFSET_X'] = 'Text offset X';
-MIN['TABLE_ROW_TEXT_OFFSET_X'] = -100;
-MAX['TABLE_ROW_TEXT_OFFSET_X'] = 100;
-CFG['TABLE_ROW_TEXT_OFFSET_Y'] = 0; -- y offset for damage bar text
-TXT['TABLE_ROW_TEXT_OFFSET_Y'] = 'Text offset Y';
-MIN['TABLE_ROW_TEXT_OFFSET_Y'] = -100;
-MAX['TABLE_ROW_TEXT_OFFSET_Y'] = 100;
-
--- colors
--- 0x 12345678
--- 12 = alpha
--- 34 = green
--- 56 = blue
--- 78 = red
-
--- basic palette
-CFG['COLOR_WHITE']  = 0xFFFFFFFF;
-CFG['COLOR_GRAY']   = 0xFFAFAFAF;
-CFG['COLOR_BLACK']  = 0xFF000000;
-CFG['COLOR_RED']    = 0xAF3232FF;
-CFG['COLOR_BLUE']   = 0xAFFF3232;
-CFG['COLOR_YELLOW'] = 0xAF32FFFF;
-CFG['COLOR_GREEN']  = 0xAF32FF32;
-
--- players
-CFG['COLOR_PLAYER'] = {};
-CFG['COLOR_PLAYER'][0] = CFG['COLOR_RED'];
-CFG['COLOR_PLAYER'][1] = CFG['COLOR_BLUE'];
-CFG['COLOR_PLAYER'][2] = CFG['COLOR_YELLOW'];
-CFG['COLOR_PLAYER'][3] = CFG['COLOR_GREEN'];
-
--- table colors
-CFG['COLOR_TITLE_BG']         = 0x88000000;
-CFG['COLOR_TITLE_FG']         = 0xFFDADADA;
-CFG['COLOR_BAR_BG']           = 0x44000000;
-CFG['COLOR_BAR_OUTLINE']      = 0x44000000;
-
-CFG['COLOR_BAR_DMG_PHYSICAL'] = 0xAF616658;
-CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'] = {};
-CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][0] = 0xAF2828CC; -- red
-CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][1] = 0xAFCC2828; -- blue
-CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][2] = 0xAF28CCCC; -- yellow
-CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][3] = 0xAF28CC28; -- green
-
-CFG['COLOR_BAR_DMG_ELEMENT']  = 0xAF919984;
-CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'] = {};
-CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][0] = 0xAF1C1C8C; -- red
-CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][1] = 0xAF8C1C1C; -- blue
-CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][2] = 0xAF1C8C8C; -- yellow
-CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][3] = 0xAF1C8C1C; -- green
-
-CFG['COLOR_BAR_DMG_AILMENT']  = 0xAF3E37A3;
-CFG['COLOR_BAR_DMG_OTOMO']    = 0xAFFCC500;
-CFG['COLOR_BAR_DMG_OTHER']    = 0xAF616658;
-
---
--- end configuration
+-- for configuration, see reframework/data/mhrise-coavins-dps/default.json
 --
 
 --
 -- presets
 --
-
-local PRESET_STANDARD = {};
-PRESET_STANDARD['OTOMO_DMG_IS_PLAYER_DMG'] = true;
-PRESET_STANDARD['DRAW_BAR_BACKGROUNDS'] = true;
-PRESET_STANDARD['DRAW_BAR_OUTLINES'] = false;
-PRESET_STANDARD['DRAW_BAR_TEXT_NAME'] = true;
-PRESET_STANDARD['DRAW_BAR_TEXT_YOU'] = true;
-PRESET_STANDARD['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = false;
-PRESET_STANDARD['DRAW_BAR_TEXT_TOTAL_DAMAGE'] = false;
-PRESET_STANDARD['DRAW_BAR_TEXT_PERCENT_OF_PARTY'] = true;
-PRESET_STANDARD['DRAW_BAR_TEXT_PERCENT_OF_BEST'] = false;
-PRESET_STANDARD['DRAW_BAR_TEXT_HIT_COUNT'] = false;
-PRESET_STANDARD['DRAW_BAR_TEXT_BIGGEST_HIT'] = false;
-PRESET_STANDARD['USE_MINIMAL_BARS'] = false;
-PRESET_STANDARD['TABLE_WIDTH'] = 350;
-PRESET_STANDARD['TABLE_ROWH'] = 18;
 
 local PRESET_DETAILED = {};
 PRESET_DETAILED['OTOMO_DMG_IS_PLAYER_DMG'] = true;
@@ -270,8 +85,12 @@ local DRAW_WINDOW_REPORT = false;
 local WINDOW_FLAGS = 0x10120;
 local IS_ONLINE = false;
 
-local PRESETS = {};
-local PRESET_OPTIONS = {};
+CFG = {};
+CFG_DIR = 'mhrise-coavins-dps/';
+COLORS = {};
+
+PRESETS = {};
+PRESET_OPTIONS = {};
 local PRESET_OPTIONS_SELECTED = 1;
 
 local SCREEN_W = 0;
@@ -328,61 +147,139 @@ function log_error(text)
 end
 
 -- sanity checking
+-- returns false if the script should stop
+function sanityCheck()
+	if not SCENE_MANAGER then
+		log_error('could not find scene manager');
+		return false;
+	end
 
-if not SCENE_MANAGER then
-	log_error('could not find scene manager');
-	return;
+	if not SCENE_MANAGER_TYPE then
+		log_error('could not find scene manager type');
+		return false;
+	end
+
+	if not SCENE_MANAGER_VIEW then
+		log_error('could not find scene manager view');
+		return false;
+	end
+
+	if not SNOW_ENEMY_ENEMYCHARACTERBASE then
+		log_error('could not find type snow.enemy.EnemyCharacterBase');
+		return false;
+	end
+
+	if not SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE then
+		log_error('could not find method snow.enemy.EnemyCharacterBase::afterCalcDamage_DamageSide');
+		return false;
+	end
+
+	if not CFG.UPDATE_RATE then
+		CFG.UPDATE_RATE = {};
+	end
+	local cfgUpdateRate = CFG.UPDATE_RATE.VALUE;
+	if not cfgUpdateRate or tonumber(cfgUpdateRate) == nil then
+		CFG.UPDATE_RATE.VALUE = 0.5;
+	elseif cfgUpdateRate < 0.01 then
+		CFG.UPDATE_RATE.VALUE = 0.01;
+	elseif cfgUpdateRate > 3 then
+		CFG.UPDATE_RATE.VALUE = 3;
+	end
+
+	return true;
 end
 
-if not SCENE_MANAGER_TYPE then
-	log_error('could not find scene manager type');
-	return;
+--
+-- saving / loading
+--
+
+-- returns file json
+function readDataFile(filename)
+	filename = CFG_DIR .. filename;
+	return json.load_file(filename);
 end
 
-if not SCENE_MANAGER_VIEW then
-	log_error('could not find scene manager view');
-	return;
+-- merges second cfg into first
+-- returns true if anything was done
+function mergeCfgIntoLeft(cfg1, cfg2)
+	local mergedAny = false;
+
+		for name,setting in pairs(cfg2) do
+			mergedAny = true;
+			cfg1[name].VALUE = setting.VALUE; -- load only the values
+		end
+
+	return mergedAny;
 end
 
-if not SNOW_ENEMY_ENEMYCHARACTERBASE then
-	log_error('could not find type snow.enemy.EnemyCharacterBase');
-	return;
+-- returns true on success
+function loadDefaultConfig()
+	local file = readDataFile('default.json');
+	if not file then
+		log_error('failed to load default.json');
+		return false;
+	end
+
+	CFG = file['CFG'];
+	COLORS = file['COLORS'];
+
+	return true;
 end
 
-if not SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE then
-	log_error('could not find method snow.enemy.EnemyCharacterBase::afterCalcDamage_DamageSide');
-	return;
+function loadSavedConfigIfExist()
+	local file = readDataFile('saves/save.json'); -- file might not exist
+	if file and file.CFG then
+		-- load save file on top of current config
+		local loadedAny = mergeCfgIntoLeft(CFG, file.CFG);
+
+		if loadedAny then
+			log_info('loaded configuration from saves/save.json');
+		end
+	end
 end
 
-if not CFG['UPDATE_RATE'] or tonumber(CFG['UPDATE_RATE']) == nil then
-	CFG['UPDATE_RATE'] = 0.5;
-end
-if CFG['UPDATE_RATE'] < 0.01 then
-	CFG['UPDATE_RATE'] = 0.01;
-end
-if CFG['UPDATE_RATE'] > 3 then
-	CFG['UPDATE_RATE'] = 3;
+function saveCurrentConfig()
+	local file = {};
+	file['CFG'] = CFG;
+
+	-- save current config to disk, replacing any existing file
+	local success = json.dump_file(CFG_DIR .. 'saves/save.json', file);
+	if success then
+		log_info('saved configuration to saves/save.json');
+	else
+		log_error('failed to save configuration to saves/save.json');
+	end
 end
 
 -- load presets
-PRESETS['Standard'] = PRESET_STANDARD;
-PRESETS['Detailed'] = PRESET_DETAILED;
-PRESETS['Fylex'] = PRESET_FYLEX;
-PRESETS['MHR Overlay'] = PRESET_MHROVERLAY;
+function loadPresets()
+	-- hardcode the names until we have the privilege of iterating the presets folder
+	local namesOnDisk = {};
+	table.insert(namesOnDisk, 'Simple');
 
--- build preset options list
-for name,_ in pairs(PRESETS) do
-	table.insert(PRESET_OPTIONS, name);
+	for _,name in ipairs(namesOnDisk) do
+		local file = readDataFile('presets/' .. name .. '.json');
+		if file then
+			PRESETS[name] = file;
+			log_info('loaded preset ' .. name);
+		end
+	end
+
+	-- build preset options list
+	for name,_ in pairs(PRESETS) do
+		table.insert(PRESET_OPTIONS, name);
+	end
+	table.sort(PRESET_OPTIONS);
+	table.insert(PRESET_OPTIONS, 1, 'Select a preset');
 end
-table.sort(PRESET_OPTIONS);
-table.insert(PRESET_OPTIONS, 1, 'Select a preset');
 
 function applySelectedPreset()
 	local name = PRESET_OPTIONS[PRESET_OPTIONS_SELECTED];
 	local preset = PRESETS[name];
-	if preset then
-		for setting,value in pairs(preset) do
-			CFG[setting] = value;
+	if preset and preset.CFG then
+		local loadedAny = mergeCfgIntoLeft(CFG, preset.CFG);
+		if loadedAny then
+			log_info('applied preset ' .. name);
 		end
 	end
 end
@@ -916,9 +813,9 @@ function mergeDamageSourcesIntoReport(report, damageSources)
 	end
 
 	-- sort report items
-	if CFG['TABLE_SORT_IN_ORDER'] then
+	if CFG.TABLE_SORT_IN_ORDER.VALUE then
 		table.sort(report.items, sortReportItems_Player);
-	elseif CFG['TABLE_SORT_ASC'] then
+	elseif CFG.TABLE_SORT_ASC.VALUE then
 		table.sort(report.items, sortReportItems_ASC);
 	else
 		table.sort(report.items, sortReportItems_DESC);
@@ -1060,15 +957,15 @@ function drawReport(index)
 		return;
 	end
 
-	local origin_x = getScreenXFromX(CFG['TABLE_X']);
-	local origin_y = getScreenYFromY(CFG['TABLE_Y']);
-	local tableWidth = CFG['TABLE_WIDTH'] * CFG['TABLE_SCALE'];
-	local rowHeight = CFG['TABLE_ROWH'] * CFG['TABLE_SCALE'];
+	local origin_x = getScreenXFromX(CFG.TABLE_X.VALUE);
+	local origin_y = getScreenYFromY(CFG.TABLE_Y.VALUE);
+	local tableWidth = CFG.TABLE_WIDTH.VALUE * CFG.TABLE_SCALE.VALUE;
+	local rowHeight = CFG.TABLE_ROWH.VALUE * CFG.TABLE_SCALE.VALUE;
 	local colorBlockWidth = 20;
-	local text_offset_x = CFG['TABLE_ROW_TEXT_OFFSET_X'];
-	local text_offset_y = CFG['TABLE_ROW_TEXT_OFFSET_Y'];
+	local text_offset_x = CFG.TABLE_ROW_TEXT_OFFSET_X.VALUE;
+	local text_offset_y = CFG.TABLE_ROW_TEXT_OFFSET_Y.VALUE;
 
-	if not CFG['DRAW_BAR_COLORBLOCK'] then
+	if not CFG.DRAW_BAR_COLORBLOCK.VALUE then
 		colorBlockWidth = 0;
 	end
 
@@ -1078,7 +975,7 @@ function drawReport(index)
 		title = boss.name;
 	end
 
-	if CFG['TABLE_GROWS_UPWARD'] then
+	if CFG.TABLE_GROWS_UPWARD.VALUE then
 		origin_y = origin_y - rowHeight;
 	end
 
@@ -1087,47 +984,47 @@ function drawReport(index)
 	local timeSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
 	timeSeconds = timeSeconds - (timeMinutes * 60);
 
-	if CFG['DRAW_TITLE_BACKGROUND'] then
+	if CFG.DRAW_TITLE_BACKGROUND.VALUE then
 		-- title background
-		draw.filled_rect(origin_x, origin_y, tableWidth, rowHeight, CFG['COLOR_TITLE_BG'])
+		draw.filled_rect(origin_x, origin_y, tableWidth, rowHeight, COLORS.TITLE_BG)
 	end
 
-	if CFG['DRAW_TITLE_TEXT'] then
+	if CFG.DRAW_TITLE_TEXT.VALUE then
 		-- title text
 		local titleText = string.format("%d:%02.0f - %s", timeMinutes, timeSeconds, title);
-		draw.text(titleText, origin_x, origin_y, CFG['COLOR_TITLE_FG']);
+		draw.text(titleText, origin_x, origin_y, COLORS.TITLE_FG);
 	end
 
-	if CFG['TABLE_GROWS_UPWARD'] then
+	if CFG.TABLE_GROWS_UPWARD.VALUE then
 		-- adjust starting position for drawing report items
 		origin_y = origin_y - rowHeight * (#report.items + 1);
 	end
 
 	-- draw report items
 	for i,item in ipairs(report.items) do
-		local y = origin_y + (rowHeight + CFG['TABLE_ROW_PADDING']) * i;
+		local y = origin_y + (rowHeight + CFG.TABLE_ROW_PADDING.VALUE) * i;
 
-		local playerColor = CFG['COLOR_PLAYER'][item.id];
+		local playerColor = COLORS.PLAYER[item.id+1];
 		if not playerColor then
-			playerColor = CFG['COLOR_GRAY'];
+			playerColor = COLORS.GRAY;
 		end
 
-		local physicalColor = CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][item.id];
-		if not physicalColor or not CFG['DRAW_BAR_USE_PLAYER_COLORS'] then
-			physicalColor = CFG['COLOR_BAR_DMG_PHYSICAL'];
+		local physicalColor = COLORS.BAR_DMG_PHYSICAL_UNIQUE[item.id+1];
+		if not physicalColor or not CFG.DRAW_BAR_USE_PLAYER_COLORS.VALUE then
+			physicalColor = COLORS.BAR_DMG_PHYSICAL;
 		end
 
-		local elementalColor = CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][item.id];
+		local elementalColor = COLORS.BAR_DMG_ELEMENT_UNIQUE[item.id+1];
 		if not elementalColor then
-			elementalColor = CFG['COLOR_BAR_DMG_ELEMENT'];
+			elementalColor = COLORS.BAR_DMG_ELEMENT;
 		end
 
 		local damageBarWidthMultiplier = item.percentOfBest;
-		if CFG['DRAW_BAR_RELATIVE_TO_PARTY'] then
+		if CFG.DRAW_BAR_RELATIVE_TO_PARTY.VALUE then
 			damageBarWidthMultiplier = item.percentOfTotal;
 		end
 
-		if CFG['USE_MINIMAL_BARS'] then
+		if CFG.USE_MINIMAL_BARS.VALUE then
 			-- color block
 			draw.filled_rect(origin_x, y, colorBlockWidth, rowHeight, elementalColor);
 
@@ -1135,12 +1032,12 @@ function drawReport(index)
 			local damageBarWidth = colorBlockWidth * damageBarWidthMultiplier;
 			draw.filled_rect(origin_x, y, damageBarWidth, rowHeight, playerColor);
 		else
-			if CFG['DRAW_BAR_BACKGROUNDS'] then
+			if CFG.DRAW_BAR_BACKGROUNDS.VALUE then
 				-- draw background
-				draw.filled_rect(origin_x, y, tableWidth, rowHeight, CFG['COLOR_BAR_BG']);
+				draw.filled_rect(origin_x, y, tableWidth, rowHeight, COLORS.BAR_BG);
 			end
 
-			if CFG['DRAW_BAR_COLORBLOCK'] then
+			if CFG.DRAW_BAR_COLORBLOCK.VALUE then
 				-- color block
 				draw.filled_rect(origin_x, y, colorBlockWidth, rowHeight, playerColor);
 			end
@@ -1155,16 +1052,16 @@ function drawReport(index)
 		local text_x = origin_x + colorBlockWidth + 2 + text_offset_x;
 		local text_y = y + text_offset_y;
 		local barText = '';
-		local paddingCount = CFG['DRAW_BAR_TEXT_PADDING'];
+		local paddingCount = CFG.DRAW_BAR_TEXT_PADDING.VALUE;
 		local spacer = string.rep(' ', paddingCount);
-		local fixedSpacing = CFG['DRAW_BAR_TEXT_PADDING_FIXED'];
+		local fixedSpacing = CFG.DRAW_BAR_TEXT_PADDING_FIXED.VALUE;
 
-		if CFG['DRAW_BAR_TEXT_NAME'] then
+		if CFG.DRAW_BAR_TEXT_NAME.VALUE then
 			-- player names
 			if item.playerNumber then
-				if CFG['DRAW_BAR_TEXT_YOU'] and item.id == MY_PLAYER_ID then
+				if CFG.DRAW_BAR_TEXT_YOU.VALUE and item.id == MY_PLAYER_ID then
 					barText = barText .. 'YOU' .. spacer;
-				elseif CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] and item.name then
+				elseif CFG.DRAW_BAR_TEXT_NAME_USE_REAL_NAMES.VALUE and item.name then
 					barText = barText .. string.format('%s', item.name)  .. spacer;
 				else
 					barText = barText .. string.format('Player %.0f', item.id + 1) .. spacer;
@@ -1183,75 +1080,75 @@ function drawReport(index)
 				-- just draw the name
 				barText = barText .. string.format('%s', item.name or '') .. spacer;
 			end
-		elseif CFG['DRAW_BAR_TEXT_YOU'] then
+		elseif CFG.DRAW_BAR_TEXT_YOU.VALUE then
 			if item.id == MY_PLAYER_ID then
 				barText = barText .. 'YOU' .. spacer;
 			end
 		end
 
 		if fixedSpacing and barText ~= '' then
-			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
+			draw.text(barText, text_x, text_y, COLORS.WHITE);
 			text_x = text_x + (5 * paddingCount);
 			barText = '';
 		end
 
-		if CFG['DRAW_BAR_TEXT_TOTAL_DAMAGE'] then
+		if CFG.DRAW_BAR_TEXT_TOTAL_DAMAGE.VALUE then
 			barText = barText .. string.format('%.0f', item.total)  .. spacer;
 		end
 
 		if fixedSpacing and barText ~= '' then
-			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
+			draw.text(barText, text_x, text_y, COLORS.WHITE);
 			text_x = text_x + (5 * paddingCount);
 			barText = '';
 		end
 
-		if CFG['DRAW_BAR_TEXT_PERCENT_OF_PARTY'] then
+		if CFG.DRAW_BAR_TEXT_PERCENT_OF_PARTY.VALUE then
 			barText = barText .. string.format('%.1f%%', item.percentOfTotal * 100.0)  .. spacer;
 		end
 
 		if fixedSpacing and barText ~= '' then
-			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
+			draw.text(barText, text_x, text_y, COLORS.WHITE);
 			text_x = text_x + (5 * paddingCount);
 			barText = '';
 		end
 
-		if CFG['DRAW_BAR_TEXT_PERCENT_OF_BEST'] then
+		if CFG.DRAW_BAR_TEXT_PERCENT_OF_BEST.VALUE then
 			barText = barText .. string.format('(%.1f%%)', item.percentOfBest * 100.0)  .. spacer;
 		end
 
 		if fixedSpacing and barText ~= '' then
-			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
+			draw.text(barText, text_x, text_y, COLORS.WHITE);
 			text_x = text_x + (5 * paddingCount);
 			barText = '';
 		end
 
-		if CFG['DRAW_BAR_TEXT_HIT_COUNT'] then
+		if CFG.DRAW_BAR_TEXT_HIT_COUNT.VALUE then
 			barText = barText .. string.format('%d', item.numHit)  .. spacer;
 		end
 
 		if fixedSpacing and barText ~= '' then
-			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
+			draw.text(barText, text_x, text_y, COLORS.WHITE);
 			text_x = text_x + (5 * paddingCount);
 			barText = '';
 		end
 
-		if CFG['DRAW_BAR_TEXT_BIGGEST_HIT'] then
+		if CFG.DRAW_BAR_TEXT_BIGGEST_HIT.VALUE then
 			barText = barText .. string.format('[%d]', item.maxHit)  .. spacer;
 		end
 
 		if fixedSpacing and barText ~= '' then
-			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
+			draw.text(barText, text_x, text_y, COLORS.WHITE);
 			text_x = text_x + (5 * paddingCount);
 			barText = '';
 		end
 
 		if not fixedSpacing then
-			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
+			draw.text(barText, text_x, text_y, COLORS.WHITE);
 		end
 
-		if CFG['DRAW_BAR_OUTLINES'] then
+		if CFG.DRAW_BAR_OUTLINES.VALUE then
 			-- draw outline
-			draw.outline_rect(origin_x, y, tableWidth, rowHeight, CFG['COLOR_BAR_OUTLINE']);
+			draw.outline_rect(origin_x, y, tableWidth, rowHeight, COLORS.BAR_OUTLINE);
 		end
 	end
 end
@@ -1453,23 +1350,23 @@ end
 --
 
 function showCheckboxForSetting(setting)
-	local changed, value = imgui.checkbox(TXT[setting], CFG[setting]);
+	local changed, value = imgui.checkbox(CFG[setting].TEXT, CFG[setting].VALUE);
 	if changed then
-		CFG[setting] = value;
+		CFG[setting].VALUE = value;
 	end
 end
 
 function showSliderForFloatSetting(setting)
-	local changed, value = imgui.slider_float(TXT[setting], CFG[setting], MIN[setting], MAX[setting], '%.2f');
+	local changed, value = imgui.slider_float(CFG[setting].TEXT, CFG[setting].VALUE, CFG[setting].MIN, CFG[setting].MAX, '%.2f');
 	if changed then
-		CFG[setting] = value;
+		CFG[setting].VALUE = value;
 	end
 end
 
 function showSliderForIntSetting(setting)
-	local changed, value = imgui.slider_int(TXT[setting], CFG[setting], MIN[setting], MAX[setting], '%d');
+	local changed, value = imgui.slider_int(CFG[setting].TEXT, CFG[setting].VALUE, CFG[setting].MIN, CFG[setting].MAX, '%d');
 	if changed then
-		CFG[setting] = value;
+		CFG[setting].VALUE = value;
 	end
 end
 
@@ -1491,20 +1388,24 @@ function DrawWindowSettings()
 	if changed then
 		DPS_ENABLED = wantsIt;
 	end
-	--[[
-	imgui.same_line();
-	if imgui.button('Save settings') then
 
+	imgui.same_line();
+	if imgui.button('Save changes') then
+		saveCurrentConfig();
 	end
 	imgui.same_line();
-	if imgui.button('Load settings') then
+	if imgui.button('Load saved config') then
+		loadSavedConfigIfExist();
 	end;
-	]]
+	imgui.same_line();
+	if imgui.button('Reset to default') then
+		loadDefaultConfig();
+	end;
 
 	-- Show test data
-	changed, wantsIt = imgui.checkbox('Show test data while menu is open', CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN']);
+	changed, wantsIt = imgui.checkbox(CFG.SHOW_TEST_DATA_WHILE_MENU_IS_OPEN.TEXT, CFG.SHOW_TEST_DATA_WHILE_MENU_IS_OPEN.VALUE);
 	if changed then
-		CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] = wantsIt;
+		CFG.SHOW_TEST_DATA_WHILE_MENU_IS_OPEN.VALUE = wantsIt;
 		if wantsIt then
 			initializeTestData();
 		else
@@ -1727,11 +1628,36 @@ function dpsFrame()
 end
 
 function dpsUpdateOccasionally(realSeconds)
-	if realSeconds > LAST_UPDATE_TIME + CFG['UPDATE_RATE'] then
+	if realSeconds > LAST_UPDATE_TIME + CFG.UPDATE_RATE.VALUE then
 		dpsUpdate();
 		LAST_UPDATE_TIME = realSeconds;
 	end
 end
+
+-- last minute initialization
+
+-- load default settings
+if not loadDefaultConfig() then
+	return; -- halt script
+end
+
+-- load any saved settings
+loadSavedConfigIfExist();
+
+-- load presets into cache
+loadPresets();
+
+-- perform sanity checks
+if not sanityCheck() then
+	return; -- halt script
+end
+
+-- all attacker types in the report by default
+for _,type in pairs(ATTACKER_TYPES) do
+	AddAttackerTypeToReport(type);
+end
+
+-- finally, hook into reframework
 
 re.on_frame(function()
 	if DRAW_WINDOW_SETTINGS then
@@ -1754,7 +1680,7 @@ re.on_draw_ui(function()
 	if imgui.button('settings') and not DRAW_WINDOW_SETTINGS then
 		DRAW_WINDOW_SETTINGS = true;
 
-		if CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] then
+		if CFG.SHOW_TEST_DATA_WHILE_MENU_IS_OPEN then
 			initializeTestData();
 		end
 	end
@@ -1767,9 +1693,5 @@ re.on_draw_ui(function()
 
 	imgui.end_group();
 end)
-
-for _,type in pairs(ATTACKER_TYPES) do
-	AddAttackerTypeToReport(type);
-end
 
 log_info('init complete');

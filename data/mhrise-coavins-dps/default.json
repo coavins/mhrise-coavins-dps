@@ -1,0 +1,192 @@
+{
+	"CFG": {
+		"UPDATE_RATE": {
+			"VALUE": 0.5,
+			"TEXT": "Update frequency (in seconds)",
+			"MIN": 0.01,
+			"MAX": 10.00
+		},
+		"SHOW_TEST_DATA_WHILE_MENU_IS_OPEN": {
+			"VALUE": true,
+			"TEXT": "Show test data while menu is open"
+		},
+		"OTOMO_DMG_IS_PLAYER_DMG": {
+			"VALUE": true,
+			"TEXT": "Partner damage is counted as if dealt by the player"
+		},
+		"DRAW_BAR_RELATIVE_TO_PARTY": {
+			"VALUE": false,
+			"TEXT": "Damage bars will represent share of overall party DPS"
+		},
+		"DRAW_TITLE_TEXT": {
+			"VALUE": true,
+			"TEXT": "Show title text"
+		},
+		"DRAW_TITLE_BACKGROUND": {
+			"VALUE": true,
+			"TEXT": "Show title background"
+		},
+		"DRAW_BAR_BACKGROUNDS": {
+			"VALUE": true,
+			"TEXT": "Show bar background"
+		},
+		"DRAW_BAR_OUTLINES": {
+			"VALUE": false,
+			"TEXT": "Show bar outlines"
+		},
+		"DRAW_BAR_COLORBLOCK": {
+			"VALUE": true,
+			"TEXT": "Show color block"
+		},
+		"DRAW_BAR_TEXT_PADDING": {
+			"VALUE": 3,
+			"TEXT": "Bar text padding",
+			"MIN": 0,
+			"MAX": 200
+		},
+		"DRAW_BAR_TEXT_PADDING_FIXED": {
+			"VALUE": false,
+			"TEXT": "Bar text at fixed positions"
+		},
+		"DRAW_BAR_USE_PLAYER_COLORS": {
+			"VALUE": true,
+			"TEXT": "Show player bars with their assigned color"
+		},
+		"DRAW_BAR_USE_UNIQUE_COLORS": {
+			"VALUE": true,
+			"TEXT": "Show each type of damage in a different color"
+		},
+		"DRAW_BAR_TEXT_NAME": {
+			"VALUE": true,
+			"TEXT": "Show names"
+		},
+		"DRAW_BAR_TEXT_YOU": {
+			"VALUE": false,
+			"TEXT": "Show \"YOU\" on your row"
+		},
+		"DRAW_BAR_TEXT_NAME_USE_REAL_NAMES": {
+			"VALUE": true,
+			"TEXT": "Reveal player names"
+		},
+		"DRAW_BAR_TEXT_TOTAL_DAMAGE": {
+			"VALUE": false,
+			"TEXT": "Show total damage done"
+		},
+		"DRAW_BAR_TEXT_PERCENT_OF_PARTY": {
+			"VALUE": true,
+			"TEXT": "Show percent of party damage"
+		},
+		"DRAW_BAR_TEXT_PERCENT_OF_BEST": {
+			"VALUE": false,
+			"TEXT": "Show percent of leader's damage"
+		},
+		"DRAW_BAR_TEXT_HIT_COUNT": {
+			"VALUE": true,
+			"TEXT": "Show number of hits"
+		},
+		"DRAW_BAR_TEXT_BIGGEST_HIT": {
+			"VALUE": true,
+			"TEXT": "Show damage dealt by biggest hit"
+		},
+		"USE_MINIMAL_BARS": {
+			"VALUE": false,
+			"TEXT": "Use a minimalist style for the damage bars"
+		},
+		"TABLE_GROWS_UPWARD": {
+			"VALUE": false,
+			"TEXT": "Table grows upward instead of down"
+		},
+		"TABLE_SORT_ASC": {
+			"VALUE": false,
+			"TEXT": "Sort ascending"
+		},
+		"TABLE_SORT_IN_ORDER": {
+			"VALUE": false,
+			"TEXT": "Sort by player"
+		},
+		"TABLE_X": {
+			"VALUE": 0.65,
+			"TEXT": "Horizontal position",
+			"MIN": 0.0,
+			"MAX": 1.0
+		},
+		"TABLE_Y": {
+			"VALUE": 0.0,
+			"TEXT": "Vertical position",
+			"MIN": 0.0,
+			"MAX": 1.0
+		},
+		"TABLE_SCALE": {
+			"VALUE": 1.0,
+			"TEXT": "Scaling factor",
+			"MIN": 0.0,
+			"MAX": 10.0
+		},
+		"TABLE_WIDTH": {
+			"VALUE": 350,
+			"TEXT": "Table width",
+			"MIN": 0,
+			"MAX": 3000
+		},
+		"TABLE_ROWH": {
+			"VALUE": 18,
+			"TEXT": "Row height",
+			"MIN": 0,
+			"MAX": 100
+		},
+		"TABLE_ROW_PADDING": {
+			"VALUE": 0,
+			"TEXT": "Row padding",
+			"MIN": 0,
+			"MAX": 150
+		},
+		"TABLE_ROW_TEXT_OFFSET_X": {
+			"VALUE": 0,
+			"TEXT": "Text offset X",
+			"MIN": -100,
+			"MAX": 100
+		},
+		"TABLE_ROW_TEXT_OFFSET_Y": {
+			"VALUE": 0,
+			"TEXT": "Text offset Y",
+			"MIN": -100,
+			"MAX": 100
+		}
+	},
+	"COLORS": {
+		"WHITE": 4294967295,
+		"GRAY": 4289703855,
+		"BLACK": 4278190080,
+		"RED": 2939302655,
+		"BLUE": 2952737330,
+		"YELLOW": 2939355135,
+		"GREEN": 2939354930,
+		"PLAYER": [
+			2939302655,
+			2952737330,
+			2939355135,
+			2939354930
+		],
+		"TITLE_BG": 2281701376,
+		"TITLE_FG": 4292532954,
+		"BAR_BG": 1140850688,
+		"BAR_OUTLINE": 1140850688,
+		"BAR_DMG_PHYSICAL": 2942395992,
+		"BAR_DMG_PHYSICAL_UNIQUE": [
+			2938644684,
+			2949392424,
+			2938686668,
+			2938686504
+		],
+		"BAR_DMG_ELEMENT": 2945554820,
+		"BAR_DMG_ELEMENT_UNIQUE": [
+			2937855116,
+			2945195036,
+			2937883788,
+			2937883676
+		],
+		"BAR_DMG_AILMENT": 2940090275,
+		"BAR_DMG_OTOMO": 2952578304,
+		"BAR_DMG_OTHER": 2942395992
+	}
+}

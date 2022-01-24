@@ -4,6 +4,7 @@
 		"imgui",
 		"draw",
 		"log",
-		"re"
+		"re",
+		"json"
 	]
 }
