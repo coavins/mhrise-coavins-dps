@@ -839,7 +839,7 @@ function dpsDraw()
 	-- draw the first report
 	drawReport(1);
 
-	drawDebugStats();
+	--drawDebugStats();
 end
 
 function drawReport(index)
