@@ -301,6 +301,9 @@ local SCENE_MANAGER      = sdk.get_native_singleton("via.SceneManager");
 local SCENE_MANAGER_TYPE = sdk.find_type_definition("via.SceneManager");
 local SCENE_MANAGER_VIEW = sdk.call_native_func(SCENE_MANAGER, SCENE_MANAGER_TYPE, "get_MainView");
 
+local QUEST_MANAGER_TYPE = sdk.find_type_definition("snow.QuestManager");
+local QUEST_MANAGER_METHOD_ONCHANGEDGAMESTATUS = QUEST_MANAGER_TYPE:get_method("onChangedGameStatus");
+--local QUEST_MANAGER_METHOD_ADDKPIATTACKDAMAGE = QUEST_MANAGER_TYPE:get_method("addKpiAttackDamage");
 local SNOW_ENEMY_ENEMYCHARACTERBASE = sdk.find_type_definition("snow.enemy.EnemyCharacterBase");
 local SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE = SNOW_ENEMY_ENEMYCHARACTERBASE:get_method("afterCalcDamage_DamageSide");
 
@@ -430,6 +433,20 @@ function updatePlayerNames()
 end
 
 -- callback functions
+function read_onChangedGameStatus(args)
+	local status = sdk.to_int64(args[3]);
+	if status == 1 then
+		-- entered the village
+		cleanUpData();
+	end
+end
+
+-- hook into function to know when we return from a quest
+sdk.hook(QUEST_MANAGER_METHOD_ONCHANGEDGAMESTATUS,
+function(args)
+	read_onChangedGameStatus(args);
+end, function(retval) return retval end);
+
 local ATTACKER_TYPES = {};
 ATTACKER_TYPES[0] = 'weapon';
 ATTACKER_TYPES[1] = 'barrelbombl';
@@ -1447,6 +1464,14 @@ end
 -- REFramework
 --
 
+function cleanUpData()
+	LAST_UPDATE_TIME = 0;
+	LARGE_MONSTERS  = {};
+	DAMAGE_REPORTS  = {};
+	REPORT_MONSTERS = {};
+	log_info('cleared captured data');
+end
+
 -- runs every frame
 function dpsFrame()
 	-- make sure managed resources are initialized
@@ -1475,8 +1500,7 @@ function dpsFrame()
 	else
 		-- clean up some things in between quests
 		if LAST_UPDATE_TIME ~= 0 then
-			LAST_UPDATE_TIME = 0;
-			LARGE_MONSTERS = {};
+			cleanUpData();
 		end
 	end
 
