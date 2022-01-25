@@ -768,8 +768,11 @@ function mergeDamageSourcesIntoReport(report, damageSources)
 		::skip_to_next::
 	end
 
-	-- now loop all report items and calculate report totals
+	-- now loop all report items and calculate totals
 	for _,item in ipairs(report.items) do
+		-- calculate the item's own total damage
+		calculateTotalsForReportItem(item)
+
 		-- remember which combatant has the most damage
 		if item.total > bestDamage then
 			bestDamage = item.total;
@@ -837,6 +840,33 @@ function initializeReportItem()
 	return item;
 end
 
+-- saves the total into the item itself
+function calculateTotalsForReportItem(item)
+	-- initialize totals to zero
+	item.total = 0.0;
+	item.totalPhysical = 0.0;
+	item.totalElemental = 0.0;
+	item.totalCondition = 0.0;
+
+	-- get totals from counters
+	for type,counter in pairs(item.counters) do
+		if REPORT_ATTACKER_TYPES[type] then
+			if type == 'otomo' then
+				-- count the otomo damage as a special kind of damage inflicted by the player
+				item.totalOtomo = item.totalOtomo + getTotalDamageForDamageCounter(counter);
+
+				item.total = item.total + getTotalDamageForDamageCounter(counter);
+			else
+				item.totalPhysical  = item.totalPhysical  + counter.physical;
+				item.totalElemental = item.totalElemental + counter.elemental;
+				item.totalCondition = item.totalCondition + counter.condition;
+
+				item.total = item.total + getTotalDamageForDamageCounter(counter);
+			end
+		end
+	end
+end
+
 function mergeDamageSourceIntoReportItem(item, source)
 	if not item.id or item.id == source.id then
 		if not item.id then
@@ -850,24 +880,6 @@ function mergeDamageSourceIntoReportItem(item, source)
 		end
 
 		item.counters = mergeReportItemCounters(item.counters, source.damageCounters);
-
-		-- get totals from counters
-		for type,counter in pairs(item.counters) do
-			if REPORT_ATTACKER_TYPES[type] then
-				if type == 'otomo' then
-					-- count the otomo damage as a special kind of damage inflicted by the player
-					item.totalOtomo = item.totalOtomo + getTotalDamageForDamageCounter(counter);
-
-					item.total = item.total + getTotalDamageForDamageCounter(counter);
-				else
-					item.totalPhysical  = item.totalPhysical  + counter.physical;
-					item.totalElemental = item.totalElemental + counter.elemental;
-					item.totalCondition = item.totalCondition + counter.condition;
-
-					item.total = item.total + getTotalDamageForDamageCounter(counter);
-				end
-			end
-		end
 
 		item.numHit = item.numHit + source.numHit;
 		item.maxHit = math.max(item.maxHit, source.maxHit);
@@ -1173,7 +1185,7 @@ function drawDebugStats()
 		                   else is_combat_str = "";
 		end
 
-		local hpStr = string.format('%.0f / %.0f (%.1f%%)', boss.hp.current, boss.hp.max, boss.hp.percent * 100)
+		local hpStr = string.format('%.0f / %.0f (%.1f%%) -%.0f', boss.hp.current, boss.hp.max, boss.hp.percent * 100, boss.hp.missing);
 
 		debug_line(string.format("%s %s %s", boss.name, hpStr, is_combat_str));
 
