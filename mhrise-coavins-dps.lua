@@ -285,7 +285,8 @@ local DAMAGE_REPORTS = {};
 
 local REPORT_MONSTERS = {}; -- a subset of LARGE_MONSTERS or TEST_MONSTERS that will appear in reports
 local REPORT_ATTACKER_TYPES = {}; -- a subset of ATTACKER_TYPES that will appear in reports
-local REPORT_NONPLAYERS = false; -- show nonplayers in the report
+local REPORT_OTOMO = false; -- show otomo in the report
+local REPORT_OTHER = false; -- show monsters, etc in the report
 
 local MY_PLAYER_ID = nil;
 local PLAYER_NAMES = {};
@@ -403,6 +404,14 @@ end
 
 function getScreenYFromY(y)
 	return SCREEN_H * y;
+end
+
+function attackerIdIsPlayer(attackerId)
+	if attackerId >= 0 and attackerId <= 3 then
+		return true;
+	else
+		return false;
+	end
 end
 
 function attackerIdIsOtomo(attackerId)
@@ -828,19 +837,20 @@ function mergeDamageSourcesIntoReport(report, damageSources)
 			end
 		end
 
-		if not REPORT_NONPLAYERS and (effSourceId < 0 or effSourceId > 3) then
-			goto skip_to_next
+		-- if we aren't excluding this type of source
+		if attackerIdIsPlayer(effSourceId)
+		or (attackerIdIsOtomo(effSourceId) and REPORT_OTOMO)
+		or (not attackerIdIsOtomo(effSourceId) and REPORT_OTHER)
+		then
+			-- get report item, creating it if necessary
+			local item = getReportItem(report, effSourceId);
+			if not item then
+				item = initializeReportItem(effSourceId);
+				table.insert(report.items, item);
+			end
+
+			mergeDamageSourceIntoReportItem(item, source);
 		end
-
-		local item = getItemWithIdFromReport(report, effSourceId);
-		if not item then
-			item = initializeReportItem(effSourceId);
-			table.insert(report.items, item);
-		end
-
-		mergeDamageSourceIntoReportItem(item, source);
-
-		::skip_to_next::
 	end
 
 	-- now loop all report items and calculate totals
@@ -880,7 +890,7 @@ function mergeDamageSourcesIntoReport(report, damageSources)
 	end
 end
 
-function getItemWithIdFromReport(report, id)
+function getReportItem(report, id)
 	for _,item in ipairs(report.items) do
 		if item.id == id then
 			return item;
@@ -1569,8 +1579,20 @@ function DrawWindowReport()
 		DRAW_WINDOW_REPORT = false;
 	end
 
+	changed, wantsIt = imgui.checkbox('Include buddies', REPORT_OTOMO);
+	if changed then
+		REPORT_OTOMO = wantsIt;
+	end
+
+	changed, wantsIt = imgui.checkbox('Include monsters, etc', REPORT_OTHER);
+	if changed then
+		REPORT_OTHER = wantsIt;
+	end
+
+	imgui.new_line();
+
 	-- draw buttons for each boss monster in the cache
-	imgui.text('Filter by large monsters');
+	imgui.text('Monsters');
 
 	local monsterCollection = TEST_MONSTERS or LARGE_MONSTERS;
 	for enemy,boss in pairs(monsterCollection) do
@@ -1587,15 +1609,8 @@ function DrawWindowReport()
 
 	imgui.new_line();
 
-	changed, wantsIt = imgui.checkbox('Show nonplayer combatants', REPORT_NONPLAYERS);
-	if changed then
-		REPORT_NONPLAYERS = wantsIt;
-	end
-
-	imgui.new_line();
-
 	-- draw buttons for damage types
-	imgui.text('Filter by types of damage');
+	imgui.text('Attacker type');
 
 	for _,type in pairs(ATTACKER_TYPES) do
 		local typeIsInReport = REPORT_ATTACKER_TYPES[type];
