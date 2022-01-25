@@ -847,6 +847,7 @@ function calculateTotalsForReportItem(item)
 	item.totalPhysical = 0.0;
 	item.totalElemental = 0.0;
 	item.totalCondition = 0.0;
+	item.totalOtomo = 0.0;
 
 	-- get totals from counters
 	for type,counter in pairs(item.counters) do
