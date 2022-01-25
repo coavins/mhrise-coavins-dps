@@ -277,6 +277,7 @@ local PRESET_OPTIONS_SELECTED = 1;
 local SCREEN_W = 0;
 local SCREEN_H = 0;
 local DEBUG_Y = 0;
+local FAKE_OTOMO_RANGE_START = 9990; -- it is important that attacker ids near this are never used by the game
 
 local LARGE_MONSTERS = {};
 local TEST_MONSTERS = nil; -- like LARGE_MONSTERS, but holds dummy/test data
@@ -489,18 +490,21 @@ function read_AfterCalcInfo_DamageSide(args)
 		return;
 	end
 
+	local sources = boss.damageSources;
+
 	local info = sdk.to_managed_object(args[3]); -- snow.hit.EnemyCalcDamageInfo.AfterCalcInfo_DamageSide
 	local attackerId     = info:call("get_AttackerID");
 	local attackerTypeId = info:call("get_DamageAttackerType");
 	local attackerType   = ATTACKER_TYPES[attackerTypeId];
 
-	local isPlayer  = (attackerTypeId == 0);
 	local isOtomo   = (attackerTypeId == 19);
-	local isMonster = (attackerTypeId == 23);
 
 	--log_info(string.format('damage instance from attacker %d of type %s', attackerId, attackerType));
-
-	local sources = boss.damageSources;
+	if isOtomo then
+		-- separate otomo from their master
+		attackerId = FAKE_OTOMO_RANGE_START + attackerId;
+	end
+	
 	-- get the damage source for this attacker
 	if not sources[attackerId] then
 		sources[attackerId] = initializeDamageSource(attackerId);
@@ -753,11 +757,28 @@ function mergeDamageSourcesIntoReport(report, damageSources)
 
 	-- merge damage sources
 	for id,source in pairs(damageSources) do
-		if not REPORT_NONPLAYERS and (source.id < 0 or source.id > 3) then
+		local effSourceId = source.id;
+
+		-- merge otomo with master
+		if CFG['OTOMO_DMG_IS_PLAYER_DMG'] then
+			local otomoPlayerId = effSourceId - FAKE_OTOMO_RANGE_START;
+			-- handle primary otomo
+			if otomoPlayerId >= 0 and otomoPlayerId <= 3 then
+				-- pretend this damage source belongs to this player
+				effSourceId = otomoPlayerId;
+			end
+			-- handle secondary otomo
+			if otomoPlayerId == 4 then
+				-- pretend to be player 1
+				effSourceId = 0;
+			end
+		end
+
+		if not REPORT_NONPLAYERS and (effSourceId < 0 or effSourceId > 3) then
 			goto skip_to_next
 		end
 
-		local item = getItemWithIdFromReport(report, id);
+		local item = getItemWithIdFromReport(report, effSourceId);
 		if not item then
 			item = initializeReportItem();
 			table.insert(report.items, item);
@@ -853,10 +874,12 @@ function calculateTotalsForReportItem(item)
 	for type,counter in pairs(item.counters) do
 		if REPORT_ATTACKER_TYPES[type] then
 			if type == 'otomo' then
-				-- count the otomo damage as a special kind of damage inflicted by the player
-				item.totalOtomo = item.totalOtomo + getTotalDamageForDamageCounter(counter);
+				local counterTotal = getTotalDamageForDamageCounter(counter);
 
-				item.total = item.total + getTotalDamageForDamageCounter(counter);
+				-- sum together otomo's different types of damage and store it as its own type of damage instead
+				item.totalOtomo = item.totalOtomo + counterTotal;
+
+				item.total = item.total + counterTotal;
 			else
 				item.totalPhysical  = item.totalPhysical  + counter.physical;
 				item.totalElemental = item.totalElemental + counter.elemental;
@@ -869,24 +892,31 @@ function calculateTotalsForReportItem(item)
 end
 
 function mergeDamageSourceIntoReportItem(item, source)
-	if not item.id or item.id == source.id then
-		if not item.id then
-			item.id = source.id;
+	-- don't allow merging source and item with different IDs
+	if item.id and item.id ~= source.id then
+		-- make an exception for otomo and player to account for the trick we pulled in mergeDamageSourcesIntoReport()
+		if  item.id ~= source.id - FAKE_OTOMO_RANGE_START     -- it's OK to merge primary otomo with its master
+		and item.id ~= source.id - FAKE_OTOMO_RANGE_START - 4 -- it's OK to merge secondary otomo with its master
+		then
+			log_error('tried to merge a damage source into a report item with a different id');
+			return;
+		end
+	end
 
-			if item.id >= 0 and item.id <= 3 then
-				item.playerNumber = item.id + 1;
-			end
+	if not item.id then
+		item.id = source.id;
 
-			item.name = PLAYER_NAMES[item.playerNumber];
+		if item.id >= 0 and item.id <= 3 then
+			item.playerNumber = item.id + 1;
 		end
 
-		item.counters = mergeReportItemCounters(item.counters, source.damageCounters);
-
-		item.numHit = item.numHit + source.numHit;
-		item.maxHit = math.max(item.maxHit, source.maxHit);
-	else
-		log_error('tried to merge a damage source into a report item with a different id');
+		item.name = PLAYER_NAMES[item.playerNumber];
 	end
+
+	item.counters = mergeReportItemCounters(item.counters, source.damageCounters);
+
+	item.numHit = item.numHit + source.numHit;
+	item.maxHit = math.max(item.maxHit, source.maxHit);
 end
 
 function mergeReportItemCounters(a, b)
