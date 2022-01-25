@@ -718,6 +718,11 @@ function mergeDamageSourcesIntoReport(report, damageSources)
 
 		mergeDamageSourceIntoReportItem(item, source);
 
+		::skip_to_next::
+	end
+
+	-- now loop all report items and calculate report totals
+	for _,item in ipairs(report.items) do
 		-- remember which combatant has the most damage
 		if item.total > bestDamage then
 			bestDamage = item.total;
@@ -725,17 +730,19 @@ function mergeDamageSourcesIntoReport(report, damageSources)
 
 		-- accumulate total overall damage
 		totalDamage = totalDamage + item.total;
-
-		::skip_to_next::
 	end
 
 	report.totalDamage = totalDamage;
 	report.topDamage = bestDamage;
 
-	-- finish writing data
+	-- loop again to calculate percents using the totals we got before
 	for _,item in ipairs(report.items) do
-		item.percentOfTotal = tonumber(string.format("%.3f", item.total / report.totalDamage));
-		item.percentOfBest  = tonumber(string.format("%.3f", item.total / report.topDamage));
+		if report.totalDamage ~= 0 then
+			item.percentOfTotal = tonumber(string.format("%.3f", item.total / report.totalDamage));
+		end
+		if report.topDamage ~= 0 then
+			item.percentOfBest  = tonumber(string.format("%.3f", item.total / report.topDamage));
+		end
 	end
 
 	-- sort report items
