@@ -632,7 +632,6 @@ function initializeDamageSourceWithDummyData(attackerId)
 	s.damageCounters['weapon'] = initializeDamageCounterWithDummyData();
 	s.damageCounters['otomo'] = initializeDamageCounter();
 	s.damageCounters['otomo'].physical = math.random(0,400);
-	s.damageCounters['otomo'].total = s.damageCounters['otomo'].physical;
 
 	s.numHit = math.random(1,1000);
 	s.maxHit = math.random(1,3000);
