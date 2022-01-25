@@ -289,6 +289,7 @@ local REPORT_NONPLAYERS = false; -- show nonplayers in the report
 
 local MY_PLAYER_ID = nil;
 local PLAYER_NAMES = {};
+local OTOMO_NAMES = {};
 
 -- initialized later when they become available
 local PLAYER_MANAGER  = nil;
@@ -297,6 +298,7 @@ local QUEST_MANAGER   = nil;
 local MESSAGE_MANAGER = nil;
 local LOBBY_MANAGER   = nil;
 local AREA_MANAGER    = nil;
+local OTOMO_MANAGER   = nil;
 
 local SCENE_MANAGER      = sdk.get_native_singleton("via.SceneManager");
 local SCENE_MANAGER_TYPE = sdk.find_type_definition("via.SceneManager");
@@ -403,32 +405,79 @@ function getScreenYFromY(y)
 	return SCREEN_H * y;
 end
 
-function updatePlayerNames()
-	local hunterInfo = LOBBY_MANAGER:get_field("_questHunterInfo");
-	if not hunterInfo then
-		return nil;
+function attackerIdIsOtomo(attackerId)
+	if attackerId >= FAKE_OTOMO_RANGE_START
+	and attackerId <= FAKE_OTOMO_RANGE_START + 4
+	then
+		return true;
+	else
+		return false;
 	end
+end
 
-	-- get my hunter info first, in case i'm playing single player
+function getFakeAttackerIdForOtomo(otomoId)
+	return FAKE_OTOMO_RANGE_START + otomoId;
+end
+
+function updatePlayerNames()
+	-- get offline player name
 	local myHunter = LOBBY_MANAGER:get_field("_myHunterInfo");
 	if myHunter then
 		PLAYER_NAMES[MY_PLAYER_ID + 1] = myHunter:get_field("_name");
 	end
 
+	-- get online player names
+	local hunterInfo = LOBBY_MANAGER:get_field("_questHunterInfo");
+	if hunterInfo then
+		local hunterCount = hunterInfo:call("get_Count");
+		if hunterCount then
+			for i = 0, hunterCount-1 do
+				local hunter = hunterInfo:call("get_Item", i);
+				if hunter then
+					local playerId = hunter:get_field("_memberIndex");
+					local name = hunter:get_field("_name");
 
-	local hunterCount = hunterInfo:call("get_Count");
-	if not hunterCount then
-		return nil;
+					if playerId and name then
+						PLAYER_NAMES[playerId + 1] = name;
+					end
+				end
+			end
+		end
 	end
 
-	for i = 0, hunterCount-1 do
-		local hunter = hunterInfo:call("get_Item", i);
-		if hunter then
-			local playerId = hunter:get_field("_memberIndex");
-			local name = hunter:get_field("_name");
+	-- get offline otomo names
+	local firstOtomo = OTOMO_MANAGER:call("getMasterOtomoInfo", 0);
+	if firstOtomo then
+		local name = firstOtomo:get_field("Name");
+		local id = getFakeAttackerIdForOtomo(0);
+		--local level = firstOtomo:get_field("Level");
+		OTOMO_NAMES[id] = name;
+	end
 
-			if playerId and name then
-				PLAYER_NAMES[playerId + 1] = name;
+	local secondOtomo = OTOMO_MANAGER:call("getMasterOtomoInfo", 1);
+	if secondOtomo then
+		local name = secondOtomo:get_field("Name");
+		local id = getFakeAttackerIdForOtomo(4);
+		--local level = firstOtomo:get_field("Level");
+		OTOMO_NAMES[id] = name;
+	end
+
+	-- get online otomo names
+	local otomoInfo = LOBBY_MANAGER:get_field("_questOtomoInfo");
+	if otomoInfo then
+		local otomoCount = otomoInfo:call("get_Count");
+		if otomoCount then
+			for i=0, otomoCount-1 do
+				local otomo = otomoInfo:call("get_Item", i);
+				if otomo then
+					local otomoId = otomo:get_field("_memberIndex");
+					otomoId = getFakeAttackerIdForOtomo(otomoId);
+					local name = otomo:get_field("_Name");
+
+					if otomoId and name then
+						OTOMO_NAMES[otomoId] = name;
+					end
+				end
 			end
 		end
 	end
@@ -502,9 +551,9 @@ function read_AfterCalcInfo_DamageSide(args)
 	--log_info(string.format('damage instance from attacker %d of type %s', attackerId, attackerType));
 	if isOtomo then
 		-- separate otomo from their master
-		attackerId = FAKE_OTOMO_RANGE_START + attackerId;
+		attackerId = getFakeAttackerIdForOtomo(attackerId);
 	end
-	
+
 	-- get the damage source for this attacker
 	if not sources[attackerId] then
 		sources[attackerId] = initializeDamageSource(attackerId);
@@ -895,9 +944,7 @@ function mergeDamageSourceIntoReportItem(item, source)
 	-- don't allow merging source and item with different IDs
 	if item.id and item.id ~= source.id then
 		-- make an exception for otomo and player to account for the trick we pulled in mergeDamageSourcesIntoReport()
-		if  item.id ~= source.id - FAKE_OTOMO_RANGE_START     -- it's OK to merge primary otomo with its master
-		and item.id ~= source.id - FAKE_OTOMO_RANGE_START - 4 -- it's OK to merge secondary otomo with its master
-		then
+		if not attackerIdIsOtomo(item.id) then
 			log_error('tried to merge a damage source into a report item with a different id');
 			return;
 		end
@@ -908,9 +955,10 @@ function mergeDamageSourceIntoReportItem(item, source)
 
 		if item.id >= 0 and item.id <= 3 then
 			item.playerNumber = item.id + 1;
+			item.name = PLAYER_NAMES[item.playerNumber];
+		elseif attackerIdIsOtomo(item.id) then
+			item.name = OTOMO_NAMES[item.id];
 		end
-
-		item.name = PLAYER_NAMES[item.playerNumber];
 	end
 
 	item.counters = mergeReportItemCounters(item.counters, source.damageCounters);
@@ -1072,7 +1120,6 @@ function drawReport(index)
 				-- it's not a player, just draw the name
 				barText = barText .. string.format('%s', item.name or '') .. spacer;
 			end
-			-- TODO: otomo, monster
 		elseif CFG['DRAW_BAR_TEXT_YOU'] then
 			if item.id == MY_PLAYER_ID then
 				barText = barText .. 'YOU' .. spacer;
@@ -1326,6 +1373,13 @@ function hasManagedResources()
 
 	if not AREA_MANAGER then
 		AREA_MANAGER = sdk.get_managed_singleton("snow.VillageAreaManager");
+	end
+
+	if not OTOMO_MANAGER then
+		OTOMO_MANAGER = sdk.get_managed_singleton("snow.otomo.OtomoManager");
+		if not OTOMO_MANAGER then
+			return false;
+		end
 	end
 
 	return true;
