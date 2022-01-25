@@ -306,6 +306,7 @@ local QUEST_MANAGER_METHOD_ONCHANGEDGAMESTATUS = QUEST_MANAGER_TYPE:get_method("
 --local QUEST_MANAGER_METHOD_ADDKPIATTACKDAMAGE = QUEST_MANAGER_TYPE:get_method("addKpiAttackDamage");
 local SNOW_ENEMY_ENEMYCHARACTERBASE = sdk.find_type_definition("snow.enemy.EnemyCharacterBase");
 local SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE = SNOW_ENEMY_ENEMYCHARACTERBASE:get_method("afterCalcDamage_DamageSide");
+local SNOW_ENEMY_ENEMYCHARACTERBASE_UPDATE = SNOW_ENEMY_ENEMYCHARACTERBASE:get_method("update");
 
 -- helper functions
 
@@ -543,6 +544,47 @@ function(retval)
 	return retval
 end);
 
+function updateBossEnemy(args)
+	local enemy = sdk.to_managed_object(args[2]);
+
+	-- get this boss from the table
+	local boss = LARGE_MONSTERS[enemy];
+	if not boss then
+		return;
+	end
+
+	-- update boss
+
+	-- get is in combat
+	boss.isInCombat = enemy:call("get_IsCombatMode");
+
+	-- get health
+	local physicalParam = enemy:get_field("<PhysicalParam>k__BackingField");
+	if physicalParam then
+		local vitalParam = physicalParam:call("getVital", 0, 0);
+		if vitalParam then
+			boss.hp.current = vitalParam:call("get_Current");
+			boss.hp.max = vitalParam:call("get_Max");
+			boss.hp.missing = boss.hp.max - boss.hp.current;
+			if boss.hp.max ~= 0 then
+				boss.hp.percent = boss.hp.current / boss.hp.max;
+			else
+				boss.hp.percent = 0;
+			end
+		end
+	end
+
+end
+
+-- hook into update function to keep track of some things on the monster
+sdk.hook(SNOW_ENEMY_ENEMYCHARACTERBASE_UPDATE,
+function(args)
+	updateBossEnemy(args);
+end,
+function(retval)
+return retval
+end);
+
 --
 -- Damage sources
 --
@@ -561,6 +603,12 @@ function initializeBossMonster(bossEnemy)
 	boss.name = MESSAGE_MANAGER:call("getEnemyNameMessage", enemyType);
 
 	boss.damageSources = {};
+
+	boss.hp = {};
+	boss.hp.current = 0.0;
+	boss.hp.max     = 0.0;
+	boss.hp.missing = 0.0;
+	boss.hp.percent = 0.0;
 
 	-- store it in the table
 	LARGE_MONSTERS[bossEnemy] = boss;
@@ -1125,7 +1173,9 @@ function drawDebugStats()
 		                   else is_combat_str = "";
 		end
 
-		debug_line(string.format("%s%s", boss.name, is_combat_str));
+		local hpStr = string.format('%.0f / %.0f (%.1f%%)', boss.hp.current, boss.hp.max, boss.hp.percent * 100)
+
+		debug_line(string.format("%s %s %s", boss.name, hpStr, is_combat_str));
 
 	end
 
@@ -1134,11 +1184,13 @@ function drawDebugStats()
 
 	debug_line('');
 	local report = DAMAGE_REPORTS[1];
-	for _,item in ipairs(report.items) do
-		debug_line(item.name or 'no name');
-		for type,counter in pairs(item.counters) do
-			if counter.total > 0 then
-				debug_line(string.format('%s\t\t%f',type, counter.total));
+	if report then
+		for _,item in ipairs(report.items) do
+			debug_line(item.name or 'no name');
+			for type,counter in pairs(item.counters) do
+				if counter.total > 0 then
+					debug_line(string.format('%s\t\t%f',type, counter.total));
+				end
 			end
 		end
 	end
@@ -1178,7 +1230,7 @@ function dpsUpdate()
 		updatePlayerNames();
 	end
 
-	-- update bosses
+	-- ensure bosses are initialized
 	local bossCount = ENEMY_MANAGER:call("getBossEnemyCount");
 	for i = 0, bossCount-1 do
 		local bossEnemy = ENEMY_MANAGER:call("getBossEnemy", i);
@@ -1187,12 +1239,6 @@ function dpsUpdate()
 			-- initialize data for this boss
 			initializeBossMonster(bossEnemy);
 		end
-
-		-- get this boss from the table
-		local boss = LARGE_MONSTERS[bossEnemy];
-
-		-- update boss
-		boss.isInCombat = bossEnemy:call("get_IsCombatMode");
 	end
 
 	-- generate report for selected bosses
