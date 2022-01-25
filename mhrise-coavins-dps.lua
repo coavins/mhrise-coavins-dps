@@ -415,8 +415,12 @@ function attackerIdIsOtomo(attackerId)
 	end
 end
 
-function getFakeAttackerIdForOtomo(otomoId)
+function getFakeAttackerIdForOtomoId(otomoId)
 	return FAKE_OTOMO_RANGE_START + otomoId;
+end
+
+function getOtomoIdFromFakeAttackerId(fakeAttackerId)
+	return fakeAttackerId - FAKE_OTOMO_RANGE_START;
 end
 
 function updatePlayerNames()
@@ -449,7 +453,7 @@ function updatePlayerNames()
 	local firstOtomo = OTOMO_MANAGER:call("getMasterOtomoInfo", 0);
 	if firstOtomo then
 		local name = firstOtomo:get_field("Name");
-		local id = getFakeAttackerIdForOtomo(0);
+		local id = getFakeAttackerIdForOtomoId(0);
 		--local level = firstOtomo:get_field("Level");
 		OTOMO_NAMES[id] = name;
 	end
@@ -457,7 +461,7 @@ function updatePlayerNames()
 	local secondOtomo = OTOMO_MANAGER:call("getMasterOtomoInfo", 1);
 	if secondOtomo then
 		local name = secondOtomo:get_field("Name");
-		local id = getFakeAttackerIdForOtomo(4);
+		local id = getFakeAttackerIdForOtomoId(4);
 		--local level = firstOtomo:get_field("Level");
 		OTOMO_NAMES[id] = name;
 	end
@@ -471,7 +475,7 @@ function updatePlayerNames()
 				local otomo = otomoInfo:call("get_Item", i);
 				if otomo then
 					local otomoId = otomo:get_field("_memberIndex");
-					otomoId = getFakeAttackerIdForOtomo(otomoId);
+					otomoId = getFakeAttackerIdForOtomoId(otomoId);
 					local name = otomo:get_field("_Name");
 
 					if otomoId and name then
@@ -551,7 +555,7 @@ function read_AfterCalcInfo_DamageSide(args)
 	--log_info(string.format('damage instance from attacker %d of type %s', attackerId, attackerType));
 	if isOtomo then
 		-- separate otomo from their master
-		attackerId = getFakeAttackerIdForOtomo(attackerId);
+		attackerId = getFakeAttackerIdForOtomoId(attackerId);
 	end
 
 	-- get the damage source for this attacker
@@ -809,15 +813,16 @@ function mergeDamageSourcesIntoReport(report, damageSources)
 		local effSourceId = source.id;
 
 		-- merge otomo with master
-		if CFG['OTOMO_DMG_IS_PLAYER_DMG'] then
-			local otomoPlayerId = effSourceId - FAKE_OTOMO_RANGE_START;
+		if CFG['OTOMO_DMG_IS_PLAYER_DMG'] and attackerIdIsOtomo(effSourceId) then
+			local otomoId = getOtomoIdFromFakeAttackerId(effSourceId);
+			-- 
 			-- handle primary otomo
-			if otomoPlayerId >= 0 and otomoPlayerId <= 3 then
+			if otomoId >= 0 and otomoId <= 3 then
 				-- pretend this damage source belongs to this player
-				effSourceId = otomoPlayerId;
+				effSourceId = otomoId;
 			end
 			-- handle secondary otomo
-			if otomoPlayerId == 4 then
+			if otomoId == 4 then
 				-- pretend to be player 1
 				effSourceId = 0;
 			end
@@ -829,7 +834,7 @@ function mergeDamageSourcesIntoReport(report, damageSources)
 
 		local item = getItemWithIdFromReport(report, effSourceId);
 		if not item then
-			item = initializeReportItem();
+			item = initializeReportItem(effSourceId);
 			table.insert(report.items, item);
 		end
 
@@ -885,12 +890,24 @@ function getItemWithIdFromReport(report, id)
 end
 
 -- report item
-function initializeReportItem()
+function initializeReportItem(id)
+	if not id then
+		log_error('initializing report item with no id');
+	end
+
 	local item = {};
 
-	item.id = nil;
+	item.id = id;
 	item.playerNumber = nil;
 	item.name = nil;
+
+	-- initialize player number and name if we can
+	if item.id >= 0 and item.id <= 3 then
+		item.playerNumber = item.id + 1;
+		item.name = PLAYER_NAMES[item.playerNumber];
+	elseif attackerIdIsOtomo(item.id) then
+		item.name = OTOMO_NAMES[item.id];
+	end
 
 	item.counters = {};
 
@@ -942,22 +959,11 @@ end
 
 function mergeDamageSourceIntoReportItem(item, source)
 	-- don't allow merging source and item with different IDs
-	if item.id and item.id ~= source.id then
+	if item.id ~= source.id then
 		-- make an exception for otomo and player to account for the trick we pulled in mergeDamageSourcesIntoReport()
-		if not attackerIdIsOtomo(item.id) then
+		if not attackerIdIsOtomo(source.id) then
 			log_error('tried to merge a damage source into a report item with a different id');
 			return;
-		end
-	end
-
-	if not item.id then
-		item.id = source.id;
-
-		if item.id >= 0 and item.id <= 3 then
-			item.playerNumber = item.id + 1;
-			item.name = PLAYER_NAMES[item.playerNumber];
-		elseif attackerIdIsOtomo(item.id) then
-			item.name = OTOMO_NAMES[item.id];
 		end
 	end
 
