@@ -1170,7 +1170,11 @@ function drawReport(index)
 					barText = barText .. string.format('Player %.0f', item.id + 1) .. spacer;
 				end
 			elseif item.otomoNumber then
-				barText = barText .. string.format('%s', item.name or string.format('Buddy %d', item.otomoNumber)) .. spacer;
+				if CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] and item.name then
+					barText = barText .. string.format('%s', item.name) .. spacer;
+				else
+					barText = barText .. string.format('Buddy %.0f', item.otomoNumber) .. spacer;
+				end
 			else
 				-- just draw the name
 				barText = barText .. string.format('%s', item.name or '') .. spacer;
