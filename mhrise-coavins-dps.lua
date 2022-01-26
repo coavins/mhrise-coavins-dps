@@ -688,9 +688,9 @@ function initializeTestData()
 	TEST_MONSTERS = {};
 	REPORT_MONSTERS = {};
 
-	initializeBossMonsterWithDummyData(111, 'Sample Monster A');
-	initializeBossMonsterWithDummyData(222, 'Sample Monster B');
-	initializeBossMonsterWithDummyData(333, 'Sample Monster C');
+	initializeBossMonsterWithDummyData(111, 'Rathian');
+	initializeBossMonsterWithDummyData(222, 'Tigrex');
+	initializeBossMonsterWithDummyData(333, 'Qurupeco');
 end
 
 function clearTestData()
@@ -1073,28 +1073,39 @@ function drawReport(index)
 		colorBlockWidth = 0;
 	end
 
-	local boss = LARGE_MONSTERS[index];
-	local title = "All large monsters";
-	if boss then
-		title = boss.name;
-	end
-
 	if CFG['TABLE_GROWS_UPWARD'] then
 		origin_y = origin_y - rowHeight;
 	end
 
 	-- title bar
-	local timeMinutes = QUEST_MANAGER:call("getQuestElapsedTimeMin");
-	local timeSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
-	timeSeconds = timeSeconds - (timeMinutes * 60);
-
 	if CFG['DRAW_TITLE_BACKGROUND'] then
 		-- title background
 		draw.filled_rect(origin_x, origin_y, tableWidth, rowHeight, CFG['COLOR_TITLE_BG'])
 	end
 
 	if CFG['DRAW_TITLE_TEXT'] then
-		-- title text
+		-- generate the title text
+		local title = "";
+		local timeMinutes = QUEST_MANAGER:call("getQuestElapsedTimeMin");
+		local timeSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
+		timeSeconds = timeSeconds - (timeMinutes * 60);
+
+		-- use a fake timer in test mode
+		if TEST_MONSTERS then
+			timeMinutes = 5;
+			timeSeconds = 37;
+		end
+
+		-- add monster names
+		for _,boss in pairs(REPORT_MONSTERS) do
+			if title ~= '' then title = title .. ', '; end
+			title = title .. string.format('%s', boss.name);
+		end
+
+		if title == '' then
+			title = 'No monsters selected';
+		end
+
 		local titleText = string.format("%d:%02.0f - %s", timeMinutes, timeSeconds, title);
 		draw.text(titleText, origin_x, origin_y, CFG['COLOR_TITLE_FG']);
 	end
