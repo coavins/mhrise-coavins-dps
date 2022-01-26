@@ -52,9 +52,9 @@ TXT['DRAW_BAR_USE_UNIQUE_COLORS'] = 'Show each type of damage in a different col
 
 CFG['DRAW_BAR_TEXT_NAME']                = true; -- shows name of combatant
 TXT['DRAW_BAR_TEXT_NAME'] = 'Show names';
-CFG['DRAW_BAR_TEXT_YOU']                 = true; -- shows "YOU" on your bar
+CFG['DRAW_BAR_TEXT_YOU']                 = false; -- shows "YOU" on your bar
 TXT['DRAW_BAR_TEXT_YOU'] = 'Show "YOU" on your row';
-CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = false; -- show real player names instead of IDs
+CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = true; -- show real player names instead of IDs
 TXT['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = 'Reveal character names';
 CFG['DRAW_BAR_TEXT_TOTAL_DAMAGE']        = false; -- shows total damage dealt
 TXT['DRAW_BAR_TEXT_TOTAL_DAMAGE'] = 'Show total damage done';
