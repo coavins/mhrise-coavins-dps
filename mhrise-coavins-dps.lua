@@ -482,7 +482,7 @@ function updatePlayerNames()
 			for i=0, otomoCount-1 do
 				local otomo = otomoInfo:call("get_Item", i);
 				if otomo then
-					local otomoId = otomo:get_field("_memberIndex");
+					local otomoId = i;
 					local name = otomo:get_field("_Name");
 
 					if otomoId and name then
