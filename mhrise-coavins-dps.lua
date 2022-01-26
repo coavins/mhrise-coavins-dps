@@ -268,7 +268,7 @@ local LAST_UPDATE_TIME = 0;
 local DRAW_WINDOW_SETTINGS = false;
 local DRAW_WINDOW_REPORT = false;
 local WINDOW_FLAGS = 0x10120;
-
+local IS_ONLINE = false;
 
 local PRESETS = {};
 local PRESET_OPTIONS = {};
@@ -859,7 +859,7 @@ function mergeDamageSourcesIntoReport(report, damageSources)
 		-- merge otomo with master
 		if CFG['OTOMO_DMG_IS_PLAYER_DMG'] and attackerIdIsOtomo(effSourceId) then
 			local otomoId = getOtomoIdFromFakeAttackerId(effSourceId);
-			-- 
+
 			-- handle primary otomo
 			if otomoId >= 0 and otomoId <= 3 then
 				-- pretend this damage source belongs to this player
@@ -1171,7 +1171,11 @@ function drawReport(index)
 				end
 			elseif item.otomoNumber then
 				if CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] and item.name then
-					barText = barText .. string.format('%s', item.name) .. spacer;
+					if IS_ONLINE then
+						barText = barText .. string.format('%s (%.0f)', item.name, item.otomoNumber) .. spacer;
+					else
+						barText = barText .. string.format('%s', item.name) .. spacer;
+					end
 				else
 					barText = barText .. string.format('Buddy %.0f', item.otomoNumber) .. spacer;
 				end
@@ -1694,6 +1698,8 @@ function dpsFrame()
 	if AREA_MANAGER then
 		villageArea = AREA_MANAGER:get_field("<_CurrentAreaNo>k__BackingField");
 	end
+
+	IS_ONLINE = (LOBBY_MANAGER and LOBBY_MANAGER:call("IsQuestOnline")) or false;
 
 	-- if the window is open
 	if DRAW_WINDOW_SETTINGS then
