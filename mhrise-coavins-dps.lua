@@ -146,6 +146,8 @@ CFG['COLOR_PLAYER'][1] = CFG['COLOR_BLUE'];
 CFG['COLOR_PLAYER'][2] = CFG['COLOR_YELLOW'];
 CFG['COLOR_PLAYER'][3] = CFG['COLOR_GREEN'];
 
+CFG['COLOR_OTOMO'] = 0xAFFCD032;
+
 -- table colors
 CFG['COLOR_TITLE_BG']         = 0x88000000;
 CFG['COLOR_TITLE_FG']         = 0xFFDADADA;
@@ -167,7 +169,7 @@ CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][2] = 0xAF1C8C8C; -- yellow
 CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][3] = 0xAF1C8C1C; -- green
 
 CFG['COLOR_BAR_DMG_AILMENT']  = 0xAF3E37A3;
-CFG['COLOR_BAR_DMG_OTOMO']    = 0xAFFCC500;
+CFG['COLOR_BAR_DMG_OTOMO']    = 0xAFF0BB00;
 CFG['COLOR_BAR_DMG_OTHER']    = 0xAF616658;
 
 --
@@ -1119,9 +1121,11 @@ function drawReport(index)
 	for i,item in ipairs(report.items) do
 		local y = origin_y + (rowHeight + CFG['TABLE_ROW_PADDING']) * i;
 
-		local playerColor = CFG['COLOR_PLAYER'][item.id];
-		if not playerColor then
-			playerColor = CFG['COLOR_GRAY'];
+		local combatantColor = CFG['COLOR_GRAY'];
+		if item.playerNumber then
+			combatantColor = CFG['COLOR_PLAYER'][item.id];
+		elseif item.otomoNumber then
+			combatantColor = CFG['COLOR_OTOMO'];
 		end
 
 		local physicalColor = CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][item.id];
@@ -1145,7 +1149,7 @@ function drawReport(index)
 
 			-- damage bar
 			local damageBarWidth = colorBlockWidth * damageBarWidthMultiplier;
-			draw.filled_rect(origin_x, y, damageBarWidth, rowHeight, playerColor);
+			draw.filled_rect(origin_x, y, damageBarWidth, rowHeight, combatantColor);
 		else
 			if CFG['DRAW_BAR_BACKGROUNDS'] then
 				-- draw background
@@ -1154,7 +1158,7 @@ function drawReport(index)
 
 			if CFG['DRAW_BAR_COLORBLOCK'] then
 				-- color block
-				draw.filled_rect(origin_x, y, colorBlockWidth, rowHeight, playerColor);
+				draw.filled_rect(origin_x, y, colorBlockWidth, rowHeight, combatantColor);
 			end
 
 			-- damage bar
