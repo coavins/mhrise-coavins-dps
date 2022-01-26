@@ -23,7 +23,7 @@ TXT['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] = 'Show test data while menu is open';
 -- when true, damage from palicoes and palamutes will be counted as if dealt by their hunter
 -- when false, damage from palicoes and palamutes will be ignored completely
 CFG['OTOMO_DMG_IS_PLAYER_DMG'] = true;
-TXT['OTOMO_DMG_IS_PLAYER_DMG'] = 'Partner damage is counted as if dealt by the player';
+TXT['OTOMO_DMG_IS_PLAYER_DMG'] = 'Combine buddies with their hunter';
 
 CFG['DRAW_BAR_RELATIVE_TO_PARTY'] = false;
 TXT['DRAW_BAR_RELATIVE_TO_PARTY'] = 'Damage bars will represent share of overall party DPS';
