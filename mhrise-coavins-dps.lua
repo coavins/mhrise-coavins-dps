@@ -462,17 +462,16 @@ function updatePlayerNames()
 	local firstOtomo = OTOMO_MANAGER:call("getMasterOtomoInfo", 0);
 	if firstOtomo then
 		local name = firstOtomo:get_field("Name");
-		local id = getFakeAttackerIdForOtomoId(0);
 		--local level = firstOtomo:get_field("Level");
-		OTOMO_NAMES[id] = name;
+		OTOMO_NAMES[1] = name;
 	end
 
 	local secondOtomo = OTOMO_MANAGER:call("getMasterOtomoInfo", 1);
 	if secondOtomo then
 		local name = secondOtomo:get_field("Name");
-		local id = getFakeAttackerIdForOtomoId(4);
 		--local level = firstOtomo:get_field("Level");
-		OTOMO_NAMES[id] = name;
+		-- the secondary otomo is actually the fifth one!
+		OTOMO_NAMES[5] = name;
 	end
 
 	-- get online otomo names
@@ -484,11 +483,10 @@ function updatePlayerNames()
 				local otomo = otomoInfo:call("get_Item", i);
 				if otomo then
 					local otomoId = otomo:get_field("_memberIndex");
-					otomoId = getFakeAttackerIdForOtomoId(otomoId);
 					local name = otomo:get_field("_Name");
 
 					if otomoId and name then
-						OTOMO_NAMES[otomoId] = name;
+						OTOMO_NAMES[otomoId + 1] = name;
 					end
 				end
 			end
@@ -714,10 +712,25 @@ function initializeBossMonsterWithDummyData(bossKey, fakeName)
 	boss.name = fakeName;
 
 	local s = {};
-	s[0] = initializeDamageSourceWithDummyData(0);
-	s[1] = initializeDamageSourceWithDummyData(1);
-	s[2] = initializeDamageSourceWithDummyData(2);
-	s[3] = initializeDamageSourceWithDummyData(3);
+	-- players
+	s[0] = initializeDamageSourceWithDummyPlayerData(0);
+	s[1] = initializeDamageSourceWithDummyPlayerData(1);
+	s[2] = initializeDamageSourceWithDummyPlayerData(2);
+	s[3] = initializeDamageSourceWithDummyPlayerData(3);
+
+	-- otomo
+	local dummyId = getFakeAttackerIdForOtomoId(0);
+	s[dummyId] = initializeDamageSourceWithDummyOtomoData(dummyId);
+	local dummyId = getFakeAttackerIdForOtomoId(1);
+	s[dummyId] = initializeDamageSourceWithDummyOtomoData(dummyId);
+	local dummyId = getFakeAttackerIdForOtomoId(2);
+	s[dummyId] = initializeDamageSourceWithDummyOtomoData(dummyId);
+	local dummyId = getFakeAttackerIdForOtomoId(3);
+	s[dummyId] = initializeDamageSourceWithDummyOtomoData(dummyId);
+
+	-- monster
+	s[1001] = initializeDamageSourceWithDummyMonsterData(1001);
+
 	boss.damageSources = s;
 
 	TEST_MONSTERS[bossKey] = boss;
@@ -740,15 +753,37 @@ function initializeDamageSource(attackerId)
 	return s;
 end
 
-function initializeDamageSourceWithDummyData(attackerId)
+function initializeDamageSourceWithDummyPlayerData(attackerId)
 	local s = initializeDamageSource(attackerId);
 
 	s.damageCounters['weapon'] = initializeDamageCounterWithDummyData();
+
+	s.numHit = math.random(1,380);
+	s.maxHit = math.random(1,1000);
+
+	return s;
+end
+
+function initializeDamageSourceWithDummyOtomoData(attackerId)
+	local s = initializeDamageSource(attackerId);
+
 	s.damageCounters['otomo'] = initializeDamageCounter();
 	s.damageCounters['otomo'].physical = math.random(0,400);
 
-	s.numHit = math.random(1,1000);
-	s.maxHit = math.random(1,3000);
+	s.numHit = math.random(1,500);
+	s.maxHit = math.random(1,100);
+
+	return s;
+end
+
+function initializeDamageSourceWithDummyMonsterData(attackerId)
+	local s = initializeDamageSource(attackerId);
+
+	s.damageCounters['monster'] = initializeDamageCounter();
+	s.damageCounters['monster'].physical = math.random(0,150);
+
+	s.numHit = math.random(1,10);
+	s.maxHit = math.random(1,50);
 
 	return s;
 end
@@ -909,6 +944,7 @@ function initializeReportItem(id)
 
 	item.id = id;
 	item.playerNumber = nil;
+	item.otomoNumber = nil;
 	item.name = nil;
 
 	-- initialize player number and name if we can
@@ -916,7 +952,8 @@ function initializeReportItem(id)
 		item.playerNumber = item.id + 1;
 		item.name = PLAYER_NAMES[item.playerNumber];
 	elseif attackerIdIsOtomo(item.id) then
-		item.name = OTOMO_NAMES[item.id];
+		item.otomoNumber = getOtomoIdFromFakeAttackerId(item.id) + 1;
+		item.name = OTOMO_NAMES[item.otomoNumber];
 	end
 
 	item.counters = {};
@@ -1132,8 +1169,10 @@ function drawReport(index)
 				else
 					barText = barText .. string.format('Player %.0f', item.id + 1) .. spacer;
 				end
+			elseif item.otomoNumber then
+				barText = barText .. string.format('%s', item.name or string.format('Buddy %d', item.otomoNumber)) .. spacer;
 			else
-				-- it's not a player, just draw the name
+				-- just draw the name
 				barText = barText .. string.format('%s', item.name or '') .. spacer;
 			end
 		elseif CFG['DRAW_BAR_TEXT_YOU'] then
