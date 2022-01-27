@@ -268,6 +268,65 @@ PRESET_MHROVERLAY['TABLE_ROW_TEXT_OFFSET_Y'] = -16;
 PRESET_MHROVERLAY['COLOR_BAR_DMG_PHYSICAL'] = 0xAFE069AE;
 
 --
+-- enums
+--
+
+-- via.hid.KeyboardKey
+local ENUM_KEYBOARD_KEY = {};
+ENUM_KEYBOARD_KEY[0] = 'None';
+ENUM_KEYBOARD_KEY[1] = 'LButton';
+ENUM_KEYBOARD_KEY[2] = 'RButton';
+ENUM_KEYBOARD_KEY[3] = 'Cancel';
+ENUM_KEYBOARD_KEY[4] = 'MButton';
+ENUM_KEYBOARD_KEY[5] = 'XButton1';
+ENUM_KEYBOARD_KEY[6] = 'XButton2';
+ENUM_KEYBOARD_KEY[8] = 'Back';
+ENUM_KEYBOARD_KEY[9] = 'Tab';
+ENUM_KEYBOARD_KEY[12] = 'Clear';
+ENUM_KEYBOARD_KEY[13] = 'Enter';
+ENUM_KEYBOARD_KEY[16] = 'Shift'; -- modifier
+ENUM_KEYBOARD_KEY[17] = 'Control'; -- modifier
+ENUM_KEYBOARD_KEY[18] = 'Menu';
+ENUM_KEYBOARD_KEY[19] = 'Pause';
+ENUM_KEYBOARD_KEY[20] = 'Capital';
+ENUM_KEYBOARD_KEY[21] = 'Kana';
+ENUM_KEYBOARD_KEY[23] = 'Junja';
+ENUM_KEYBOARD_KEY[24] = 'Final';
+ENUM_KEYBOARD_KEY[25] = 'Hanja';
+ENUM_KEYBOARD_KEY[27] = 'Escape';
+ENUM_KEYBOARD_KEY[28] = 'Convert';
+ENUM_KEYBOARD_KEY[29] = 'NonConvert';
+ENUM_KEYBOARD_KEY[30] = 'Accept';
+ENUM_KEYBOARD_KEY[31] = 'ModeChange';
+ENUM_KEYBOARD_KEY[32] = 'Space';
+ENUM_KEYBOARD_KEY[33] = 'Prior';
+ENUM_KEYBOARD_KEY[34] = 'Next';
+ENUM_KEYBOARD_KEY[35] = 'End';
+ENUM_KEYBOARD_KEY[36] = 'Home';
+ENUM_KEYBOARD_KEY[37] = 'Left';
+ENUM_KEYBOARD_KEY[38] = 'Up';
+ENUM_KEYBOARD_KEY[39] = 'Right';
+ENUM_KEYBOARD_KEY[40] = 'Down';
+ENUM_KEYBOARD_KEY[41] = 'Select';
+ENUM_KEYBOARD_KEY[42] = 'Print';
+ENUM_KEYBOARD_KEY[43] = 'Execute';
+ENUM_KEYBOARD_KEY[44] = 'SnapShot';
+ENUM_KEYBOARD_KEY[45] = 'Insert';
+ENUM_KEYBOARD_KEY[46] = 'Delete';
+ENUM_KEYBOARD_KEY[47] = 'Help';
+ENUM_KEYBOARD_KEY[48] = 'Alpha0';
+ENUM_KEYBOARD_KEY[49] = 'Alpha1';
+ENUM_KEYBOARD_KEY[50] = 'Alpha2';
+ENUM_KEYBOARD_KEY[51] = 'Alpha3';
+ENUM_KEYBOARD_KEY[52] = 'Alpha4';
+ENUM_KEYBOARD_KEY[53] = 'Alpha5';
+ENUM_KEYBOARD_KEY[54] = 'Alpha6';
+ENUM_KEYBOARD_KEY[55] = 'Alpha7';
+ENUM_KEYBOARD_KEY[56] = 'Alpha8';
+ENUM_KEYBOARD_KEY[57] = 'Alpha9';
+ENUM_KEYBOARD_KEY[65] = 'A';
+
+--
 -- globals
 --
 
@@ -276,9 +335,13 @@ local LAST_UPDATE_TIME = 0;
 local DRAW_OVERLAY = true;
 local DRAW_WINDOW_SETTINGS = false;
 local DRAW_WINDOW_REPORT = false;
+local DRAW_WINDOW_HOTKEYS = false;
 local WINDOW_FLAGS = 0x10120;
 local IS_ONLINE = false;
-local HOTKEY_TOGGLE_OVERLAY = 109; -- numpad minus
+
+local ASSIGNED_HOTKEY_THIS_FRAME = false;
+local HOTKEY_TOGGLE_OVERLAY = 109; -- 109 is numpad minus
+local HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = false; -- if true, will register next key press as the new hotkey
 
 local PRESETS = {};
 local PRESET_OPTIONS = {};
@@ -1555,7 +1618,7 @@ function DrawWindowSettings()
 	local changed, wantsIt = false, false;
 	local value = nil;
 
-	wantsIt = imgui.begin_window('settings', DRAW_WINDOW_SETTINGS, WINDOW_FLAGS);
+	wantsIt = imgui.begin_window('coavins dps meter - settings', DRAW_WINDOW_SETTINGS, WINDOW_FLAGS);
 	if DRAW_WINDOW_SETTINGS and not wantsIt then
 		DRAW_WINDOW_SETTINGS = false;
 
@@ -1713,7 +1776,7 @@ function DrawWindowReport()
 	local changed, wantsIt = false, false;
 	local value = nil;
 
-	wantsIt = imgui.begin_window('filters', DRAW_WINDOW_REPORT, WINDOW_FLAGS);
+	wantsIt = imgui.begin_window('coavins dps meter - filters', DRAW_WINDOW_REPORT, WINDOW_FLAGS);
 	if DRAW_WINDOW_REPORT and not wantsIt then
 		DRAW_WINDOW_REPORT = false;
 	end
@@ -1792,6 +1855,32 @@ function DrawWindowReport()
 	imgui.end_window();
 end
 
+function DrawWindowHotkeys()
+	local changed, wantsIt = false, false;
+	local value = nil;
+
+	wantsIt = imgui.begin_window('coavins dps meter - hotkeys', DRAW_WINDOW_HOTKEYS, WINDOW_FLAGS);
+	if DRAW_WINDOW_HOTKEYS and not wantsIt then
+		DRAW_WINDOW_HOTKEYS = false;
+		HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = false;
+	end
+
+	imgui.text('Toggle overlay:');
+	imgui.same_line();
+	local text = 'Set key';
+	if HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER then
+		text = 'Press key...';
+	end
+	if imgui.button(text) then
+		HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = not HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER;
+	end
+	imgui.same_line();
+	text = string.format('%s (%d)', ENUM_KEYBOARD_KEY[HOTKEY_TOGGLE_OVERLAY], HOTKEY_TOGGLE_OVERLAY);
+	imgui.text(text);
+
+	imgui.end_window();
+end
+
 --
 -- REFramework
 --
@@ -1823,7 +1912,7 @@ function dpsFrame()
 
 	IS_ONLINE = (LOBBY_MANAGER and LOBBY_MANAGER:call("IsQuestOnline")) or false;
 
-	if KEYBOARD_MANAGER:call("getTrg", HOTKEY_TOGGLE_OVERLAY) then
+	if not ASSIGNED_HOTKEY_THIS_FRAME and KEYBOARD_MANAGER:call("getTrg", HOTKEY_TOGGLE_OVERLAY) then
 		DRAW_OVERLAY = not DRAW_OVERLAY;
 	end
 
@@ -1862,6 +1951,18 @@ function dpsUpdateOccasionally(realSeconds)
 	end
 end
 
+function registerWaitingHotkeys()
+	if HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER then
+		for key,text in pairs(ENUM_KEYBOARD_KEY) do
+			if KEYBOARD_MANAGER:call("getDown", key) then
+				HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = false;
+				HOTKEY_TOGGLE_OVERLAY = key;
+				ASSIGNED_HOTKEY_THIS_FRAME = true;
+			end
+		end
+	end
+end
+
 re.on_frame(function()
 	if DRAW_WINDOW_SETTINGS then
 		DrawWindowSettings();
@@ -1871,17 +1972,27 @@ re.on_frame(function()
 		DrawWindowReport();
 	end
 
+	if DRAW_WINDOW_HOTKEYS then
+		DrawWindowHotkeys();
+	else
+		HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = false;
+	end
+
+	registerWaitingHotkeys();
+
 	if DPS_ENABLED then
 		dpsFrame();
 	end
+
+	ASSIGNED_HOTKEY_THIS_FRAME = false;
 end)
 
 re.on_draw_ui(function()
 	imgui.begin_group();
 	imgui.text('coavins dps meter');
 
-	if imgui.button('settings') and not DRAW_WINDOW_SETTINGS then
-		DRAW_WINDOW_SETTINGS = true;
+	if imgui.button('settings') then
+		DRAW_WINDOW_SETTINGS = not DRAW_WINDOW_SETTINGS;
 
 		if CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] then
 			initializeTestData();
@@ -1890,8 +2001,14 @@ re.on_draw_ui(function()
 
 	imgui.same_line();
 
-	if imgui.button('filters') and not DRAW_WINDOW_REPORT then
-		DRAW_WINDOW_REPORT = true;
+	if imgui.button('filters') then
+		DRAW_WINDOW_REPORT = not DRAW_WINDOW_REPORT;
+	end
+
+	imgui.same_line();
+
+	if imgui.button('hotkeys') then
+		DRAW_WINDOW_HOTKEYS = not DRAW_WINDOW_HOTKEYS;
 	end
 
 	imgui.end_group();
