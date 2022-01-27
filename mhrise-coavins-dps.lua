@@ -1812,6 +1812,7 @@ local function showCheckboxForAttackerType(type)
 		else
 			RemoveAttackerTypeFromReport(type);
 		end
+		generateReport(REPORT_MONSTERS);
 	end
 end
 
@@ -1826,11 +1827,13 @@ local function DrawWindowReport()
 	changed, wantsIt = imgui.checkbox('Include buddies', REPORT_OTOMO);
 	if changed then
 		REPORT_OTOMO = wantsIt;
+		generateReport(REPORT_MONSTERS);
 	end
 
 	changed, wantsIt = imgui.checkbox('Include monsters, etc', REPORT_OTHER);
 	if changed then
 		REPORT_OTHER = wantsIt;
+		generateReport(REPORT_MONSTERS);
 	end
 
 	imgui.new_line();
@@ -1850,6 +1853,7 @@ local function DrawWindowReport()
 			else
 				RemoveMonsterFromReport(enemy);
 			end
+			generateReport(REPORT_MONSTERS);
 		end
 	end
 	if not foundMonster then
