@@ -71,7 +71,7 @@ TXT['DRAW_BAR_TEXT_BIGGEST_HIT'] = 'Show damage dealt by biggest hit';
 CFG['USE_MINIMAL_BARS'] = false;
 TXT['USE_MINIMAL_BARS'] = 'Use a minimalist style for the damage bars';
 
--- rows will be added on top of the title bar instead of underneath, making it easier to place the table at the bottom of the screen
+-- rows will be added on top of the title bar instead, making it easier to place the table at the bottom of the screen
 CFG['TABLE_GROWS_UPWARD'] = false;
 TXT['TABLE_GROWS_UPWARD'] = 'Table grows upward instead of down';
 
@@ -375,6 +375,7 @@ ATTACKER_TYPE_TEXT['monster']           = 'Monster';
 --#region globals
 
 local DPS_ENABLED = true;
+local DPS_DEBUG = false;
 local LAST_UPDATE_TIME = 0;
 local DRAW_OVERLAY = true;
 local DRAW_WINDOW_SETTINGS = false;
@@ -441,7 +442,8 @@ local QUEST_MANAGER_METHOD_ONCHANGEDGAMESTATUS = QUEST_MANAGER_TYPE:get_method("
 --local QUEST_MANAGER_METHOD_ADDKPIATTACKDAMAGE = QUEST_MANAGER_TYPE:get_method("addKpiAttackDamage");
 local SNOW_ENEMY_ENEMYCHARACTERBASE = sdk.find_type_definition("snow.enemy.EnemyCharacterBase");
 -- stockDamage function also works, for host only
-local SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE = SNOW_ENEMY_ENEMYCHARACTERBASE:get_method("afterCalcDamage_DamageSide");
+local SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE =
+	SNOW_ENEMY_ENEMYCHARACTERBASE:get_method("afterCalcDamage_DamageSide");
 local SNOW_ENEMY_ENEMYCHARACTERBASE_UPDATE = SNOW_ENEMY_ENEMYCHARACTERBASE:get_method("update");
 
 --#endregion
@@ -848,11 +850,11 @@ local function initializeBossMonsterWithDummyData(bossKey, fakeName)
 	-- otomo
 	local dummyId = getFakeAttackerIdForOtomoId(0);
 	s[dummyId] = initializeDamageSourceWithDummyOtomoData(dummyId);
-	local dummyId = getFakeAttackerIdForOtomoId(1);
+	dummyId = getFakeAttackerIdForOtomoId(1);
 	s[dummyId] = initializeDamageSourceWithDummyOtomoData(dummyId);
-	local dummyId = getFakeAttackerIdForOtomoId(2);
+	dummyId = getFakeAttackerIdForOtomoId(2);
 	s[dummyId] = initializeDamageSourceWithDummyOtomoData(dummyId);
-	local dummyId = getFakeAttackerIdForOtomoId(3);
+	dummyId = getFakeAttackerIdForOtomoId(3);
 	s[dummyId] = initializeDamageSourceWithDummyOtomoData(dummyId);
 
 	-- monster
@@ -1021,7 +1023,7 @@ local function mergeDamageSourcesIntoReport(report, damageSources)
 	local bestDamage = 0.0;
 
 	-- merge damage sources
-	for id,source in pairs(damageSources) do
+	for _,source in pairs(damageSources) do
 		local effSourceId = source.id;
 
 		-- merge otomo with master
@@ -1110,7 +1112,7 @@ end
 --#region Drawing
 
 local function drawRichDamageBar(item, x, y, maxWidth, h, colorPhysical, colorElemental)
-	local w = 0;
+	local w;
 	local colorAilment = CFG['COLOR_BAR_DMG_AILMENT'];
 	local colorOtomo = CFG['COLOR_BAR_DMG_OTOMO'];
 	local colorOther = CFG['COLOR_BAR_DMG_OTHER'];
@@ -1388,8 +1390,8 @@ local function drawDebugStats()
 	--local playerDamage    = playerPhysical + playerElemental + playerAilment;
 
 	-- get player
-	local myPlayerId = PLAYER_MANAGER:call("getMasterPlayerID");
-	local myPlayer = PLAYER_MANAGER:call("getPlayer", myPlayerId);
+	--local myPlayerId = PLAYER_MANAGER:call("getMasterPlayerID");
+	--local myPlayer = PLAYER_MANAGER:call("getPlayer", myPlayerId);
 
 	-- get enemy
 	local bossCount = ENEMY_MANAGER:call("getBossEnemyCount");
@@ -1403,12 +1405,16 @@ local function drawDebugStats()
 			return;
 		end
 
-		local is_combat_str = "";
+		local is_combat_str;
 		if boss.isInCombat then is_combat_str = " (In Combat)";
 		                   else is_combat_str = "";
 		end
 
-		local hpStr = string.format('%.0f / %.0f (%.1f%%) -%.0f', boss.hp.current, boss.hp.max, boss.hp.percent * 100, boss.hp.missing);
+		local hpStr = string.format('%.0f / %.0f (%.1f%%) -%.0f'
+			, boss.hp.current
+			, boss.hp.max
+			, boss.hp.percent * 100
+			, boss.hp.missing);
 
 		debug_line(string.format("%s %s %s", boss.name, hpStr, is_combat_str));
 
@@ -1455,7 +1461,9 @@ local function dpsDraw()
 	-- draw the first report
 	drawReport(1);
 
-	--drawDebugStats();
+	if DPS_DEBUG then
+		drawDebugStats();
+	end
 end
 
 --#endregion
@@ -1574,8 +1582,7 @@ local function showSliderForIntSetting(setting)
 end
 
 local function DrawWindowSettings()
-	local changed, wantsIt = false, false;
-	local value = nil;
+	local changed, wantsIt, value;
 
 	wantsIt = imgui.begin_window('coavins dps meter - settings', DRAW_WINDOW_SETTINGS, WINDOW_FLAGS);
 	if DRAW_WINDOW_SETTINGS and not wantsIt then
@@ -1707,8 +1714,7 @@ local function showCheckboxForAttackerType(type)
 end
 
 local function DrawWindowReport()
-	local changed, wantsIt = false, false;
-	local value = nil;
+	local changed, wantsIt;
 
 	wantsIt = imgui.begin_window('coavins dps meter - filters', DRAW_WINDOW_REPORT, WINDOW_FLAGS);
 	if DRAW_WINDOW_REPORT and not wantsIt then
@@ -1790,8 +1796,7 @@ local function DrawWindowReport()
 end
 
 local function DrawWindowHotkeys()
-	local changed, wantsIt = false, false;
-	local value = nil;
+	local wantsIt;
 
 	wantsIt = imgui.begin_window('coavins dps meter - hotkeys', DRAW_WINDOW_HOTKEYS, WINDOW_FLAGS);
 	if DRAW_WINDOW_HOTKEYS and not wantsIt then
@@ -1921,8 +1926,6 @@ local function read_AfterCalcInfo_DamageSide(args)
 	local elementDamage   = tonumber(info:call("get_ElementDamage"));
 	local conditionDamage = tonumber(info:call("get_ConditionDamage"));
 
-	--log_info(string.format('total: %f physical: %f element: %f ailment: %f', totalDamage, physicalDamage, elementDamage, conditionDamage));
-
 	-- add damage facts to counter
 	c.physical  = c.physical  + physicalDamage;
 	c.elemental = c.elemental + elementDamage;
@@ -1952,7 +1955,7 @@ end);
 
 local function registerWaitingHotkeys()
 	if HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER then
-		for key,text in pairs(ENUM_KEYBOARD_KEY) do
+		for key,_ in pairs(ENUM_KEYBOARD_KEY) do
 			if KEYBOARD_MANAGER:call("getDown", key) then
 				HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = false;
 				HOTKEY_TOGGLE_OVERLAY = key;
