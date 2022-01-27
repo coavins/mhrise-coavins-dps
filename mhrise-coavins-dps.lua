@@ -1110,7 +1110,14 @@ local function sortReportItems_ASC(a, b)
 end
 
 local function sortReportItems_Player(a, b)
-	return a.id < b.id;
+	if     a.playerNumber and not b.playerNumber then return true;
+	elseif b.playerNumber and not a.playerNumber then return false;
+	elseif a.playerNumber and     b.playerNumber then return a.playerNumber < b.playerNumber;
+	elseif a.otomoNumber and not b.otomoNumber then return true;
+	elseif b.otomoNumber and not a.otomoNumber then return false;
+	elseif a.otomoNumber and     b.otomoNumber then return a.otomoNumber < b.otomoNumber;
+	else return a.id < b.id;
+	end
 end
 
 -- main function responsible for loading a boss into a report
