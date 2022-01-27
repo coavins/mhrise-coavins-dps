@@ -1,9 +1,7 @@
 -- dps meter for monster hunter rise
 -- written by github.com/coavins
 
---
--- configuration
---
+--#region Configuration
 
 local CFG = {};
 local TXT = {};
@@ -177,13 +175,9 @@ CFG['COLOR_BAR_DMG_AILMENT']  = 0xAF3E37A3;
 CFG['COLOR_BAR_DMG_OTOMO']    = 0xAFF0BB00;
 CFG['COLOR_BAR_DMG_OTHER']    = 0xAF616658;
 
---
--- end configuration
---
+--#endregion Configuration
 
---
--- presets
---
+--#region Presets
 
 local PRESET_STANDARD = {};
 PRESET_STANDARD['OTOMO_DMG_IS_PLAYER_DMG'] = true;
@@ -267,9 +261,9 @@ PRESET_MHROVERLAY['TABLE_ROW_TEXT_OFFSET_X'] = 5;
 PRESET_MHROVERLAY['TABLE_ROW_TEXT_OFFSET_Y'] = -16;
 PRESET_MHROVERLAY['COLOR_BAR_DMG_PHYSICAL'] = 0xAFE069AE;
 
---
--- enums
---
+--#endregion Presets
+
+--#region enums
 
 -- via.hid.KeyboardKey
 local ENUM_KEYBOARD_KEY = {};
@@ -326,9 +320,59 @@ ENUM_KEYBOARD_KEY[56] = 'Alpha8';
 ENUM_KEYBOARD_KEY[57] = 'Alpha9';
 ENUM_KEYBOARD_KEY[65] = 'A';
 
---
--- globals
---
+local ATTACKER_TYPES = {};
+ATTACKER_TYPES[0] = 'weapon';
+ATTACKER_TYPES[1] = 'barrelbombl';
+ATTACKER_TYPES[2] = 'makimushi';
+ATTACKER_TYPES[3] = 'nitro';
+ATTACKER_TYPES[4] = 'onibimine';
+ATTACKER_TYPES[5] = 'ballistahate';
+ATTACKER_TYPES[6] = 'capturesmokebomb';
+ATTACKER_TYPES[7] = 'capturebullet';
+ATTACKER_TYPES[8] = 'barrelbombs';
+ATTACKER_TYPES[9] = 'kunai';
+ATTACKER_TYPES[10] = 'waterbeetle';
+ATTACKER_TYPES[11] = 'detonationgrenade';
+ATTACKER_TYPES[12] = 'hmballista';
+ATTACKER_TYPES[13] = 'hmcannon';
+ATTACKER_TYPES[14] = 'hmgatling';
+ATTACKER_TYPES[15] = 'hmtrap';
+ATTACKER_TYPES[16] = 'hmnpc';
+ATTACKER_TYPES[17] = 'hmflamethrower';
+ATTACKER_TYPES[18] = 'hmdragonator';
+ATTACKER_TYPES[19] = 'otomo';
+ATTACKER_TYPES[20] = 'fg005';
+ATTACKER_TYPES[21] = 'ecbatexplode';
+ATTACKER_TYPES[23] = 'monster';
+
+local ATTACKER_TYPE_TEXT = {};
+ATTACKER_TYPE_TEXT['weapon']            = 'Weapon';
+ATTACKER_TYPE_TEXT['barrelbombl']       = 'Large Barrel Bomb';
+ATTACKER_TYPE_TEXT['makimushi']         = 'makimushi';
+ATTACKER_TYPE_TEXT['nitro']             = 'nitro';
+ATTACKER_TYPE_TEXT['onibimine']         = 'onibimine';
+ATTACKER_TYPE_TEXT['ballistahate']      = 'ballistahate';
+ATTACKER_TYPE_TEXT['capturesmokebomb']  = 'Tranq Bomb';
+ATTACKER_TYPE_TEXT['capturebullet']     = 'Tranq Ammo';
+ATTACKER_TYPE_TEXT['barrelbombs']       = 'Barrel Bomb';
+ATTACKER_TYPE_TEXT['kunai']             = 'Kunai';
+ATTACKER_TYPE_TEXT['waterbeetle']       = 'waterbeetle';
+ATTACKER_TYPE_TEXT['detonationgrenade'] = 'detonationgrenade';
+ATTACKER_TYPE_TEXT['hmballista']        = 'Ballista';
+ATTACKER_TYPE_TEXT['hmcannon']          = 'Cannon';
+ATTACKER_TYPE_TEXT['hmgatling']         = 'Machine Cannon';
+ATTACKER_TYPE_TEXT['hmtrap']            = 'Bamboo Bomb';
+ATTACKER_TYPE_TEXT['hmnpc']             = 'Defenders';
+ATTACKER_TYPE_TEXT['hmflamethrower']    = 'Wyvernfire';
+ATTACKER_TYPE_TEXT['hmdragonator']      = 'Dragonator';
+ATTACKER_TYPE_TEXT['otomo']             = 'Buddy';
+ATTACKER_TYPE_TEXT['fg005']             = 'fg005';
+ATTACKER_TYPE_TEXT['ecbatexplode']      = 'ecbatexplode';
+ATTACKER_TYPE_TEXT['monster']           = 'Monster';
+
+--#endregion
+
+--#region globals
 
 local DPS_ENABLED = true;
 local LAST_UPDATE_TIME = 0;
@@ -346,6 +390,19 @@ local HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = false; -- if true, will regist
 local PRESETS = {};
 local PRESET_OPTIONS = {};
 local PRESET_OPTIONS_SELECTED = 1;
+
+-- load presets
+PRESETS['Standard'] = PRESET_STANDARD;
+PRESETS['Detailed'] = PRESET_DETAILED;
+PRESETS['Fylex'] = PRESET_FYLEX;
+PRESETS['MHR Overlay'] = PRESET_MHROVERLAY;
+
+-- build preset options list
+for name,_ in pairs(PRESETS) do
+	table.insert(PRESET_OPTIONS, name);
+end
+table.sort(PRESET_OPTIONS);
+table.insert(PRESET_OPTIONS, 1, 'Select a preset');
 
 local SCREEN_W = 0;
 local SCREEN_H = 0;
@@ -383,86 +440,28 @@ local QUEST_MANAGER_TYPE = sdk.find_type_definition("snow.QuestManager");
 local QUEST_MANAGER_METHOD_ONCHANGEDGAMESTATUS = QUEST_MANAGER_TYPE:get_method("onChangedGameStatus");
 --local QUEST_MANAGER_METHOD_ADDKPIATTACKDAMAGE = QUEST_MANAGER_TYPE:get_method("addKpiAttackDamage");
 local SNOW_ENEMY_ENEMYCHARACTERBASE = sdk.find_type_definition("snow.enemy.EnemyCharacterBase");
+-- stockDamage function also works, for host only
 local SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE = SNOW_ENEMY_ENEMYCHARACTERBASE:get_method("afterCalcDamage_DamageSide");
 local SNOW_ENEMY_ENEMYCHARACTERBASE_UPDATE = SNOW_ENEMY_ENEMYCHARACTERBASE:get_method("update");
 
--- helper functions
+--#endregion
 
-function debug_line(text)
+--#region Helper functions
+
+local function debug_line(text)
 	DEBUG_Y = DEBUG_Y + 20;
 	draw.text(text, 0, DEBUG_Y, 0xFFFFFFFF);
 end
 
-function log_info(text)
+local function log_info(text)
 	log.info('mhrise-coavins-dps: ' .. text);
 end
 
-function log_error(text)
+local function log_error(text)
 	log.error('mhrise-coavins-dps: ' .. text);
 end
 
--- sanity checking
-
-if not SCENE_MANAGER then
-	log_error('could not find scene manager');
-	return;
-end
-
-if not SCENE_MANAGER_TYPE then
-	log_error('could not find scene manager type');
-	return;
-end
-
-if not SCENE_MANAGER_VIEW then
-	log_error('could not find scene manager view');
-	return;
-end
-
-if not SNOW_ENEMY_ENEMYCHARACTERBASE then
-	log_error('could not find type snow.enemy.EnemyCharacterBase');
-	return;
-end
-
-if not SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE then
-	log_error('could not find method snow.enemy.EnemyCharacterBase::afterCalcDamage_DamageSide');
-	return;
-end
-
-if not CFG['UPDATE_RATE'] or tonumber(CFG['UPDATE_RATE']) == nil then
-	CFG['UPDATE_RATE'] = 0.5;
-end
-if CFG['UPDATE_RATE'] < 0.01 then
-	CFG['UPDATE_RATE'] = 0.01;
-end
-if CFG['UPDATE_RATE'] > 3 then
-	CFG['UPDATE_RATE'] = 3;
-end
-
--- load presets
-PRESETS['Standard'] = PRESET_STANDARD;
-PRESETS['Detailed'] = PRESET_DETAILED;
-PRESETS['Fylex'] = PRESET_FYLEX;
-PRESETS['MHR Overlay'] = PRESET_MHROVERLAY;
-
--- build preset options list
-for name,_ in pairs(PRESETS) do
-	table.insert(PRESET_OPTIONS, name);
-end
-table.sort(PRESET_OPTIONS);
-table.insert(PRESET_OPTIONS, 1, 'Select a preset');
-
-function applySelectedPreset()
-	local name = PRESET_OPTIONS[PRESET_OPTIONS_SELECTED];
-	local preset = PRESETS[name];
-	if preset then
-		for setting,value in pairs(preset) do
-			CFG[setting] = value;
-		end
-	end
-end
-
--- system functions
-function readScreenDimensions()
+local function readScreenDimensions()
 	local size = SCENE_MANAGER_VIEW:call("get_Size");
 	if not size then
 		log_error('could not get screen size');
@@ -472,15 +471,121 @@ function readScreenDimensions()
 	SCREEN_H = size:get_field("h");
 end
 
-function getScreenXFromX(x)
+local function getScreenXFromX(x)
 	return SCREEN_W * x;
 end
 
-function getScreenYFromY(y)
+local function getScreenYFromY(y)
 	return SCREEN_H * y;
 end
 
-function attackerIdIsPlayer(attackerId)
+local function hasManagedResources()
+	if not PLAYER_MANAGER then
+		PLAYER_MANAGER = sdk.get_managed_singleton("snow.player.PlayerManager");
+		if not PLAYER_MANAGER then
+			return false;
+		end
+	end
+
+	if not QUEST_MANAGER then
+		QUEST_MANAGER = sdk.get_managed_singleton("snow.QuestManager");
+		if not QUEST_MANAGER then
+			return false;
+		end
+	end
+
+	if not ENEMY_MANAGER then
+		ENEMY_MANAGER = sdk.get_managed_singleton("snow.enemy.EnemyManager");
+		if not ENEMY_MANAGER then
+			return false;
+		end
+	end
+
+	if not MESSAGE_MANAGER then
+		MESSAGE_MANAGER = sdk.get_managed_singleton("snow.gui.MessageManager");
+		if not MESSAGE_MANAGER then
+			return false;
+		end
+	end
+
+	if not LOBBY_MANAGER then
+		LOBBY_MANAGER = sdk.get_managed_singleton("snow.LobbyManager");
+		if not LOBBY_MANAGER then
+			return false;
+		end
+	end
+
+	if not OTOMO_MANAGER then
+		OTOMO_MANAGER = sdk.get_managed_singleton("snow.otomo.OtomoManager");
+		if not OTOMO_MANAGER then
+			return false;
+		end
+	end
+
+	if not KEYBOARD_MANAGER then
+		local softKeyboard = sdk.get_managed_singleton("snow.GameKeyboard");
+		if softKeyboard then
+			KEYBOARD_MANAGER = softKeyboard:get_field("hardKeyboard");
+			if not KEYBOARD_MANAGER then
+				return false;
+			end
+		else
+			return false;
+		end
+	end
+
+	-- not required since it doesn't seem to always be available
+	if not AREA_MANAGER then
+		AREA_MANAGER = sdk.get_managed_singleton("snow.VillageAreaManager");
+	end
+
+	return true;
+end
+
+local function applySelectedPreset()
+	local name = PRESET_OPTIONS[PRESET_OPTIONS_SELECTED];
+	local preset = PRESETS[name];
+	if preset then
+		for setting,value in pairs(preset) do
+			CFG[setting] = value;
+		end
+	end
+end
+
+local function cleanUpData()
+	LAST_UPDATE_TIME = 0;
+	LARGE_MONSTERS  = {};
+	DAMAGE_REPORTS  = {};
+	REPORT_MONSTERS = {};
+	log_info('cleared captured data');
+end
+
+local function AddMonsterToReport(enemyToAdd, bossInfo)
+	REPORT_MONSTERS[enemyToAdd] = bossInfo;
+	log_info(string.format('%s added to report', bossInfo.name));
+end
+
+local function RemoveMonsterFromReport(enemyToRemove)
+	for enemy,boss in pairs(REPORT_MONSTERS) do
+		if enemy == enemyToRemove then
+			REPORT_MONSTERS[enemy] = nil;
+			log_info(string.format('%s removed from report', boss.name));
+			return;
+		end
+	end
+end
+
+local function AddAttackerTypeToReport(typeToAdd)
+	REPORT_ATTACKER_TYPES[typeToAdd] = true;
+	log_info(string.format('damage type %s added to report', typeToAdd));
+end
+
+local function RemoveAttackerTypeFromReport(typeToRemove)
+	REPORT_ATTACKER_TYPES[typeToRemove] = nil;
+	log_info(string.format('damage type %s removed from report', typeToRemove));
+end
+
+local function attackerIdIsPlayer(attackerId)
 	if attackerId >= 0 and attackerId <= 3 then
 		return true;
 	else
@@ -488,7 +593,7 @@ function attackerIdIsPlayer(attackerId)
 	end
 end
 
-function attackerIdIsOtomo(attackerId)
+local function attackerIdIsOtomo(attackerId)
 	if attackerId >= FAKE_OTOMO_RANGE_START
 	and attackerId <= FAKE_OTOMO_RANGE_START + 4
 	then
@@ -498,15 +603,15 @@ function attackerIdIsOtomo(attackerId)
 	end
 end
 
-function getFakeAttackerIdForOtomoId(otomoId)
+local function getFakeAttackerIdForOtomoId(otomoId)
 	return FAKE_OTOMO_RANGE_START + otomoId;
 end
 
-function getOtomoIdFromFakeAttackerId(fakeAttackerId)
+local function getOtomoIdFromFakeAttackerId(fakeAttackerId)
 	return fakeAttackerId - FAKE_OTOMO_RANGE_START;
 end
 
-function updatePlayerNames()
+local function updatePlayerNames()
 	-- get offline player name
 	local myHunter = LOBBY_MANAGER:get_field("_myHunterInfo");
 	if myHunter then
@@ -568,193 +673,133 @@ function updatePlayerNames()
 	end
 end
 
--- callback functions
-function read_onChangedGameStatus(args)
-	local status = sdk.to_int64(args[3]);
-	if status == 1 then
-		-- entered the village
-		cleanUpData();
-	end
+--#endregion Helper functions
+
+--#region Sanity checking
+
+if not SCENE_MANAGER then
+	log_error('could not find scene manager');
+	return;
 end
 
--- hook into function to know when we return from a quest
-sdk.hook(QUEST_MANAGER_METHOD_ONCHANGEDGAMESTATUS,
-function(args)
-	read_onChangedGameStatus(args);
-end, function(retval) return retval end);
-
-local ATTACKER_TYPES = {};
-ATTACKER_TYPES[0] = 'weapon';
-ATTACKER_TYPES[1] = 'barrelbombl';
-ATTACKER_TYPES[2] = 'makimushi';
-ATTACKER_TYPES[3] = 'nitro';
-ATTACKER_TYPES[4] = 'onibimine';
-ATTACKER_TYPES[5] = 'ballistahate';
-ATTACKER_TYPES[6] = 'capturesmokebomb';
-ATTACKER_TYPES[7] = 'capturebullet';
-ATTACKER_TYPES[8] = 'barrelbombs';
-ATTACKER_TYPES[9] = 'kunai';
-ATTACKER_TYPES[10] = 'waterbeetle';
-ATTACKER_TYPES[11] = 'detonationgrenade';
-ATTACKER_TYPES[12] = 'hmballista';
-ATTACKER_TYPES[13] = 'hmcannon';
-ATTACKER_TYPES[14] = 'hmgatling';
-ATTACKER_TYPES[15] = 'hmtrap';
-ATTACKER_TYPES[16] = 'hmnpc';
-ATTACKER_TYPES[17] = 'hmflamethrower';
-ATTACKER_TYPES[18] = 'hmdragonator';
-ATTACKER_TYPES[19] = 'otomo';
-ATTACKER_TYPES[20] = 'fg005';
-ATTACKER_TYPES[21] = 'ecbatexplode';
-ATTACKER_TYPES[23] = 'monster';
-
-local ATTACKER_TYPE_TEXT = {};
-ATTACKER_TYPE_TEXT['weapon']            = 'Weapon';
-ATTACKER_TYPE_TEXT['barrelbombl']       = 'Large Barrel Bomb';
-ATTACKER_TYPE_TEXT['makimushi']         = 'makimushi';
-ATTACKER_TYPE_TEXT['nitro']             = 'nitro';
-ATTACKER_TYPE_TEXT['onibimine']         = 'onibimine';
-ATTACKER_TYPE_TEXT['ballistahate']      = 'ballistahate';
-ATTACKER_TYPE_TEXT['capturesmokebomb']  = 'Tranq Bomb';
-ATTACKER_TYPE_TEXT['capturebullet']     = 'Tranq Ammo';
-ATTACKER_TYPE_TEXT['barrelbombs']       = 'Barrel Bomb';
-ATTACKER_TYPE_TEXT['kunai']             = 'Kunai';
-ATTACKER_TYPE_TEXT['waterbeetle']       = 'waterbeetle';
-ATTACKER_TYPE_TEXT['detonationgrenade'] = 'detonationgrenade';
-ATTACKER_TYPE_TEXT['hmballista']        = 'Ballista';
-ATTACKER_TYPE_TEXT['hmcannon']          = 'Cannon';
-ATTACKER_TYPE_TEXT['hmgatling']         = 'Machine Cannon';
-ATTACKER_TYPE_TEXT['hmtrap']            = 'Bamboo Bomb';
-ATTACKER_TYPE_TEXT['hmnpc']             = 'Defenders';
-ATTACKER_TYPE_TEXT['hmflamethrower']    = 'Wyvernfire';
-ATTACKER_TYPE_TEXT['hmdragonator']      = 'Dragonator';
-ATTACKER_TYPE_TEXT['otomo']             = 'Buddy';
-ATTACKER_TYPE_TEXT['fg005']             = 'fg005';
-ATTACKER_TYPE_TEXT['ecbatexplode']      = 'ecbatexplode';
-ATTACKER_TYPE_TEXT['monster']           = 'Monster';
-
-
--- used to track damage taken by monsters
-function read_AfterCalcInfo_DamageSide(args)
-	local enemy = sdk.to_managed_object(args[2]);
-	if not enemy then
-		return;
-	end
-
-	local boss = LARGE_MONSTERS[enemy];
-	if not boss then
-		return;
-	end
-
-	if enemy:call('getHpVital') == 0 then
-		return;
-	end
-
-	local sources = boss.damageSources;
-
-	local info = sdk.to_managed_object(args[3]); -- snow.hit.EnemyCalcDamageInfo.AfterCalcInfo_DamageSide
-	local attackerId     = info:call("get_AttackerID");
-	local attackerTypeId = info:call("get_DamageAttackerType");
-	local attackerType   = ATTACKER_TYPES[attackerTypeId];
-
-	local isOtomo   = (attackerTypeId == 19);
-
-	--log_info(string.format('damage instance from attacker %d of type %s', attackerId, attackerType));
-	if isOtomo then
-		-- separate otomo from their master
-		attackerId = getFakeAttackerIdForOtomoId(attackerId);
-	end
-
-	-- get the damage source for this attacker
-	if not sources[attackerId] then
-		sources[attackerId] = initializeDamageSource(attackerId);
-	end
-	local s = sources[attackerId];
-
-	-- get the damage counter for this type
-	if not s.damageCounters[attackerType] then
-		s.damageCounters[attackerType] = initializeDamageCounter();
-	end
-	local c = s.damageCounters[attackerType];
-
-	local totalDamage     = tonumber(info:call("get_TotalDamage"));
-	local physicalDamage  = tonumber(info:call("get_PhysicalDamage"));
-	local elementDamage   = tonumber(info:call("get_ElementDamage"));
-	local conditionDamage = tonumber(info:call("get_ConditionDamage"));
-
-	--log_info(string.format('total: %f physical: %f element: %f ailment: %f', totalDamage, physicalDamage, elementDamage, conditionDamage));
-
-	-- add damage facts to counter
-	c.physical  = c.physical  + physicalDamage;
-	c.elemental = c.elemental + elementDamage;
-	c.condition = c.condition + conditionDamage;
-
-	-- hit count
-	s.numHit = s.numHit + 1;
-
-	-- biggest hit
-	if totalDamage > s.maxHit then
-		s.maxHit = totalDamage;
-	end
+if not SCENE_MANAGER_TYPE then
+	log_error('could not find scene manager type');
+	return;
 end
 
--- hook into afterCalcDamage_DamageSide function to track incoming damage on monster
--- stockDamage function also works, for host only
-sdk.hook(SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE,
-function(args)
-	read_AfterCalcInfo_DamageSide(args);
-end,
-function(retval)
-	return retval
-end);
-
-function updateBossEnemy(args)
-	local enemy = sdk.to_managed_object(args[2]);
-
-	-- get this boss from the table
-	local boss = LARGE_MONSTERS[enemy];
-	if not boss then
-		return;
-	end
-
-	-- update boss
-
-	-- get is in combat
-	boss.isInCombat = enemy:call("get_IsCombatMode");
-
-	-- get health
-	local physicalParam = enemy:get_field("<PhysicalParam>k__BackingField");
-	if physicalParam then
-		local vitalParam = physicalParam:call("getVital", 0, 0);
-		if vitalParam then
-			boss.hp.current = vitalParam:call("get_Current");
-			boss.hp.max = vitalParam:call("get_Max");
-			boss.hp.missing = boss.hp.max - boss.hp.current;
-			if boss.hp.max ~= 0 then
-				boss.hp.percent = boss.hp.current / boss.hp.max;
-			else
-				boss.hp.percent = 0;
-			end
-		end
-	end
-
+if not SCENE_MANAGER_VIEW then
+	log_error('could not find scene manager view');
+	return;
 end
 
--- hook into update function to keep track of some things on the monster
-sdk.hook(SNOW_ENEMY_ENEMYCHARACTERBASE_UPDATE,
-function(args)
-	updateBossEnemy(args);
-end,
-function(retval)
-return retval
-end);
+if not SNOW_ENEMY_ENEMYCHARACTERBASE then
+	log_error('could not find type snow.enemy.EnemyCharacterBase');
+	return;
+end
 
---
--- Damage sources
---
+if not SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE then
+	log_error('could not find method snow.enemy.EnemyCharacterBase::afterCalcDamage_DamageSide');
+	return;
+end
 
--- initializes a new boss object
-function initializeBossMonster(bossEnemy)
+if not CFG['UPDATE_RATE'] or tonumber(CFG['UPDATE_RATE']) == nil then
+	CFG['UPDATE_RATE'] = 0.5;
+end
+if CFG['UPDATE_RATE'] < 0.01 then
+	CFG['UPDATE_RATE'] = 0.01;
+end
+if CFG['UPDATE_RATE'] > 3 then
+	CFG['UPDATE_RATE'] = 3;
+end
+
+--#endregion
+
+--#region Damage sources
+
+-- damage counter
+local function initializeDamageCounter()
+	local c = {};
+	c['physical']  = 0.0;
+	c['elemental'] = 0.0;
+	c['condition'] = 0.0;
+	return c;
+end
+
+local function initializeDamageCounterWithDummyData()
+	local c = initializeDamageCounter();
+	c['physical']  = math.random(1,1000);
+	c['elemental'] = math.random(1,600);
+	c['condition'] = math.random(1,100);
+	return c;
+end
+
+local function getTotalDamageForDamageCounter(c)
+	return c.physical + c.elemental + c.condition;
+end
+
+local function mergeDamageCounters(a, b)
+	if not a then a = initializeDamageCounter(); end
+	if not b then b = initializeDamageCounter(); end
+	local c = initializeDamageCounter();
+	c.physical  = a.physical  + b.physical;
+	c.elemental = a.elemental + b.elemental;
+	c.condition = a.condition + b.condition;
+	return c;
+end
+
+-- damage source
+local function initializeDamageSource(attackerId)
+	local s = {};
+	s.id = attackerId;
+
+	s.damageCounters = {};
+	for _,type in pairs(ATTACKER_TYPES) do
+		s.damageCounters[type] = initializeDamageCounter();
+	end
+
+	s.numHit = 0; -- how many hits
+	s.maxHit = 0; -- biggest hit
+
+	return s;
+end
+
+local function initializeDamageSourceWithDummyPlayerData(attackerId)
+	local s = initializeDamageSource(attackerId);
+
+	s.damageCounters['weapon'] = initializeDamageCounterWithDummyData();
+
+	s.numHit = math.random(1,380);
+	s.maxHit = math.random(1,1000);
+
+	return s;
+end
+
+local function initializeDamageSourceWithDummyOtomoData(attackerId)
+	local s = initializeDamageSource(attackerId);
+
+	s.damageCounters['otomo'] = initializeDamageCounter();
+	s.damageCounters['otomo'].physical = math.random(0,400);
+
+	s.numHit = math.random(1,500);
+	s.maxHit = math.random(1,100);
+
+	return s;
+end
+
+local function initializeDamageSourceWithDummyMonsterData(attackerId)
+	local s = initializeDamageSource(attackerId);
+
+	s.damageCounters['monster'] = initializeDamageCounter();
+	s.damageCounters['monster'].physical = math.random(0,150);
+
+	s.numHit = math.random(1,10);
+	s.maxHit = math.random(1,50);
+
+	return s;
+end
+
+-- boss
+local function initializeBossMonster(bossEnemy)
 	local boss = {};
 
 	boss.enemy = bossEnemy;
@@ -783,29 +828,7 @@ function initializeBossMonster(bossEnemy)
 	log_info('initialized new ' .. boss.name);
 end
 
-function initializeTestData()
-	TEST_MONSTERS = {};
-	REPORT_MONSTERS = {};
-
-	initializeBossMonsterWithDummyData(111, 'Rathian');
-	initializeBossMonsterWithDummyData(222, 'Tigrex');
-	initializeBossMonsterWithDummyData(333, 'Qurupeco');
-end
-
-function isInTestMode()
-	return (TEST_MONSTERS ~= nil);
-end
-
-function clearTestData()
-	TEST_MONSTERS = nil;
-	REPORT_MONSTERS = {};
-	for enemy, boss in pairs(LARGE_MONSTERS) do
-		AddMonsterToReport(enemy, boss);
-	end
-	log_info('cleared test data');
-end
-
-function initializeBossMonsterWithDummyData(bossKey, fakeName)
+local function initializeBossMonsterWithDummyData(bossKey, fakeName)
 	local boss = {};
 
 	boss.enemy = bossKey;
@@ -841,94 +864,33 @@ function initializeBossMonsterWithDummyData(bossKey, fakeName)
 	AddMonsterToReport(bossKey, boss);
 end
 
--- damage source
-function initializeDamageSource(attackerId)
-	local s = {};
-	s.id = attackerId;
+local function initializeTestData()
+	TEST_MONSTERS = {};
+	REPORT_MONSTERS = {};
 
-	s.damageCounters = {};
-	for _,type in pairs(ATTACKER_TYPES) do
-		s.damageCounters[type] = initializeDamageCounter();
+	initializeBossMonsterWithDummyData(111, 'Rathian');
+	initializeBossMonsterWithDummyData(222, 'Tigrex');
+	initializeBossMonsterWithDummyData(333, 'Qurupeco');
+end
+
+local function isInTestMode()
+	return (TEST_MONSTERS ~= nil);
+end
+
+local function clearTestData()
+	TEST_MONSTERS = nil;
+	REPORT_MONSTERS = {};
+	for enemy, boss in pairs(LARGE_MONSTERS) do
+		AddMonsterToReport(enemy, boss);
 	end
-
-	s.numHit = 0; -- how many hits
-	s.maxHit = 0; -- biggest hit
-
-	return s;
+	log_info('cleared test data');
 end
 
-function initializeDamageSourceWithDummyPlayerData(attackerId)
-	local s = initializeDamageSource(attackerId);
+--#endregion
 
-	s.damageCounters['weapon'] = initializeDamageCounterWithDummyData();
+--#region Reports
 
-	s.numHit = math.random(1,380);
-	s.maxHit = math.random(1,1000);
-
-	return s;
-end
-
-function initializeDamageSourceWithDummyOtomoData(attackerId)
-	local s = initializeDamageSource(attackerId);
-
-	s.damageCounters['otomo'] = initializeDamageCounter();
-	s.damageCounters['otomo'].physical = math.random(0,400);
-
-	s.numHit = math.random(1,500);
-	s.maxHit = math.random(1,100);
-
-	return s;
-end
-
-function initializeDamageSourceWithDummyMonsterData(attackerId)
-	local s = initializeDamageSource(attackerId);
-
-	s.damageCounters['monster'] = initializeDamageCounter();
-	s.damageCounters['monster'].physical = math.random(0,150);
-
-	s.numHit = math.random(1,10);
-	s.maxHit = math.random(1,50);
-
-	return s;
-end
-
--- damage counter
-function initializeDamageCounter()
-	local c = {};
-	c['physical']  = 0.0;
-	c['elemental'] = 0.0;
-	c['condition'] = 0.0;
-	return c;
-end
-
-function initializeDamageCounterWithDummyData()
-	local c = initializeDamageCounter();
-	c['physical']  = math.random(1,1000);
-	c['elemental'] = math.random(1,600);
-	c['condition'] = math.random(1,100);
-	return c;
-end
-
-function getTotalDamageForDamageCounter(c)
-	return c.physical + c.elemental + c.condition;
-end
-
-function mergeDamageCounters(a, b)
-	if not a then a = initializeDamageCounter(); end
-	if not b then b = initializeDamageCounter(); end
-	local c = initializeDamageCounter();
-	c.physical  = a.physical  + b.physical;
-	c.elemental = a.elemental + b.elemental;
-	c.condition = a.condition + b.condition;
-	return c;
-end
-
---
--- Reports
---
-
--- report
-function initializeReport()
+local function initializeReport()
 	local report = {};
 
 	report.items = {};
@@ -939,20 +901,122 @@ function initializeReport()
 	return report;
 end
 
-function generateReport(filterBosses)
-	DAMAGE_REPORTS = {};
+local function getReportItem(report, id)
+	for _,item in ipairs(report.items) do
+		if item.id == id then
+			return item;
+		end
+	end
+	return nil;
+end
 
-	local report = initializeReport();
-
-	for _,boss in pairs(filterBosses) do
-		mergeDamageSourcesIntoReport(report, boss.damageSources);
+local function initializeReportItem(id)
+	if not id then
+		log_error('initializing report item with no id');
 	end
 
-	table.insert(DAMAGE_REPORTS, report);
+	local item = {};
+
+	item.id = id;
+	item.playerNumber = nil;
+	item.otomoNumber = nil;
+	item.name = nil;
+
+	-- initialize player number and name if we can
+	if item.id >= 0 and item.id <= 3 then
+		item.playerNumber = item.id + 1;
+		item.name = PLAYER_NAMES[item.playerNumber];
+	elseif attackerIdIsOtomo(item.id) then
+		item.otomoNumber = getOtomoIdFromFakeAttackerId(item.id) + 1;
+		item.name = OTOMO_NAMES[item.otomoNumber];
+	end
+
+	item.counters = {};
+
+	item.total = 0.0;
+
+	item.totalPhysical = 0.0;
+	item.totalElemental = 0.0;
+	item.totalCondition = 0.0;
+	item.totalOtomo = 0.0;
+
+	item.percentOfTotal = 0.0;
+	item.percentOfBest = 0.0;
+
+	item.numHit = 0;
+	item.maxHit = 0;
+
+	return item;
+end
+
+-- saves the total into the item itself
+local function calculateTotalsForReportItem(item)
+	-- initialize totals to zero
+	item.total = 0.0;
+	item.totalPhysical = 0.0;
+	item.totalElemental = 0.0;
+	item.totalCondition = 0.0;
+	item.totalOtomo = 0.0;
+
+	-- get totals from counters
+	for type,counter in pairs(item.counters) do
+		if REPORT_ATTACKER_TYPES[type] then
+			if type == 'otomo' then
+				local counterTotal = getTotalDamageForDamageCounter(counter);
+
+				-- sum together otomo's different types of damage and store it as its own type of damage instead
+				item.totalOtomo = item.totalOtomo + counterTotal;
+
+				item.total = item.total + counterTotal;
+			else
+				item.totalPhysical  = item.totalPhysical  + counter.physical;
+				item.totalElemental = item.totalElemental + counter.elemental;
+				item.totalCondition = item.totalCondition + counter.condition;
+
+				item.total = item.total + getTotalDamageForDamageCounter(counter);
+			end
+		end
+	end
+end
+
+local function mergeReportItemCounters(a, b)
+	local counters = {};
+	for _,type in pairs(ATTACKER_TYPES) do
+		counters[type] = mergeDamageCounters(a[type], b[type]);
+	end
+	return counters;
+end
+
+local function mergeDamageSourceIntoReportItem(item, source)
+	-- don't allow merging source and item with different IDs
+	if item.id ~= source.id then
+		-- make an exception for otomo and player to account for the trick we pulled in mergeDamageSourcesIntoReport()
+		if not attackerIdIsOtomo(source.id) then
+			log_error('tried to merge a damage source into a report item with a different id');
+			return;
+		end
+	end
+
+	item.counters = mergeReportItemCounters(item.counters, source.damageCounters);
+
+	item.numHit = item.numHit + source.numHit;
+	item.maxHit = math.max(item.maxHit, source.maxHit);
+end
+
+local function sortReportItems_DESC(a, b)
+	return a.total > b.total;
+end
+
+local function sortReportItems_ASC(a, b)
+	return a.total < b.total;
+end
+
+local function sortReportItems_Player(a, b)
+	return a.id < b.id;
 end
 
 -- main function responsible for loading a boss into a report
-function mergeDamageSourcesIntoReport(report, damageSources)
+local function mergeDamageSourcesIntoReport(report, damageSources)
 	local totalDamage = 0.0;
 	local bestDamage = 0.0;
 
@@ -1029,136 +1093,64 @@ function mergeDamageSourcesIntoReport(report, damageSources)
 	end
 end
 
-function getReportItem(report, id)
-	for _,item in ipairs(report.items) do
-		if item.id == id then
-			return item;
-		end
-	end
-	return nil;
-end
+local function generateReport(filterBosses)
+	DAMAGE_REPORTS = {};
 
--- report item
-function initializeReportItem(id)
-	if not id then
-		log_error('initializing report item with no id');
+	local report = initializeReport();
+
+	for _,boss in pairs(filterBosses) do
+		mergeDamageSourcesIntoReport(report, boss.damageSources);
 	end
 
-	local item = {};
+	table.insert(DAMAGE_REPORTS, report);
+end
 
-	item.id = id;
-	item.playerNumber = nil;
-	item.otomoNumber = nil;
-	item.name = nil;
+--#endregion
 
-	-- initialize player number and name if we can
-	if item.id >= 0 and item.id <= 3 then
-		item.playerNumber = item.id + 1;
-		item.name = PLAYER_NAMES[item.playerNumber];
-	elseif attackerIdIsOtomo(item.id) then
-		item.otomoNumber = getOtomoIdFromFakeAttackerId(item.id) + 1;
-		item.name = OTOMO_NAMES[item.otomoNumber];
+--#region Drawing
+
+local function drawRichDamageBar(item, x, y, maxWidth, h, colorPhysical, colorElemental)
+	local w = 0;
+	local colorAilment = CFG['COLOR_BAR_DMG_AILMENT'];
+	local colorOtomo = CFG['COLOR_BAR_DMG_OTOMO'];
+	local colorOther = CFG['COLOR_BAR_DMG_OTHER'];
+
+	if not CFG['DRAW_BAR_USE_UNIQUE_COLORS'] then
+		colorElemental = colorPhysical;
+		colorAilment = colorPhysical;
+		colorOtomo = colorPhysical;
+		colorOther = colorPhysical;
 	end
 
-	item.counters = {};
-
-	item.total = 0.0;
-
-	item.totalPhysical = 0.0;
-	item.totalElemental = 0.0;
-	item.totalCondition = 0.0;
-	item.totalOtomo = 0.0;
-
-	item.percentOfTotal = 0.0;
-	item.percentOfBest = 0.0;
-
-	item.numHit = 0;
-	item.maxHit = 0;
-
-	return item;
+	-- draw physical damage
+	--debug_line(string.format('damagePhysical: %d', source.damagePhysical));
+	w = (item.totalPhysical / item.total) * maxWidth;
+	draw.filled_rect(x, y, w, h, colorPhysical);
+	x = x + w;
+	-- draw elemental damage
+	--debug_line(string.format('damageElemental: %d', source.damageElemental));
+	w = (item.totalElemental / item.total) * maxWidth;
+	draw.filled_rect(x, y, w, h, colorElemental);
+	x = x + w;
+	-- draw ailment damage
+	--debug_line(string.format('damageAilment: %f', source.damageAilment));
+	w = (item.totalCondition / item.total) * maxWidth;
+	draw.filled_rect(x, y, w, h, colorAilment);
+	x = x + w;
+	-- draw otomo damage
+	--debug_line(string.format('damageOtomo: %d', source.damageOtomo));
+	w = (item.totalOtomo / item.total) * maxWidth;
+	draw.filled_rect(x, y, w, h, colorOtomo);
+	x = x + w;
+	-- draw whatever's left, just in case
+	local remainder = item.total - item.totalPhysical - item.totalElemental - item.totalCondition - item.totalOtomo;
+	--debug_line(string.format('remainder: %d', remainder));
+	w = (remainder / item.total) * maxWidth;
+	draw.filled_rect(x, y, w, h, colorOther);
+	--debug_line(string.format('total: %d', source.damageTotal));
 end
 
--- saves the total into the item itself
-function calculateTotalsForReportItem(item)
-	-- initialize totals to zero
-	item.total = 0.0;
-	item.totalPhysical = 0.0;
-	item.totalElemental = 0.0;
-	item.totalCondition = 0.0;
-	item.totalOtomo = 0.0;
-
-	-- get totals from counters
-	for type,counter in pairs(item.counters) do
-		if REPORT_ATTACKER_TYPES[type] then
-			if type == 'otomo' then
-				local counterTotal = getTotalDamageForDamageCounter(counter);
-
-				-- sum together otomo's different types of damage and store it as its own type of damage instead
-				item.totalOtomo = item.totalOtomo + counterTotal;
-
-				item.total = item.total + counterTotal;
-			else
-				item.totalPhysical  = item.totalPhysical  + counter.physical;
-				item.totalElemental = item.totalElemental + counter.elemental;
-				item.totalCondition = item.totalCondition + counter.condition;
-
-				item.total = item.total + getTotalDamageForDamageCounter(counter);
-			end
-		end
-	end
-end
-
-function mergeDamageSourceIntoReportItem(item, source)
-	-- don't allow merging source and item with different IDs
-	if item.id ~= source.id then
-		-- make an exception for otomo and player to account for the trick we pulled in mergeDamageSourcesIntoReport()
-		if not attackerIdIsOtomo(source.id) then
-			log_error('tried to merge a damage source into a report item with a different id');
-			return;
-		end
-	end
-
-	item.counters = mergeReportItemCounters(item.counters, source.damageCounters);
-
-	item.numHit = item.numHit + source.numHit;
-	item.maxHit = math.max(item.maxHit, source.maxHit);
-end
-
-function mergeReportItemCounters(a, b)
-	local counters = {};
-	for _,type in pairs(ATTACKER_TYPES) do
-		counters[type] = mergeDamageCounters(a[type], b[type]);
-	end
-	return counters;
-end
-
-function sortReportItems_DESC(a, b)
-	return a.total > b.total;
-end
-
-function sortReportItems_ASC(a, b)
-	return a.total < b.total;
-end
-
-function sortReportItems_Player(a, b)
-	return a.id < b.id;
-end
-
---
--- Draw
---
-
--- main draw function
-function dpsDraw()
-	DEBUG_Y = 0;
-
-	-- draw the first report
-	drawReport(1);
-
-	--drawDebugStats();
-end
-
-function drawReport(index)
+local function drawReport(index)
 	local report = DAMAGE_REPORTS[index];
 	if not report then
 		return;
@@ -1384,49 +1376,8 @@ function drawReport(index)
 	end
 end
 
-function drawRichDamageBar(item, x, y, maxWidth, h, colorPhysical, colorElemental)
-	local w = 0;
-	local colorAilment = CFG['COLOR_BAR_DMG_AILMENT'];
-	local colorOtomo = CFG['COLOR_BAR_DMG_OTOMO'];
-	local colorOther = CFG['COLOR_BAR_DMG_OTHER'];
-
-	if not CFG['DRAW_BAR_USE_UNIQUE_COLORS'] then
-		colorElemental = colorPhysical;
-		colorAilment = colorPhysical;
-		colorOtomo = colorPhysical;
-		colorOther = colorPhysical;
-	end
-
-	-- draw physical damage
-	--debug_line(string.format('damagePhysical: %d', source.damagePhysical));
-	w = (item.totalPhysical / item.total) * maxWidth;
-	draw.filled_rect(x, y, w, h, colorPhysical);
-	x = x + w;
-	-- draw elemental damage
-	--debug_line(string.format('damageElemental: %d', source.damageElemental));
-	w = (item.totalElemental / item.total) * maxWidth;
-	draw.filled_rect(x, y, w, h, colorElemental);
-	x = x + w;
-	-- draw ailment damage
-	--debug_line(string.format('damageAilment: %f', source.damageAilment));
-	w = (item.totalCondition / item.total) * maxWidth;
-	draw.filled_rect(x, y, w, h, colorAilment);
-	x = x + w;
-	-- draw otomo damage
-	--debug_line(string.format('damageOtomo: %d', source.damageOtomo));
-	w = (item.totalOtomo / item.total) * maxWidth;
-	draw.filled_rect(x, y, w, h, colorOtomo);
-	x = x + w;
-	-- draw whatever's left, just in case
-	local remainder = item.total - item.totalPhysical - item.totalElemental - item.totalCondition - item.totalOtomo;
-	--debug_line(string.format('remainder: %d', remainder));
-	w = (remainder / item.total) * maxWidth;
-	draw.filled_rect(x, y, w, h, colorOther);
-	--debug_line(string.format('total: %d', source.damageTotal));
-end
-
 -- debug info stuff
-function drawDebugStats()
+local function drawDebugStats()
 	--local kpiData         = QUEST_MANAGER:call("get_KpiData");
 	--local playerPhysical  = kpiData:call("get_PlayerTotalAttackDamage");
 	--local playerElemental = kpiData:call("get_PlayerTotalElementalAttackDamage");
@@ -1494,12 +1445,22 @@ function drawDebugStats()
 	]]
 end
 
---
--- Update
---
+-- main draw function
+local function dpsDraw()
+	DEBUG_Y = 0;
+
+	-- draw the first report
+	drawReport(1);
+
+	--drawDebugStats();
+end
+
+--#endregion
+
+--#region Updating
 
 -- main update function
-function dpsUpdate()
+local function dpsUpdate()
 	-- update screen dimensions
 	readScreenDimensions();
 
@@ -1526,95 +1487,90 @@ function dpsUpdate()
 	generateReport(REPORT_MONSTERS);
 end
 
-function hasManagedResources()
-	if not PLAYER_MANAGER then
-		PLAYER_MANAGER = sdk.get_managed_singleton("snow.player.PlayerManager");
-		if not PLAYER_MANAGER then
-			return false;
-		end
+-- update based on wall clock
+local function dpsUpdateOccasionally(realSeconds)
+	if realSeconds > LAST_UPDATE_TIME + CFG['UPDATE_RATE'] then
+		dpsUpdate();
+		LAST_UPDATE_TIME = realSeconds;
 	end
-
-	if not QUEST_MANAGER then
-		QUEST_MANAGER = sdk.get_managed_singleton("snow.QuestManager");
-		if not QUEST_MANAGER then
-			return false;
-		end
-	end
-
-	if not ENEMY_MANAGER then
-		ENEMY_MANAGER = sdk.get_managed_singleton("snow.enemy.EnemyManager");
-		if not ENEMY_MANAGER then
-			return false;
-		end
-	end
-
-	if not MESSAGE_MANAGER then
-		MESSAGE_MANAGER = sdk.get_managed_singleton("snow.gui.MessageManager");
-		if not MESSAGE_MANAGER then
-			return false;
-		end
-	end
-
-	if not LOBBY_MANAGER then
-		LOBBY_MANAGER = sdk.get_managed_singleton("snow.LobbyManager");
-		if not LOBBY_MANAGER then
-			return false;
-		end
-	end
-
-	if not OTOMO_MANAGER then
-		OTOMO_MANAGER = sdk.get_managed_singleton("snow.otomo.OtomoManager");
-		if not OTOMO_MANAGER then
-			return false;
-		end
-	end
-
-	if not KEYBOARD_MANAGER then
-		local softKeyboard = sdk.get_managed_singleton("snow.GameKeyboard");
-		if softKeyboard then
-			KEYBOARD_MANAGER = softKeyboard:get_field("hardKeyboard");
-			if not KEYBOARD_MANAGER then
-				return false;
-			end
-		else
-			return false;
-		end
-	end
-
-	-- not required since it doesn't seem to always be available
-	if not AREA_MANAGER then
-		AREA_MANAGER = sdk.get_managed_singleton("snow.VillageAreaManager");
-	end
-
-	return true;
 end
 
---
--- REFramework UI
---
+-- runs every frame
+local function dpsFrame()
+	-- make sure managed resources are initialized
+	if not hasManagedResources() then
+		return;
+	end
 
-function showCheckboxForSetting(setting)
+	local questStatus = QUEST_MANAGER:get_field("_QuestStatus");
+
+	local villageArea = 0;
+	if AREA_MANAGER then
+		villageArea = AREA_MANAGER:get_field("<_CurrentAreaNo>k__BackingField");
+	end
+
+	local isInQuest = (questStatus >= 2);
+	local isInTrainingHall = (villageArea == 5);
+
+	IS_ONLINE = (LOBBY_MANAGER and LOBBY_MANAGER:call("IsQuestOnline")) or false;
+
+	if not ASSIGNED_HOTKEY_THIS_FRAME and KEYBOARD_MANAGER:call("getTrg", HOTKEY_TOGGLE_OVERLAY) then
+		DRAW_OVERLAY = not DRAW_OVERLAY;
+	end
+
+	-- if the window is open
+	if DRAW_WINDOW_SETTINGS then
+		-- update every frame
+		dpsUpdate();
+	-- when a quest is active
+	elseif isInQuest then
+		local totalSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
+		dpsUpdateOccasionally(totalSeconds);
+	-- when you are in the training area
+	elseif isInTrainingHall then
+		local totalSeconds = AREA_MANAGER:call("get_TrainingHallStayTime");
+		dpsUpdateOccasionally(totalSeconds);
+	else
+		-- clean up some things in between quests
+		if LAST_UPDATE_TIME ~= 0 then
+			cleanUpData();
+		end
+	end
+
+	if DRAW_WINDOW_SETTINGS -- always draw overlay if settings window is open
+	or (DRAW_OVERLAY and -- draw in one of the following circumstances if overlay is enabled
+	   (isInTestMode() or isInQuest or isInTrainingHall)) then
+		-- draw on every frame
+		dpsDraw();
+	end
+end
+
+--#endregion
+
+--#region imgui interface
+
+local function showCheckboxForSetting(setting)
 	local changed, value = imgui.checkbox(TXT[setting], CFG[setting]);
 	if changed then
 		CFG[setting] = value;
 	end
 end
 
-function showSliderForFloatSetting(setting)
+local function showSliderForFloatSetting(setting)
 	local changed, value = imgui.slider_float(TXT[setting], CFG[setting], MIN[setting], MAX[setting], '%.2f');
 	if changed then
 		CFG[setting] = value;
 	end
 end
 
-function showSliderForIntSetting(setting)
+local function showSliderForIntSetting(setting)
 	local changed, value = imgui.slider_int(TXT[setting], CFG[setting], MIN[setting], MAX[setting], '%d');
 	if changed then
 		CFG[setting] = value;
 	end
 end
 
-function DrawWindowSettings()
+local function DrawWindowSettings()
 	local changed, wantsIt = false, false;
 	local value = nil;
 
@@ -1735,7 +1691,7 @@ function DrawWindowSettings()
 	imgui.end_window();
 end
 
-function showCheckboxForAttackerType(type)
+local function showCheckboxForAttackerType(type)
 	local typeIsInReport = REPORT_ATTACKER_TYPES[type];
 	local changed, wantsIt = imgui.checkbox(ATTACKER_TYPE_TEXT[type], typeIsInReport);
 	if changed then
@@ -1747,32 +1703,7 @@ function showCheckboxForAttackerType(type)
 	end
 end
 
-function AddMonsterToReport(enemyToAdd, bossInfo)
-	REPORT_MONSTERS[enemyToAdd] = bossInfo;
-	log_info(string.format('%s added to report', bossInfo.name));
-end
-
-function RemoveMonsterFromReport(enemyToRemove)
-	for enemy,boss in pairs(REPORT_MONSTERS) do
-		if enemy == enemyToRemove then
-			REPORT_MONSTERS[enemy] = nil;
-			log_info(string.format('%s removed from report', boss.name));
-			return;
-		end
-	end
-end
-
-function AddAttackerTypeToReport(typeToAdd)
-	REPORT_ATTACKER_TYPES[typeToAdd] = true;
-	log_info(string.format('damage type %s added to report', typeToAdd));
-end
-
-function RemoveAttackerTypeFromReport(typeToRemove)
-	REPORT_ATTACKER_TYPES[typeToRemove] = nil;
-	log_info(string.format('damage type %s removed from report', typeToRemove));
-end
-
-function DrawWindowReport()
+local function DrawWindowReport()
 	local changed, wantsIt = false, false;
 	local value = nil;
 
@@ -1855,7 +1786,7 @@ function DrawWindowReport()
 	imgui.end_window();
 end
 
-function DrawWindowHotkeys()
+local function DrawWindowHotkeys()
 	local changed, wantsIt = false, false;
 	local value = nil;
 
@@ -1881,77 +1812,142 @@ function DrawWindowHotkeys()
 	imgui.end_window();
 end
 
---
--- REFramework
---
+--#endregion
 
-function cleanUpData()
-	LAST_UPDATE_TIME = 0;
-	LARGE_MONSTERS  = {};
-	DAMAGE_REPORTS  = {};
-	REPORT_MONSTERS = {};
-	log_info('cleared captured data');
+--#region sdk hooks
+
+-- know when we return from a quest
+local function read_onChangedGameStatus(args)
+	local status = sdk.to_int64(args[3]);
+	if status == 1 then
+		-- entered the village
+		cleanUpData();
+	end
 end
 
--- runs every frame
-function dpsFrame()
-	-- make sure managed resources are initialized
-	if not hasManagedResources() then
+-- register function hook
+sdk.hook(QUEST_MANAGER_METHOD_ONCHANGEDGAMESTATUS,
+function(args)
+	read_onChangedGameStatus(args);
+end, function(retval) return retval end);
+
+-- keep track of some things on monsters
+local function updateBossEnemy(args)
+	local enemy = sdk.to_managed_object(args[2]);
+
+	-- get this boss from the table
+	local boss = LARGE_MONSTERS[enemy];
+	if not boss then
 		return;
 	end
 
-	local questStatus = QUEST_MANAGER:get_field("_QuestStatus");
+	-- get is in combat
+	boss.isInCombat = enemy:call("get_IsCombatMode");
 
-	local villageArea = 0;
-	if AREA_MANAGER then
-		villageArea = AREA_MANAGER:get_field("<_CurrentAreaNo>k__BackingField");
-	end
-
-	local isInQuest = (questStatus >= 2);
-	local isInTrainingHall = (villageArea == 5);
-
-	IS_ONLINE = (LOBBY_MANAGER and LOBBY_MANAGER:call("IsQuestOnline")) or false;
-
-	if not ASSIGNED_HOTKEY_THIS_FRAME and KEYBOARD_MANAGER:call("getTrg", HOTKEY_TOGGLE_OVERLAY) then
-		DRAW_OVERLAY = not DRAW_OVERLAY;
-	end
-
-	-- if the window is open
-	if DRAW_WINDOW_SETTINGS then
-		-- update every frame
-		dpsUpdate();
-	-- when a quest is active
-	elseif isInQuest then
-		local totalSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
-		dpsUpdateOccasionally(totalSeconds);
-	-- when you are in the training area
-	elseif isInTrainingHall then
-		local totalSeconds = AREA_MANAGER:call("get_TrainingHallStayTime");
-		dpsUpdateOccasionally(totalSeconds);
-	else
-		-- clean up some things in between quests
-		if LAST_UPDATE_TIME ~= 0 then
-			cleanUpData();
+	-- get health
+	local physicalParam = enemy:get_field("<PhysicalParam>k__BackingField");
+	if physicalParam then
+		local vitalParam = physicalParam:call("getVital", 0, 0);
+		if vitalParam then
+			boss.hp.current = vitalParam:call("get_Current");
+			boss.hp.max = vitalParam:call("get_Max");
+			boss.hp.missing = boss.hp.max - boss.hp.current;
+			if boss.hp.max ~= 0 then
+				boss.hp.percent = boss.hp.current / boss.hp.max;
+			else
+				boss.hp.percent = 0;
+			end
 		end
 	end
+end
 
-	
-	if DRAW_WINDOW_SETTINGS -- always draw overlay if settings window is open
-	or (DRAW_OVERLAY and -- draw in one of the following circumstances if overlay is enabled
-	   (isInTestMode() or isInQuest or isInTrainingHall)) then
-		-- draw on every frame
-		dpsDraw();
+-- register function hook
+sdk.hook(SNOW_ENEMY_ENEMYCHARACTERBASE_UPDATE,
+function(args)
+	updateBossEnemy(args);
+end,
+function(retval)
+return retval
+end);
+
+-- track damage taken by monsters
+local function read_AfterCalcInfo_DamageSide(args)
+	local enemy = sdk.to_managed_object(args[2]);
+	if not enemy then
+		return;
+	end
+
+	local boss = LARGE_MONSTERS[enemy];
+	if not boss then
+		return;
+	end
+
+	if enemy:call('getHpVital') == 0 then
+		return;
+	end
+
+	local sources = boss.damageSources;
+
+	local info = sdk.to_managed_object(args[3]); -- snow.hit.EnemyCalcDamageInfo.AfterCalcInfo_DamageSide
+	local attackerId     = info:call("get_AttackerID");
+	local attackerTypeId = info:call("get_DamageAttackerType");
+	local attackerType   = ATTACKER_TYPES[attackerTypeId];
+
+	local isOtomo   = (attackerTypeId == 19);
+
+	--log_info(string.format('damage instance from attacker %d of type %s', attackerId, attackerType));
+	if isOtomo then
+		-- separate otomo from their master
+		attackerId = getFakeAttackerIdForOtomoId(attackerId);
+	end
+
+	-- get the damage source for this attacker
+	if not sources[attackerId] then
+		sources[attackerId] = initializeDamageSource(attackerId);
+	end
+	local s = sources[attackerId];
+
+	-- get the damage counter for this type
+	if not s.damageCounters[attackerType] then
+		s.damageCounters[attackerType] = initializeDamageCounter();
+	end
+	local c = s.damageCounters[attackerType];
+
+	local totalDamage     = tonumber(info:call("get_TotalDamage"));
+	local physicalDamage  = tonumber(info:call("get_PhysicalDamage"));
+	local elementDamage   = tonumber(info:call("get_ElementDamage"));
+	local conditionDamage = tonumber(info:call("get_ConditionDamage"));
+
+	--log_info(string.format('total: %f physical: %f element: %f ailment: %f', totalDamage, physicalDamage, elementDamage, conditionDamage));
+
+	-- add damage facts to counter
+	c.physical  = c.physical  + physicalDamage;
+	c.elemental = c.elemental + elementDamage;
+	c.condition = c.condition + conditionDamage;
+
+	-- hit count
+	s.numHit = s.numHit + 1;
+
+	-- biggest hit
+	if totalDamage > s.maxHit then
+		s.maxHit = totalDamage;
 	end
 end
 
-function dpsUpdateOccasionally(realSeconds)
-	if realSeconds > LAST_UPDATE_TIME + CFG['UPDATE_RATE'] then
-		dpsUpdate();
-		LAST_UPDATE_TIME = realSeconds;
-	end
-end
+-- register function hook
+sdk.hook(SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE,
+function(args)
+	read_AfterCalcInfo_DamageSide(args);
+end,
+function(retval)
+	return retval
+end);
 
-function registerWaitingHotkeys()
+--#endregion
+
+--#region REFramework
+
+local function registerWaitingHotkeys()
 	if HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER then
 		for key,text in pairs(ENUM_KEYBOARD_KEY) do
 			if KEYBOARD_MANAGER:call("getDown", key) then
@@ -2013,6 +2009,8 @@ re.on_draw_ui(function()
 
 	imgui.end_group();
 end)
+
+--#endregion
 
 for _,type in pairs(ATTACKER_TYPES) do
 	AddAttackerTypeToReport(type);
