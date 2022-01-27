@@ -1,23 +1,25 @@
 # coavins dps meter for Monster Hunter Rise (PC)
 
-![Small screenshot 1](https://i.imgur.com/8hTPG8H.png)
-![Small screenshot 2](https://i.imgur.com/G5Fx7eQ.png)
+![screenshot-table-6](https://user-images.githubusercontent.com/91746207/151455752-8d84c769-f8d8-4aa6-9d11-4e98510fb1af.png)
 
-This mod adds an overlay that displays different types of damage dealt by your party members, and ranks them by total damage output.
+This mod records all damage dealt to large monsters and can display a wide selection of information in a highly customization overlay.
 
-This mod is solely intended to empower players with means of self-improvement. Please don't use the information provided by this tool to make hurtful comments toward other players.
+Please don't use the information provided by this tool to engage in harassment toward other players. All of the party members you meet are trying their best, and unsolicited comments about performance can be hurtful to players who may not have as much experience as you.
 
-Requires [REFramework](https://github.com/praydog/REFramework).
+This mod is NOT intended to reveal any hidden information about monsters or give the player any unfair advantage. The goal is to help players know how they are performing without affecting the intended playing experience.
 
-## Install
+### Prerequisites
 
-Just copy the `.lua` file into the autorun folder provided by REFramework.
+* [REFramework](https://github.com/praydog/REFramework)
 
-If the game is running, you will have to either restart the game or use the Reset Scripts button in the REFramework overlay.
+### Install
+
+1. Copy the `.lua` file into the autorun folder provided by REFramework.
+2. Click 'Reset scripts' in the REFramework window if the game was already running
 
 ## Configuration
 
-There is a settings menu located in the REFramework window.
+There are some menus located in the REFramework window.
 1. Expand "Script Generated UI"
 2. Click on the coavins dps meter settings button
 
@@ -49,9 +51,4 @@ The following additional information can be printed inside the bars for each pla
 4. How many total hits you have dealt
 5. Your highest damage dealt in a single blow
 
-Currently, the table only displays a summary of damage dealt to all large monsters.
-
-### TODO:
-* Actually track DPS
-* Allow filtering by monster
-* Unit testing
+You can also configure the table to show buddies, monsters, and NPCs as separate rows in the table.
