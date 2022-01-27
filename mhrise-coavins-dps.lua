@@ -1151,10 +1151,8 @@ function drawReport(index)
 
 			if monsterCount > 3 then
 				monsterText = monsterText .. ', etc...';
-			end
-
-			if monsterText == '' then
-				monsterText = 'No monsters selected';
+			elseif monsterCount == 0 then
+				monsterText = monsterText .. 'No monsters selected';
 			end
 		end
 
