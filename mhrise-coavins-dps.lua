@@ -273,10 +273,12 @@ PRESET_MHROVERLAY['COLOR_BAR_DMG_PHYSICAL'] = 0xAFE069AE;
 
 local DPS_ENABLED = true;
 local LAST_UPDATE_TIME = 0;
+local DRAW_OVERLAY = true;
 local DRAW_WINDOW_SETTINGS = false;
 local DRAW_WINDOW_REPORT = false;
 local WINDOW_FLAGS = 0x10120;
 local IS_ONLINE = false;
+local HOTKEY_TOGGLE_OVERLAY = 109; -- numpad minus
 
 local PRESETS = {};
 local PRESET_OPTIONS = {};
@@ -301,13 +303,14 @@ local PLAYER_NAMES = {};
 local OTOMO_NAMES = {};
 
 -- initialized later when they become available
-local PLAYER_MANAGER  = nil;
-local ENEMY_MANAGER   = nil;
-local QUEST_MANAGER   = nil;
-local MESSAGE_MANAGER = nil;
-local LOBBY_MANAGER   = nil;
-local AREA_MANAGER    = nil;
-local OTOMO_MANAGER   = nil;
+local PLAYER_MANAGER   = nil;
+local ENEMY_MANAGER    = nil;
+local QUEST_MANAGER    = nil;
+local MESSAGE_MANAGER  = nil;
+local LOBBY_MANAGER    = nil;
+local AREA_MANAGER     = nil;
+local OTOMO_MANAGER    = nil;
+local KEYBOARD_MANAGER = nil;
 
 local SCENE_MANAGER      = sdk.get_native_singleton("via.SceneManager");
 local SCENE_MANAGER_TYPE = sdk.find_type_definition("via.SceneManager");
@@ -726,6 +729,10 @@ function initializeTestData()
 	initializeBossMonsterWithDummyData(333, 'Qurupeco');
 end
 
+function isInTestMode()
+	return (TEST_MONSTERS ~= nil);
+end
+
 function clearTestData()
 	TEST_MONSTERS = nil;
 	REPORT_MONSTERS = {};
@@ -1125,7 +1132,7 @@ function drawReport(index)
 		local monsterText = '';
 
 		-- use a fake timer in test mode
-		if TEST_MONSTERS then
+		if isInTestMode() then
 			timeMinutes = 5;
 			timeSeconds = 37;
 		end
@@ -1494,15 +1501,28 @@ function hasManagedResources()
 		end
 	end
 
-	if not AREA_MANAGER then
-		AREA_MANAGER = sdk.get_managed_singleton("snow.VillageAreaManager");
-	end
-
 	if not OTOMO_MANAGER then
 		OTOMO_MANAGER = sdk.get_managed_singleton("snow.otomo.OtomoManager");
 		if not OTOMO_MANAGER then
 			return false;
 		end
+	end
+
+	if not KEYBOARD_MANAGER then
+		local softKeyboard = sdk.get_managed_singleton("snow.GameKeyboard");
+		if softKeyboard then
+			KEYBOARD_MANAGER = softKeyboard:get_field("hardKeyboard");
+			if not KEYBOARD_MANAGER then
+				return false;
+			end
+		else
+			return false;
+		end
+	end
+
+	-- not required since it doesn't seem to always be available
+	if not AREA_MANAGER then
+		AREA_MANAGER = sdk.get_managed_singleton("snow.VillageAreaManager");
 	end
 
 	return true;
@@ -1541,7 +1561,7 @@ function DrawWindowSettings()
 	if DRAW_WINDOW_SETTINGS and not wantsIt then
 		DRAW_WINDOW_SETTINGS = false;
 
-		if TEST_MONSTERS then
+		if isInTestMode() then
 			clearTestData();
 		end
 	end
@@ -1591,7 +1611,7 @@ function DrawWindowSettings()
 
 	imgui.same_line();
 	if imgui.button('Refresh') then
-		if TEST_MONSTERS then
+		if isInTestMode() then
 			-- reinitialize test data
 			initializeTestData();
 		end
@@ -1794,23 +1814,31 @@ function dpsFrame()
 	end
 
 	local questStatus = QUEST_MANAGER:get_field("_QuestStatus");
+
 	local villageArea = 0;
 	if AREA_MANAGER then
 		villageArea = AREA_MANAGER:get_field("<_CurrentAreaNo>k__BackingField");
 	end
 
+	local isInQuest = (questStatus >= 2);
+	local isInTrainingHall = (villageArea == 5);
+
 	IS_ONLINE = (LOBBY_MANAGER and LOBBY_MANAGER:call("IsQuestOnline")) or false;
+
+	if KEYBOARD_MANAGER:call("getTrg", HOTKEY_TOGGLE_OVERLAY) then
+		DRAW_OVERLAY = not DRAW_OVERLAY;
+	end
 
 	-- if the window is open
 	if DRAW_WINDOW_SETTINGS then
 		-- update every frame
 		dpsUpdate();
 	-- when a quest is active
-	elseif questStatus >= 2 then
+	elseif isInQuest then
 		local totalSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
 		dpsUpdateOccasionally(totalSeconds);
 	-- when you are in the training area
-	elseif villageArea == 5 then
+	elseif isInTrainingHall then
 		local totalSeconds = AREA_MANAGER:call("get_TrainingHallStayTime");
 		dpsUpdateOccasionally(totalSeconds);
 	else
@@ -1820,8 +1848,11 @@ function dpsFrame()
 		end
 	end
 
-	-- draw on every frame
-	if DRAW_WINDOW_SETTINGS or TEST_MONSTERS or questStatus >= 2 or villageArea == 5 then
+	
+	if DRAW_WINDOW_SETTINGS -- always draw overlay if settings window is open
+	or (DRAW_OVERLAY and -- draw in one of the following circumstances if overlay is enabled
+	   (isInTestMode() or isInQuest or isInTrainingHall)) then
+		-- draw on every frame
 		dpsDraw();
 	end
 end
