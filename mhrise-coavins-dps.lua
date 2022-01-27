@@ -1330,6 +1330,10 @@ local function drawReport(index)
 	end
 
 	for i,item in ipairs(report.items) do
+		if item.total == 0 then
+			goto skip_report_item
+		end
+
 		local y = origin_y + (rowHeight + CFG['TABLE_ROW_PADDING']) * i;
 
 		local combatantColor = CFG['COLOR_GRAY'];
@@ -1480,6 +1484,8 @@ local function drawReport(index)
 			-- draw outline
 			draw.outline_rect(origin_x, y, tableWidth, rowHeight, CFG['COLOR_BAR_OUTLINE']);
 		end
+
+		::skip_report_item::
 	end
 end
 
