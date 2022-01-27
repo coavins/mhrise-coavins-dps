@@ -31,6 +31,8 @@ TXT['DRAW_BAR_RELATIVE_TO_PARTY'] = 'Damage bars will represent share of overall
 -- table settings
 CFG['DRAW_TITLE_TEXT'] = true;
 TXT['DRAW_TITLE_TEXT'] = 'Show title text';
+CFG['DRAW_TITLE_MONSTERS'] = true;
+TXT['DRAW_TITLE_MONSTERS'] = 'Show monsters in title';
 CFG['DRAW_TITLE_BACKGROUND'] = true;
 TXT['DRAW_TITLE_BACKGROUND'] = 'Show title background';
 CFG['DRAW_BAR_BACKGROUNDS'] = true;
@@ -1087,10 +1089,11 @@ function drawReport(index)
 
 	if CFG['DRAW_TITLE_TEXT'] then
 		-- generate the title text
-		local title = "";
 		local timeMinutes = QUEST_MANAGER:call("getQuestElapsedTimeMin");
 		local timeSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
 		timeSeconds = timeSeconds - (timeMinutes * 60);
+		local timeText = string.format("%d:%02.0f", timeMinutes, timeSeconds);
+		local monsterText = '';
 
 		-- use a fake timer in test mode
 		if TEST_MONSTERS then
@@ -1098,25 +1101,28 @@ function drawReport(index)
 			timeSeconds = 37;
 		end
 
-		-- add monster names
-		local monsterCount = 0;
-		for _,boss in pairs(REPORT_MONSTERS) do
-			if monsterCount < 3 then
-				if title ~= '' then title = title .. ', '; end
-				title = title .. string.format('%s', boss.name);
+		if CFG['DRAW_TITLE_MONSTERS'] then
+			monsterText = ' - '
+			-- add monster names
+			local monsterCount = 0;
+			for _,boss in pairs(REPORT_MONSTERS) do
+				if monsterCount < 3 then
+					if monsterCount > 0 then monsterText = monsterText .. ', '; end
+					monsterText = monsterText .. string.format('%s', boss.name);
+				end
+				monsterCount = monsterCount + 1;
 			end
-			monsterCount = monsterCount + 1;
+
+			if monsterCount > 3 then
+				monsterText = monsterText .. ', etc...';
+			end
+
+			if monsterText == '' then
+				monsterText = 'No monsters selected';
+			end
 		end
 
-		if monsterCount > 3 then
-			title = title .. ', etc...';
-		end
-
-		if title == '' then
-			title = 'No monsters selected';
-		end
-
-		local titleText = string.format("%d:%02.0f - %s", timeMinutes, timeSeconds, title);
+		local titleText = timeText .. monsterText;
 		draw.text(titleText, origin_x, origin_y, CFG['COLOR_TITLE_FG']);
 	end
 
@@ -1570,6 +1576,7 @@ function DrawWindowSettings()
 	imgui.new_line();
 
 	showCheckboxForSetting('DRAW_TITLE_TEXT');
+	showCheckboxForSetting('DRAW_TITLE_MONSTERS');
 	showCheckboxForSetting('DRAW_TITLE_BACKGROUND');
 	showCheckboxForSetting('DRAW_BAR_BACKGROUNDS');
 	showCheckboxForSetting('DRAW_BAR_OUTLINES');
