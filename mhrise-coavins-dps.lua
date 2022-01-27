@@ -539,6 +539,32 @@ ATTACKER_TYPES[20] = 'fg005';
 ATTACKER_TYPES[21] = 'ecbatexplode';
 ATTACKER_TYPES[23] = 'monster';
 
+local ATTACKER_TYPE_TEXT = {};
+ATTACKER_TYPE_TEXT['weapon']            = 'Weapon';
+ATTACKER_TYPE_TEXT['barrelbombl']       = 'Large Barrel Bomb';
+ATTACKER_TYPE_TEXT['makimushi']         = 'makimushi';
+ATTACKER_TYPE_TEXT['nitro']             = 'nitro';
+ATTACKER_TYPE_TEXT['onibimine']         = 'onibimine';
+ATTACKER_TYPE_TEXT['ballistahate']      = 'ballistahate';
+ATTACKER_TYPE_TEXT['capturesmokebomb']  = 'Tranq Bomb';
+ATTACKER_TYPE_TEXT['capturebullet']     = 'Tranq Ammo';
+ATTACKER_TYPE_TEXT['barrelbombs']       = 'Barrel Bomb';
+ATTACKER_TYPE_TEXT['kunai']             = 'Kunai';
+ATTACKER_TYPE_TEXT['waterbeetle']       = 'waterbeetle';
+ATTACKER_TYPE_TEXT['detonationgrenade'] = 'detonationgrenade';
+ATTACKER_TYPE_TEXT['hmballista']        = 'Ballista';
+ATTACKER_TYPE_TEXT['hmcannon']          = 'Cannon';
+ATTACKER_TYPE_TEXT['hmgatling']         = 'Machine Cannon';
+ATTACKER_TYPE_TEXT['hmtrap']            = 'Bamboo Bomb';
+ATTACKER_TYPE_TEXT['hmnpc']             = 'Defenders';
+ATTACKER_TYPE_TEXT['hmflamethrower']    = 'Wyvernfire';
+ATTACKER_TYPE_TEXT['hmdragonator']      = 'Dragonator';
+ATTACKER_TYPE_TEXT['otomo']             = 'Buddy';
+ATTACKER_TYPE_TEXT['fg005']             = 'fg005';
+ATTACKER_TYPE_TEXT['ecbatexplode']      = 'ecbatexplode';
+ATTACKER_TYPE_TEXT['monster']           = 'Monster';
+
+
 -- used to track damage taken by monsters
 function read_AfterCalcInfo_DamageSide(args)
 	local enemy = sdk.to_managed_object(args[2]);
@@ -1507,7 +1533,7 @@ function DrawWindowSettings()
 	local changed, wantsIt = false, false;
 	local value = nil;
 
-	wantsIt = imgui.begin_window('coavins dps meter - settings', DRAW_WINDOW_SETTINGS, WINDOW_FLAGS);
+	wantsIt = imgui.begin_window('settings', DRAW_WINDOW_SETTINGS, WINDOW_FLAGS);
 	if DRAW_WINDOW_SETTINGS and not wantsIt then
 		DRAW_WINDOW_SETTINGS = false;
 
@@ -1623,6 +1649,18 @@ function DrawWindowSettings()
 	imgui.end_window();
 end
 
+function showCheckboxForAttackerType(type)
+	local typeIsInReport = REPORT_ATTACKER_TYPES[type];
+	local changed, wantsIt = imgui.checkbox(ATTACKER_TYPE_TEXT[type], typeIsInReport);
+	if changed then
+		if wantsIt then
+			AddAttackerTypeToReport(type);
+		else
+			RemoveAttackerTypeFromReport(type);
+		end
+	end
+end
+
 function AddMonsterToReport(enemyToAdd, bossInfo)
 	REPORT_MONSTERS[enemyToAdd] = bossInfo;
 	log_info(string.format('%s added to report', bossInfo.name));
@@ -1652,7 +1690,7 @@ function DrawWindowReport()
 	local changed, wantsIt = false, false;
 	local value = nil;
 
-	wantsIt = imgui.begin_window('coavins dps meter - filters', DRAW_WINDOW_REPORT, WINDOW_FLAGS);
+	wantsIt = imgui.begin_window('filters', DRAW_WINDOW_REPORT, WINDOW_FLAGS);
 	if DRAW_WINDOW_REPORT and not wantsIt then
 		DRAW_WINDOW_REPORT = false;
 	end
@@ -1673,7 +1711,9 @@ function DrawWindowReport()
 	imgui.text('Monsters');
 
 	local monsterCollection = TEST_MONSTERS or LARGE_MONSTERS;
+	local foundMonster = false;
 	for enemy,boss in pairs(monsterCollection) do
+		foundMonster = true;
 		local monsterIsInReport = REPORT_MONSTERS[enemy];
 		changed, wantsIt = imgui.checkbox(boss.name, monsterIsInReport);
 		if changed then
@@ -1684,23 +1724,47 @@ function DrawWindowReport()
 			end
 		end
 	end
+	if not foundMonster then
+		imgui.text('(n/a)');
+	end
 
 	imgui.new_line();
 
-	-- draw buttons for damage types
-	imgui.text('Attacker type');
+	-- draw buttons for attacker types
+	imgui.text('Attack type');
 
-	for _,type in pairs(ATTACKER_TYPES) do
-		local typeIsInReport = REPORT_ATTACKER_TYPES[type];
-		changed, wantsIt = imgui.checkbox(type, typeIsInReport);
-		if changed then
-			if wantsIt then
-				AddAttackerTypeToReport(type);
-			else
-				RemoveAttackerTypeFromReport(type);
-			end
-		end
-	end
+	showCheckboxForAttackerType('weapon');
+	showCheckboxForAttackerType('otomo');
+	showCheckboxForAttackerType('monster');
+
+	imgui.new_line();
+
+	showCheckboxForAttackerType('barrelbombs');
+	showCheckboxForAttackerType('barrelbombl');
+	showCheckboxForAttackerType('nitro');
+	showCheckboxForAttackerType('capturesmokebomb');
+	showCheckboxForAttackerType('capturebullet');
+	showCheckboxForAttackerType('kunai');
+
+	imgui.new_line();
+
+	showCheckboxForAttackerType('hmballista');
+	showCheckboxForAttackerType('hmcannon');
+	showCheckboxForAttackerType('hmgatling');
+	showCheckboxForAttackerType('hmtrap');
+	showCheckboxForAttackerType('hmnpc');
+	showCheckboxForAttackerType('hmflamethrower');
+	showCheckboxForAttackerType('hmdragonator');
+
+	imgui.new_line();
+
+	showCheckboxForAttackerType('makimushi');
+	showCheckboxForAttackerType('onibimine');
+	showCheckboxForAttackerType('ballistahate');
+	showCheckboxForAttackerType('waterbeetle');
+	showCheckboxForAttackerType('detonationgrenade');
+	showCheckboxForAttackerType('fg005');
+	showCheckboxForAttackerType('ecbatexplode');
 
 	imgui.end_window();
 end
