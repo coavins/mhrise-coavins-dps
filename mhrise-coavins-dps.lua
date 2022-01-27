@@ -100,7 +100,10 @@ TXT['TABLE_SCALE'] = 'Scaling factor';
 MIN['TABLE_SCALE'] = 0.0;
 MAX['TABLE_SCALE'] = 10.00;
 
--- pixels
+CFG['TABLE_HEADER_TEXT_OFFSET_X'] = 3;
+TXT['TABLE_HEADER_TEXT_OFFSET_X'] = 'Table text offset X';
+MIN['TABLE_HEADER_TEXT_OFFSET_X'] = -100;
+MAX['TABLE_HEADER_TEXT_OFFSET_X'] = 100;
 CFG['TABLE_WIDTH'] = 350;
 TXT['TABLE_WIDTH'] = 'Table width';
 MIN['TABLE_WIDTH'] = 0;
@@ -117,11 +120,11 @@ MIN['TABLE_ROW_PADDING'] = 0;
 MAX['TABLE_ROW_PADDING'] = 150;
 
 CFG['TABLE_ROW_TEXT_OFFSET_X'] = 0; -- x offset for damage bar text
-TXT['TABLE_ROW_TEXT_OFFSET_X'] = 'Text offset X';
+TXT['TABLE_ROW_TEXT_OFFSET_X'] = 'Row text offset X';
 MIN['TABLE_ROW_TEXT_OFFSET_X'] = -100;
 MAX['TABLE_ROW_TEXT_OFFSET_X'] = 100;
 CFG['TABLE_ROW_TEXT_OFFSET_Y'] = 0; -- y offset for damage bar text
-TXT['TABLE_ROW_TEXT_OFFSET_Y'] = 'Text offset Y';
+TXT['TABLE_ROW_TEXT_OFFSET_Y'] = 'Row text offset Y';
 MIN['TABLE_ROW_TEXT_OFFSET_Y'] = -100;
 MAX['TABLE_ROW_TEXT_OFFSET_Y'] = 100;
 
@@ -1149,7 +1152,8 @@ function drawReport(index)
 		end
 
 		local titleText = timeText .. monsterText;
-		draw.text(titleText, origin_x, origin_y, CFG['COLOR_TITLE_FG']);
+		local offsetX = CFG['TABLE_HEADER_TEXT_OFFSET_X'];
+		draw.text(titleText, origin_x + offsetX, origin_y, CFG['COLOR_TITLE_FG']);
 	end
 
 	if CFG['TABLE_GROWS_UPWARD'] then
@@ -1635,6 +1639,7 @@ function DrawWindowSettings()
 	showSliderForFloatSetting('TABLE_X');
 	showSliderForFloatSetting('TABLE_Y');
 	showSliderForFloatSetting('TABLE_SCALE');
+	showSliderForIntSetting('TABLE_HEADER_TEXT_OFFSET_X');
 	showSliderForIntSetting('TABLE_WIDTH');
 
 	imgui.new_line();
