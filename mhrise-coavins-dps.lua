@@ -8,172 +8,174 @@ local TXT = {};
 local MIN = {};
 local MAX = {};
 
--- general settings
-CFG['UPDATE_RATE'] = 0.5; -- in seconds, so 0.5 means two updates per second
-TXT['UPDATE_RATE'] = 'Update frequency (in seconds)';
-MIN['UPDATE_RATE'] = 0.01;
-MAX['UPDATE_RATE'] = 10.00;
+local function applyDefaultConfiguration()
+	-- general settings
+	CFG['UPDATE_RATE'] = 0.5; -- in seconds, so 0.5 means two updates per second
+	TXT['UPDATE_RATE'] = 'Update frequency (in seconds)';
+	MIN['UPDATE_RATE'] = 0.01;
+	MAX['UPDATE_RATE'] = 10.00;
 
--- when the settings window is open, test data will be shown in the graph
-CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] = true;
-TXT['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] = 'Show test data while menu is open';
+	-- when the settings window is open, test data will be shown in the graph
+	CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] = true;
+	TXT['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] = 'Show test data while menu is open';
 
--- when true, damage from palicoes and palamutes will be counted as if dealt by their hunter
--- when false, damage from palicoes and palamutes will be ignored completely
-CFG['OTOMO_DMG_IS_PLAYER_DMG'] = true;
-TXT['OTOMO_DMG_IS_PLAYER_DMG'] = 'Combine buddies with their hunter';
+	-- when true, damage from palicoes and palamutes will be counted as if dealt by their hunter
+	-- when false, damage from palicoes and palamutes will be ignored completely
+	CFG['OTOMO_DMG_IS_PLAYER_DMG'] = true;
+	TXT['OTOMO_DMG_IS_PLAYER_DMG'] = 'Combine buddies with their hunter';
 
-CFG['DRAW_BAR_RELATIVE_TO_PARTY'] = false;
-TXT['DRAW_BAR_RELATIVE_TO_PARTY'] = 'Damage bars will represent share of overall party DPS';
+	CFG['DRAW_BAR_RELATIVE_TO_PARTY'] = false;
+	TXT['DRAW_BAR_RELATIVE_TO_PARTY'] = 'Damage bars will represent share of overall party DPS';
 
--- table settings
-CFG['DRAW_TITLE_TEXT'] = true;
-TXT['DRAW_TITLE_TEXT'] = 'Show title text';
-CFG['DRAW_TITLE_MONSTERS'] = true;
-TXT['DRAW_TITLE_MONSTERS'] = 'Show monsters in title';
-CFG['DRAW_TITLE_BACKGROUND'] = true;
-TXT['DRAW_TITLE_BACKGROUND'] = 'Show title background';
-CFG['DRAW_BAR_BACKGROUNDS'] = true;
-TXT['DRAW_BAR_BACKGROUNDS'] = 'Show bar background';
-CFG['DRAW_BAR_OUTLINES']    = false;
-TXT['DRAW_BAR_OUTLINES'] = 'Show bar outlines';
-CFG['DRAW_BAR_COLORBLOCK'] = true; -- shows block at the front of the bar with player's color
-TXT['DRAW_BAR_COLORBLOCK'] = 'Show color block';
-CFG['DRAW_BAR_TEXT_PADDING'] = 3;
-TXT['DRAW_BAR_TEXT_PADDING'] = 'Column padding';
-MIN['DRAW_BAR_TEXT_PADDING'] = 0;
-MAX['DRAW_BAR_TEXT_PADDING'] = 35;
-CFG['DRAW_BAR_TEXT_PADDING_FIXED'] = false;
-TXT['DRAW_BAR_TEXT_PADDING_FIXED'] = 'Fixed column widths'
-CFG['DRAW_BAR_USE_PLAYER_COLORS'] = true;
-TXT['DRAW_BAR_USE_PLAYER_COLORS'] = 'Show player bars with their assigned color';
-CFG['DRAW_BAR_USE_UNIQUE_COLORS'] = true;
-TXT['DRAW_BAR_USE_UNIQUE_COLORS'] = 'Show each type of damage in a different color';
+	-- table settings
+	CFG['DRAW_TITLE_TEXT'] = true;
+	TXT['DRAW_TITLE_TEXT'] = 'Show title text';
+	CFG['DRAW_TITLE_MONSTERS'] = true;
+	TXT['DRAW_TITLE_MONSTERS'] = 'Show monsters in title';
+	CFG['DRAW_TITLE_BACKGROUND'] = true;
+	TXT['DRAW_TITLE_BACKGROUND'] = 'Show title background';
+	CFG['DRAW_BAR_BACKGROUNDS'] = true;
+	TXT['DRAW_BAR_BACKGROUNDS'] = 'Show bar background';
+	CFG['DRAW_BAR_OUTLINES']    = false;
+	TXT['DRAW_BAR_OUTLINES'] = 'Show bar outlines';
+	CFG['DRAW_BAR_COLORBLOCK'] = true; -- shows block at the front of the bar with player's color
+	TXT['DRAW_BAR_COLORBLOCK'] = 'Show color block';
+	CFG['DRAW_BAR_TEXT_PADDING'] = 3;
+	TXT['DRAW_BAR_TEXT_PADDING'] = 'Column padding';
+	MIN['DRAW_BAR_TEXT_PADDING'] = 0;
+	MAX['DRAW_BAR_TEXT_PADDING'] = 35;
+	CFG['DRAW_BAR_TEXT_PADDING_FIXED'] = false;
+	TXT['DRAW_BAR_TEXT_PADDING_FIXED'] = 'Fixed column widths'
+	CFG['DRAW_BAR_USE_PLAYER_COLORS'] = true;
+	TXT['DRAW_BAR_USE_PLAYER_COLORS'] = 'Show player bars with their assigned color';
+	CFG['DRAW_BAR_USE_UNIQUE_COLORS'] = true;
+	TXT['DRAW_BAR_USE_UNIQUE_COLORS'] = 'Show each type of damage in a different color';
 
-CFG['DRAW_BAR_TEXT_NAME']                = true; -- shows name of combatant
-TXT['DRAW_BAR_TEXT_NAME'] = 'Show names';
-CFG['DRAW_BAR_TEXT_YOU']                 = false; -- shows "YOU" on your bar
-TXT['DRAW_BAR_TEXT_YOU'] = 'Show "YOU" on your row';
-CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = true; -- show real player names instead of IDs
-TXT['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = 'Reveal character names';
-CFG['DRAW_BAR_TEXT_TOTAL_DAMAGE']        = false; -- shows total damage dealt
-TXT['DRAW_BAR_TEXT_TOTAL_DAMAGE'] = 'Show total damage done';
-CFG['DRAW_BAR_TEXT_PERCENT_OF_PARTY']    = true; -- shows your share of party damage
-TXT['DRAW_BAR_TEXT_PERCENT_OF_PARTY'] = 'Show percent of party damage';
-CFG['DRAW_BAR_TEXT_PERCENT_OF_BEST']     = false; -- shows how close you are to the top damage dealer
-TXT['DRAW_BAR_TEXT_PERCENT_OF_BEST'] = 'Show percent of leader\'s damage';
-CFG['DRAW_BAR_TEXT_HIT_COUNT']           = false; -- shows how many hits you've landed
-TXT['DRAW_BAR_TEXT_HIT_COUNT'] = 'Show number of hits';
-CFG['DRAW_BAR_TEXT_BIGGEST_HIT']         = false; -- shows how much damage your biggest hit did
-TXT['DRAW_BAR_TEXT_BIGGEST_HIT'] = 'Show damage dealt by biggest hit';
+	CFG['DRAW_BAR_TEXT_NAME']                = true; -- shows name of combatant
+	TXT['DRAW_BAR_TEXT_NAME'] = 'Show names';
+	CFG['DRAW_BAR_TEXT_YOU']                 = false; -- shows "YOU" on your bar
+	TXT['DRAW_BAR_TEXT_YOU'] = 'Show "YOU" on your row';
+	CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = true; -- show real player names instead of IDs
+	TXT['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = 'Reveal character names';
+	CFG['DRAW_BAR_TEXT_TOTAL_DAMAGE']        = false; -- shows total damage dealt
+	TXT['DRAW_BAR_TEXT_TOTAL_DAMAGE'] = 'Show total damage done';
+	CFG['DRAW_BAR_TEXT_PERCENT_OF_PARTY']    = true; -- shows your share of party damage
+	TXT['DRAW_BAR_TEXT_PERCENT_OF_PARTY'] = 'Show percent of party damage';
+	CFG['DRAW_BAR_TEXT_PERCENT_OF_BEST']     = false; -- shows how close you are to the top damage dealer
+	TXT['DRAW_BAR_TEXT_PERCENT_OF_BEST'] = 'Show percent of leader\'s damage';
+	CFG['DRAW_BAR_TEXT_HIT_COUNT']           = false; -- shows how many hits you've landed
+	TXT['DRAW_BAR_TEXT_HIT_COUNT'] = 'Show number of hits';
+	CFG['DRAW_BAR_TEXT_BIGGEST_HIT']         = false; -- shows how much damage your biggest hit did
+	TXT['DRAW_BAR_TEXT_BIGGEST_HIT'] = 'Show damage dealt by biggest hit';
 
--- the damage bars will be removed, and the player blocks will receive shading instead
-CFG['USE_MINIMAL_BARS'] = false;
-TXT['USE_MINIMAL_BARS'] = 'Use a minimalist style for the damage bars';
+	-- the damage bars will be removed, and the player blocks will receive shading instead
+	CFG['USE_MINIMAL_BARS'] = false;
+	TXT['USE_MINIMAL_BARS'] = 'Use a minimalist style for the damage bars';
 
--- rows will be added on top of the title bar instead, making it easier to place the table at the bottom of the screen
-CFG['TABLE_GROWS_UPWARD'] = false;
-TXT['TABLE_GROWS_UPWARD'] = 'Table grows upward instead of down';
+	-- rows will be added on top of the title bar instead, making it easier to place the table at the bottom of the screen
+	CFG['TABLE_GROWS_UPWARD'] = false;
+	TXT['TABLE_GROWS_UPWARD'] = 'Table grows upward instead of down';
 
--- when true, the row with the highest damage will be on bottom. you might want to use this with TABLE_GROWS_UPWARD
-CFG['TABLE_SORT_ASC'] = false;
-TXT['TABLE_SORT_ASC'] = 'Sort ascending';
--- when true, player 1 will be first and player 4 will be last
-CFG['TABLE_SORT_IN_ORDER'] = false;
-TXT['TABLE_SORT_IN_ORDER'] = 'Sort by player';
+	-- when true, the row with the highest damage will be on bottom. you might want to use this with TABLE_GROWS_UPWARD
+	CFG['TABLE_SORT_ASC'] = false;
+	TXT['TABLE_SORT_ASC'] = 'Sort ascending';
+	-- when true, player 1 will be first and player 4 will be last
+	CFG['TABLE_SORT_IN_ORDER'] = false;
+	TXT['TABLE_SORT_IN_ORDER'] = 'Sort by player';
 
--- table position
--- X/Y here is expressed as a percentage
--- 0 is left/top of screen, 1 is right/bottom
-CFG['TABLE_X'] = 0.65;
-TXT['TABLE_X'] = 'Horizontal position';
-MIN['TABLE_X'] = 0.0;
-MAX['TABLE_X'] = 1.0;
-CFG['TABLE_Y'] = 0.00;
-TXT['TABLE_Y'] = 'Vertical position';
-MIN['TABLE_Y'] = 0.0;
-MAX['TABLE_Y'] = 1.0;
-CFG['TABLE_SCALE'] = 1.0; -- multiplier for width and height
-TXT['TABLE_SCALE'] = 'Scaling factor';
-MIN['TABLE_SCALE'] = 0.0;
-MAX['TABLE_SCALE'] = 10.00;
+	-- table position
+	-- X/Y here is expressed as a percentage
+	-- 0 is left/top of screen, 1 is right/bottom
+	CFG['TABLE_X'] = 0.65;
+	TXT['TABLE_X'] = 'Horizontal position';
+	MIN['TABLE_X'] = 0.0;
+	MAX['TABLE_X'] = 1.0;
+	CFG['TABLE_Y'] = 0.00;
+	TXT['TABLE_Y'] = 'Vertical position';
+	MIN['TABLE_Y'] = 0.0;
+	MAX['TABLE_Y'] = 1.0;
+	CFG['TABLE_SCALE'] = 1.0; -- multiplier for width and height
+	TXT['TABLE_SCALE'] = 'Scaling factor';
+	MIN['TABLE_SCALE'] = 0.0;
+	MAX['TABLE_SCALE'] = 10.00;
 
-CFG['TABLE_HEADER_TEXT_OFFSET_X'] = 3;
-TXT['TABLE_HEADER_TEXT_OFFSET_X'] = 'Table text offset X';
-MIN['TABLE_HEADER_TEXT_OFFSET_X'] = -100;
-MAX['TABLE_HEADER_TEXT_OFFSET_X'] = 100;
-CFG['TABLE_WIDTH'] = 350;
-TXT['TABLE_WIDTH'] = 'Table width';
-MIN['TABLE_WIDTH'] = 0;
-MAX['TABLE_WIDTH'] = 3000;
+	CFG['TABLE_HEADER_TEXT_OFFSET_X'] = 3;
+	TXT['TABLE_HEADER_TEXT_OFFSET_X'] = 'Table text offset X';
+	MIN['TABLE_HEADER_TEXT_OFFSET_X'] = -100;
+	MAX['TABLE_HEADER_TEXT_OFFSET_X'] = 100;
+	CFG['TABLE_WIDTH'] = 350;
+	TXT['TABLE_WIDTH'] = 'Table width';
+	MIN['TABLE_WIDTH'] = 0;
+	MAX['TABLE_WIDTH'] = 3000;
 
-CFG['TABLE_ROWH'] = 18;
-TXT['TABLE_ROWH'] = 'Row height';
-MIN['TABLE_ROWH'] = 0;
-MAX['TABLE_ROWH'] = 100;
+	CFG['TABLE_ROWH'] = 18;
+	TXT['TABLE_ROWH'] = 'Row height';
+	MIN['TABLE_ROWH'] = 0;
+	MAX['TABLE_ROWH'] = 100;
 
-CFG['TABLE_ROW_PADDING'] = 0;
-TXT['TABLE_ROW_PADDING'] = 'Row padding'
-MIN['TABLE_ROW_PADDING'] = 0;
-MAX['TABLE_ROW_PADDING'] = 150;
+	CFG['TABLE_ROW_PADDING'] = 0;
+	TXT['TABLE_ROW_PADDING'] = 'Row padding'
+	MIN['TABLE_ROW_PADDING'] = 0;
+	MAX['TABLE_ROW_PADDING'] = 150;
 
-CFG['TABLE_ROW_TEXT_OFFSET_X'] = 0; -- x offset for damage bar text
-TXT['TABLE_ROW_TEXT_OFFSET_X'] = 'Row text offset X';
-MIN['TABLE_ROW_TEXT_OFFSET_X'] = -100;
-MAX['TABLE_ROW_TEXT_OFFSET_X'] = 100;
-CFG['TABLE_ROW_TEXT_OFFSET_Y'] = 0; -- y offset for damage bar text
-TXT['TABLE_ROW_TEXT_OFFSET_Y'] = 'Row text offset Y';
-MIN['TABLE_ROW_TEXT_OFFSET_Y'] = -100;
-MAX['TABLE_ROW_TEXT_OFFSET_Y'] = 100;
+	CFG['TABLE_ROW_TEXT_OFFSET_X'] = 0; -- x offset for damage bar text
+	TXT['TABLE_ROW_TEXT_OFFSET_X'] = 'Row text offset X';
+	MIN['TABLE_ROW_TEXT_OFFSET_X'] = -100;
+	MAX['TABLE_ROW_TEXT_OFFSET_X'] = 100;
+	CFG['TABLE_ROW_TEXT_OFFSET_Y'] = 0; -- y offset for damage bar text
+	TXT['TABLE_ROW_TEXT_OFFSET_Y'] = 'Row text offset Y';
+	MIN['TABLE_ROW_TEXT_OFFSET_Y'] = -100;
+	MAX['TABLE_ROW_TEXT_OFFSET_Y'] = 100;
 
--- colors
--- 0x 12345678
--- 12 = alpha
--- 34 = green
--- 56 = blue
--- 78 = red
+	-- colors
+	-- 0x 12345678
+	-- 12 = alpha
+	-- 34 = green
+	-- 56 = blue
+	-- 78 = red
 
--- basic palette
-CFG['COLOR_WHITE']  = 0xFFFFFFFF;
-CFG['COLOR_GRAY']   = 0xFFAFAFAF;
-CFG['COLOR_BLACK']  = 0xFF000000;
-CFG['COLOR_RED']    = 0xAF3232FF;
-CFG['COLOR_BLUE']   = 0xAFFF3232;
-CFG['COLOR_YELLOW'] = 0xAF32FFFF;
-CFG['COLOR_GREEN']  = 0xAF32FF32;
+	-- basic palette
+	CFG['COLOR_WHITE']  = 0xFFFFFFFF;
+	CFG['COLOR_GRAY']   = 0xFFAFAFAF;
+	CFG['COLOR_BLACK']  = 0xFF000000;
+	CFG['COLOR_RED']    = 0xAF3232FF;
+	CFG['COLOR_BLUE']   = 0xAFFF3232;
+	CFG['COLOR_YELLOW'] = 0xAF32FFFF;
+	CFG['COLOR_GREEN']  = 0xAF32FF32;
 
--- players
-CFG['COLOR_PLAYER'] = {};
-CFG['COLOR_PLAYER'][0] = CFG['COLOR_RED'];
-CFG['COLOR_PLAYER'][1] = CFG['COLOR_BLUE'];
-CFG['COLOR_PLAYER'][2] = CFG['COLOR_YELLOW'];
-CFG['COLOR_PLAYER'][3] = CFG['COLOR_GREEN'];
+	-- players
+	CFG['COLOR_PLAYER'] = {};
+	CFG['COLOR_PLAYER'][0] = CFG['COLOR_RED'];
+	CFG['COLOR_PLAYER'][1] = CFG['COLOR_BLUE'];
+	CFG['COLOR_PLAYER'][2] = CFG['COLOR_YELLOW'];
+	CFG['COLOR_PLAYER'][3] = CFG['COLOR_GREEN'];
 
-CFG['COLOR_OTOMO'] = 0xAFFCD032;
+	CFG['COLOR_OTOMO'] = 0xAFFCD032;
 
--- table colors
-CFG['COLOR_TITLE_BG']         = 0x88000000;
-CFG['COLOR_TITLE_FG']         = 0xFFDADADA;
-CFG['COLOR_BAR_BG']           = 0x44000000;
-CFG['COLOR_BAR_OUTLINE']      = 0x44000000;
+	-- table colors
+	CFG['COLOR_TITLE_BG']         = 0x88000000;
+	CFG['COLOR_TITLE_FG']         = 0xFFDADADA;
+	CFG['COLOR_BAR_BG']           = 0x44000000;
+	CFG['COLOR_BAR_OUTLINE']      = 0x44000000;
 
-CFG['COLOR_BAR_DMG_PHYSICAL'] = 0xAF616658;
-CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'] = {};
-CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][0] = 0xAF2828CC; -- red
-CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][1] = 0xAFCC2828; -- blue
-CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][2] = 0xAF28CCCC; -- yellow
-CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][3] = 0xAF28CC28; -- green
+	CFG['COLOR_BAR_DMG_PHYSICAL'] = 0xAF616658;
+	CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'] = {};
+	CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][0] = 0xAF2828CC; -- red
+	CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][1] = 0xAFCC2828; -- blue
+	CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][2] = 0xAF28CCCC; -- yellow
+	CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][3] = 0xAF28CC28; -- green
 
-CFG['COLOR_BAR_DMG_ELEMENT']  = 0xAF919984;
-CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'] = {};
-CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][0] = 0xAF1C1C8C; -- red
-CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][1] = 0xAF8C1C1C; -- blue
-CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][2] = 0xAF1C8C8C; -- yellow
-CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][3] = 0xAF1C8C1C; -- green
+	CFG['COLOR_BAR_DMG_ELEMENT']  = 0xAF919984;
+	CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'] = {};
+	CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][0] = 0xAF1C1C8C; -- red
+	CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][1] = 0xAF8C1C1C; -- blue
+	CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][2] = 0xAF1C8C8C; -- yellow
+	CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][3] = 0xAF1C8C1C; -- green
 
-CFG['COLOR_BAR_DMG_AILMENT']  = 0xAF3E37A3;
-CFG['COLOR_BAR_DMG_OTOMO']    = 0xAFF0BB00;
-CFG['COLOR_BAR_DMG_OTHER']    = 0xAF616658;
+	CFG['COLOR_BAR_DMG_AILMENT']  = 0xAF3E37A3;
+	CFG['COLOR_BAR_DMG_OTOMO']    = 0xAFF0BB00;
+	CFG['COLOR_BAR_DMG_OTHER']    = 0xAF616658;
+end
 
 --#endregion Configuration
 
@@ -638,6 +640,7 @@ local function hasManagedResources()
 end
 
 local function applySelectedPreset()
+	applyDefaultConfiguration();
 	local name = PRESET_OPTIONS[PRESET_OPTIONS_SELECTED];
 	local preset = PRESETS[name];
 	if preset then
@@ -2114,5 +2117,7 @@ end)
 for _,type in pairs(ATTACKER_TYPES) do
 	AddAttackerTypeToReport(type);
 end
+
+applyDefaultConfiguration();
 
 log_info('init complete');
