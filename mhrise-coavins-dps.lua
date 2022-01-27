@@ -1099,9 +1099,17 @@ function drawReport(index)
 		end
 
 		-- add monster names
+		local monsterCount = 0;
 		for _,boss in pairs(REPORT_MONSTERS) do
-			if title ~= '' then title = title .. ', '; end
-			title = title .. string.format('%s', boss.name);
+			if monsterCount < 3 then
+				if title ~= '' then title = title .. ', '; end
+				title = title .. string.format('%s', boss.name);
+			end
+			monsterCount = monsterCount + 1;
+		end
+
+		if monsterCount > 3 then
+			title = title .. ', etc...';
 		end
 
 		if title == '' then
