@@ -1180,17 +1180,20 @@ local function drawReport(index)
 
 	if CFG['DRAW_TITLE_TEXT'] then
 		-- generate the title text
+
+		-- get quest duration
 		local timeMinutes = QUEST_MANAGER:call("getQuestElapsedTimeMin");
 		local timeSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
 		timeSeconds = timeSeconds - (timeMinutes * 60);
-		local timeText = string.format("%d:%02.0f", timeMinutes, timeSeconds);
-		local monsterText = '';
 
-		-- use a fake timer in test mode
+		-- use a fake duration in test mode
 		if isInTestMode() then
 			timeMinutes = 5;
 			timeSeconds = 37;
 		end
+
+		local timeText = string.format("%d:%02.0f", timeMinutes, timeSeconds);
+		local monsterText = '';
 
 		if CFG['DRAW_TITLE_MONSTERS'] then
 			monsterText = ' - '
