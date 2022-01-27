@@ -1323,6 +1323,12 @@ local function drawReport(index)
 	end
 
 	-- draw report items
+	if #report.items == 0 then
+		local x = origin_x + colorBlockWidth + 2 + text_offset_x;
+		local y = origin_y + rowHeight + CFG['TABLE_ROW_PADDING'] + text_offset_y;
+		draw.text('No data', x, y, CFG['COLOR_GRAY']);
+	end
+
 	for i,item in ipairs(report.items) do
 		local y = origin_y + (rowHeight + CFG['TABLE_ROW_PADDING']) * i;
 
