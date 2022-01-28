@@ -1,4 +1,4 @@
-name: linter
+name: luacheck
 
 on: [push, pull_request]
 
