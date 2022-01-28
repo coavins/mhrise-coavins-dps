@@ -543,22 +543,19 @@ MANAGER.AREA     = nil;
 MANAGER.OTOMO    = nil;
 MANAGER.KEYBOARD = nil;
 MANAGER.STAGE    = nil;
+MANAGER.SCENE    = nil;
 
-local SCENE_MANAGER      = sdk.get_native_singleton("via.SceneManager");
-local SCENE_MANAGER_TYPE = sdk.find_type_definition("via.SceneManager");
-local SCENE_MANAGER_VIEW = sdk.call_native_func(SCENE_MANAGER, SCENE_MANAGER_TYPE, "get_MainView");
+local SCENE_MANAGER_TYPE = nil;
+local SCENE_MANAGER_VIEW = nil;
 
-local QUEST_MANAGER_TYPE = sdk.find_type_definition("snow.QuestManager");
-local QUEST_MANAGER_METHOD_ONCHANGEDGAMESTATUS = QUEST_MANAGER_TYPE:get_method("onChangedGameStatus");
---local QUEST_MANAGER_METHOD_ADDKPIATTACKDAMAGE = QUEST_MANAGER_TYPE:get_method("addKpiAttackDamage");
-local SNOW_ENEMY_ENEMYCHARACTERBASE = sdk.find_type_definition("snow.enemy.EnemyCharacterBase");
--- stockDamage function also works, for host only
-local SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE =
-	SNOW_ENEMY_ENEMYCHARACTERBASE:get_method("afterCalcDamage_DamageSide");
-local SNOW_ENEMY_ENEMYCHARACTERBASE_UPDATE = SNOW_ENEMY_ENEMYCHARACTERBASE:get_method("update");
+local QUEST_MANAGER_TYPE = nil;
+local QUEST_MANAGER_METHOD_ONCHANGEDGAMESTATUS = nil;
+local SNOW_ENEMY_ENEMYCHARACTERBASE = nil;
+local SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE = nil;
+local SNOW_ENEMY_ENEMYCHARACTERBASE_UPDATE = nil;
 
-local STAGE_MANAGER_TYPE = sdk.find_type_definition("snow.stage.StageManager");
-local STAGE_MANAGER_METHOD_ENDTRAININGROOM = STAGE_MANAGER_TYPE:get_method("endTrainingRoom");
+local STAGE_MANAGER_TYPE = nil;
+local STAGE_MANAGER_METHOD_ENDTRAININGROOM = nil;
 
 --#endregion
 
@@ -597,6 +594,17 @@ end
 
 local function getScreenYFromY(y)
 	return SCREEN_H * y;
+end
+
+local function hasNativeResources()
+	if not MANAGER.SCENE then
+		MANAGER.SCENE = sdk.get_native_singleton("via.SceneManager");
+		if not MANAGER.SCENE then
+			return false;
+		end
+	end
+
+	return true;
 end
 
 local function hasManagedResources()
@@ -652,11 +660,6 @@ local function hasManagedResources()
 		else
 			return false;
 		end
-	end
-
-	-- not required since it doesn't seem to always be available
-	if not MANAGER.AREA then
-		MANAGER.AREA = sdk.get_managed_singleton("snow.VillageAreaManager");
 	end
 
 	return true;
@@ -797,33 +800,6 @@ end
 --#endregion Helper functions
 
 --#region Sanity checking
-
-if not _G._UNIT_TESTING then
-	if not SCENE_MANAGER then
-		log_error('could not find scene manager');
-		return;
-	end
-
-	if not SCENE_MANAGER_TYPE then
-		log_error('could not find scene manager type');
-		return;
-	end
-
-	if not SCENE_MANAGER_VIEW then
-		log_error('could not find scene manager view');
-		return;
-	end
-
-	if not SNOW_ENEMY_ENEMYCHARACTERBASE then
-		log_error('could not find type snow.enemy.EnemyCharacterBase');
-		return;
-	end
-
-	if not SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE then
-		log_error('could not find method snow.enemy.EnemyCharacterBase::afterCalcDamage_DamageSide');
-		return;
-	end
-end
 
 if not CFG['UPDATE_RATE'] or tonumber(CFG['UPDATE_RATE']) == nil then
 	CFG['UPDATE_RATE'] = 0.5;
@@ -1710,55 +1686,6 @@ local function checkHotkeyActivated()
 	end
 end
 
--- runs every frame
-local function dpsFrame()
-	-- make sure managed resources are initialized
-	if not hasManagedResources() then
-		return;
-	end
-
-	local questStatus = MANAGER.QUEST:get_field("_QuestStatus");
-
-	local villageArea = 0;
-	if MANAGER.AREA then
-		villageArea = MANAGER.AREA:get_field("<_CurrentAreaNo>k__BackingField");
-	end
-
-	local isInQuest = (questStatus >= 2);
-	local isInTrainingHall = (villageArea == 5);
-
-	IS_ONLINE = (MANAGER.LOBBY and MANAGER.LOBBY:call("IsQuestOnline")) or false;
-
-	updateHeldHotkeyModifiers();
-	checkHotkeyActivated();
-
-	-- if the window is open
-	if DRAW_WINDOW_SETTINGS then
-		-- update every frame
-		dpsUpdate();
-	-- when a quest is active
-	elseif isInQuest then
-		local totalSeconds = MANAGER.QUEST:call("getQuestElapsedTimeSec");
-		dpsUpdateOccasionally(totalSeconds);
-	-- when you are in the training area
-	elseif isInTrainingHall then
-		local totalSeconds = MANAGER.AREA:call("get_TrainingHallStayTime");
-		dpsUpdateOccasionally(totalSeconds);
-	else
-		-- clean up some things in between quests
-		if LAST_UPDATE_TIME ~= 0 then
-			cleanUpData();
-		end
-	end
-
-	if DRAW_WINDOW_SETTINGS -- always draw overlay if settings window is open
-	or (DRAW_OVERLAY and -- draw in one of the following circumstances if overlay is enabled
-	   (isInTestMode() or isInQuest or isInTrainingHall)) then
-		-- draw on every frame
-		dpsDraw();
-	end
-end
-
 --#endregion
 
 --#region imgui interface
@@ -2049,10 +1976,6 @@ end
 local function read_endTrainingRoom(args)
 	cleanUpData();
 end
-sdk.hook(STAGE_MANAGER_METHOD_ENDTRAININGROOM,
-function(args)
-	read_endTrainingRoom(args);
-end, function(retval) return retval end);
 
 -- know when we return from a quest
 local function read_onChangedGameStatus(args)
@@ -2062,12 +1985,6 @@ local function read_onChangedGameStatus(args)
 		cleanUpData();
 	end
 end
-
--- register function hook
-sdk.hook(QUEST_MANAGER_METHOD_ONCHANGEDGAMESTATUS,
-function(args)
-	read_onChangedGameStatus(args);
-end, function(retval) return retval end);
 
 -- keep track of some things on monsters
 local function updateBossEnemy(args)
@@ -2099,15 +2016,6 @@ local function updateBossEnemy(args)
 	end
 end
 
--- register function hook
-sdk.hook(SNOW_ENEMY_ENEMYCHARACTERBASE_UPDATE,
-function(args)
-	updateBossEnemy(args);
-end,
-function(retval)
-return retval
-end);
-
 -- track damage taken by monsters
 local function read_AfterCalcInfo_DamageSide(args)
 	local enemy = sdk.to_managed_object(args[2]);
@@ -2137,14 +2045,67 @@ local function read_AfterCalcInfo_DamageSide(args)
 	, physicalDamage, elementDamage, conditionDamage);
 end
 
--- register function hook
-sdk.hook(SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE,
-function(args)
-	read_AfterCalcInfo_DamageSide(args);
-end,
-function(retval)
-	return retval
-end);
+local function tryLoadTypeDefinitions()
+	if not SCENE_MANAGER_TYPE then
+		SCENE_MANAGER_TYPE = sdk.find_type_definition("via.SceneManager");
+		if MANAGER.SCENE and SCENE_MANAGER_TYPE then
+			SCENE_MANAGER_VIEW = sdk.call_native_func(MANAGER.SCENE, SCENE_MANAGER_TYPE, "get_MainView");
+		else
+			log_error('Failed to find via.SceneManager');
+		end
+	end
+
+	if not QUEST_MANAGER_TYPE then
+		QUEST_MANAGER_TYPE = sdk.find_type_definition("snow.QuestManager");
+		if QUEST_MANAGER_TYPE then
+			QUEST_MANAGER_METHOD_ONCHANGEDGAMESTATUS = QUEST_MANAGER_TYPE:get_method("onChangedGameStatus");
+			-- register function hook
+			sdk.hook(QUEST_MANAGER_METHOD_ONCHANGEDGAMESTATUS,
+				function(args) read_onChangedGameStatus(args); end,
+				function(retval) return retval end);
+			log_info('Hooked snow.QuestManager:onGameChangeStatus()');
+		else
+			log_error('Failed to find snow.QuestManager');
+		end
+	end
+
+	if not SNOW_ENEMY_ENEMYCHARACTERBASE then
+		--local QUEST_MANAGER_METHOD_ADDKPIATTACKDAMAGE = QUEST_MANAGER_TYPE:get_method("addKpiAttackDamage");
+		SNOW_ENEMY_ENEMYCHARACTERBASE = sdk.find_type_definition("snow.enemy.EnemyCharacterBase");
+		if SNOW_ENEMY_ENEMYCHARACTERBASE then
+			SNOW_ENEMY_ENEMYCHARACTERBASE_UPDATE = SNOW_ENEMY_ENEMYCHARACTERBASE:get_method("update");
+			-- register function hook
+			sdk.hook(SNOW_ENEMY_ENEMYCHARACTERBASE_UPDATE,
+				function(args) updateBossEnemy(args); end,
+				function(retval) return retval end);
+				log_info('Hooked snow.enemy.EnemyCharacterBase:update()');
+
+			-- stockDamage function also works, for host only
+			SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE =
+				SNOW_ENEMY_ENEMYCHARACTERBASE:get_method("afterCalcDamage_DamageSide");
+			-- register function hook
+			sdk.hook(SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE,
+				function(args) read_AfterCalcInfo_DamageSide(args); end,
+				function(retval) return retval end);
+				log_info('Hooked snow.enemy.EnemyCharacterBase:afterCalcDamage_DamageSide()');
+		else
+			log_error('Failed to find snow.enemy.EnemyCharacterBase');
+		end
+	end
+
+	if not STAGE_MANAGER_TYPE then
+		STAGE_MANAGER_TYPE = sdk.find_type_definition("snow.stage.StageManager");
+		if STAGE_MANAGER_TYPE then
+			STAGE_MANAGER_METHOD_ENDTRAININGROOM = STAGE_MANAGER_TYPE:get_method("endTrainingRoom");
+			-- register function hook
+			sdk.hook(STAGE_MANAGER_METHOD_ENDTRAININGROOM,
+				function(args) read_endTrainingRoom(args); end,
+				function(retval) return retval end);
+		else
+			log_error('Failed to find snow.stage.StageManager');
+		end
+	end
+end
 
 --#endregion
 
@@ -2184,6 +2145,67 @@ local function registerWaitingHotkeys()
 				end
 			end
 		end
+	end
+end
+
+-- runs every frame
+local function dpsFrame()
+	-- make sure resources are initialized
+	if not hasManagedResources() then
+		return;
+	end
+
+	if not hasNativeResources() then
+		return;
+	end
+
+	-- get our function hooks if we don't have them yet
+	tryLoadTypeDefinitions();
+
+	local villageArea = 0;
+	local questStatus = MANAGER.QUEST:get_field("_QuestStatus");
+	local isInQuest = (questStatus >= 2);
+
+	if not isInQuest then
+		-- VillageAreaManager is unreliable, not always there, stale references
+		-- get a new reference
+		MANAGER.AREA = sdk.get_managed_singleton("snow.VillageAreaManager");
+		if MANAGER.AREA then
+			villageArea = MANAGER.AREA:get_field("<_CurrentAreaNo>k__BackingField");
+		end
+	end
+
+	local isInTrainingHall = (villageArea == 5);
+
+	IS_ONLINE = (MANAGER.LOBBY and MANAGER.LOBBY:call("IsQuestOnline")) or false;
+
+	updateHeldHotkeyModifiers();
+	checkHotkeyActivated();
+
+	-- if the window is open
+	if DRAW_WINDOW_SETTINGS then
+		-- update every frame
+		dpsUpdate();
+	-- when a quest is active
+	elseif isInQuest then
+		local totalSeconds = MANAGER.QUEST:call("getQuestElapsedTimeSec");
+		dpsUpdateOccasionally(totalSeconds);
+	-- when you are in the training area
+	elseif isInTrainingHall then
+		local totalSeconds = MANAGER.AREA:call("get_TrainingHallStayTime");
+		dpsUpdateOccasionally(totalSeconds);
+	else
+		-- clean up some things in between quests
+		if LAST_UPDATE_TIME ~= 0 then
+			cleanUpData();
+		end
+	end
+
+	if DRAW_WINDOW_SETTINGS -- always draw overlay if settings window is open
+	or (DRAW_OVERLAY and -- draw in one of the following circumstances if overlay is enabled
+	   (isInTestMode() or isInQuest or isInTrainingHall)) then
+		-- draw on every frame
+		dpsDraw();
 	end
 end
 
