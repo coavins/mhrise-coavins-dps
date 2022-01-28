@@ -280,9 +280,9 @@ ENUM_KEYBOARD_KEY[8] = 'Back';
 ENUM_KEYBOARD_KEY[9] = 'Tab';
 ENUM_KEYBOARD_KEY[12] = 'Clear';
 ENUM_KEYBOARD_KEY[13] = 'Enter';
-ENUM_KEYBOARD_KEY[16] = 'Shift'; -- modifier
-ENUM_KEYBOARD_KEY[17] = 'Control'; -- modifier
-ENUM_KEYBOARD_KEY[18] = 'Menu';
+--ENUM_KEYBOARD_KEY[16] = 'Shift';
+--ENUM_KEYBOARD_KEY[17] = 'Control';
+--ENUM_KEYBOARD_KEY[18] = 'Menu';
 ENUM_KEYBOARD_KEY[19] = 'Pause';
 ENUM_KEYBOARD_KEY[20] = 'Capital';
 ENUM_KEYBOARD_KEY[21] = 'Kana';
@@ -415,6 +415,17 @@ ENUM_KEYBOARD_KEY[220] = 'BackSlash';
 ENUM_KEYBOARD_KEY[254] = 'DefinedEnter';
 ENUM_KEYBOARD_KEY[255] = 'DefinedCancel';
 
+local ENUM_KEYBOARD_MODIFIERS = {};
+--ENUM_KEYBOARD_MODIFIERS[16] = true; -- shift
+--ENUM_KEYBOARD_MODIFIERS[17] = true; -- control
+--ENUM_KEYBOARD_MODIFIERS[18] = true; -- alt
+ENUM_KEYBOARD_MODIFIERS[160] = true; -- left shift
+ENUM_KEYBOARD_MODIFIERS[161] = true; -- right shift
+ENUM_KEYBOARD_MODIFIERS[162] = true; -- left control
+ENUM_KEYBOARD_MODIFIERS[163] = true; -- right control
+ENUM_KEYBOARD_MODIFIERS[164] = true; -- left alt
+ENUM_KEYBOARD_MODIFIERS[165] = true; -- right alt
+
 local ATTACKER_TYPES = {};
 ATTACKER_TYPES[0] = 'weapon';
 ATTACKER_TYPES[1] = 'barrelbombl';
@@ -479,9 +490,12 @@ local DRAW_WINDOW_HOTKEYS = false;
 local WINDOW_FLAGS = 0x10120;
 local IS_ONLINE = false;
 
+local CURRENTLY_HELD_MODIFIERS = {};
 local ASSIGNED_HOTKEY_THIS_FRAME = false;
 local HOTKEY_TOGGLE_OVERLAY = 109; -- 109 is numpad minus
+local HOTKEY_TOGGLE_OVERLAY_MODIFIERS = {}; -- modifiers that must be held for this hotkey
 local HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = false; -- if true, will register next key press as the new hotkey
+local HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER_WITH_MODIFIER = {}; -- table of modifiers for new hotkey
 
 local PRESETS = {};
 local PRESET_OPTIONS = {};
@@ -1621,6 +1635,31 @@ local function dpsUpdateOccasionally(realSeconds)
 	end
 end
 
+local function updateHeldHotkeyModifiers()
+	for key,_ in pairs(ENUM_KEYBOARD_MODIFIERS) do
+		if not CURRENTLY_HELD_MODIFIERS[key] and KEYBOARD_MANAGER:call("getTrg", key) then
+			CURRENTLY_HELD_MODIFIERS[key] = true;
+		elseif CURRENTLY_HELD_MODIFIERS[key] and KEYBOARD_MANAGER:call("getRelease", key) then
+			CURRENTLY_HELD_MODIFIERS[key] = false;
+		end
+	end
+end
+
+-- TODO: enhance to accept whatever hotkey as param
+local function checkHotkeyActivated()
+	-- we pressed our hotkey and did not just assign it
+	if not ASSIGNED_HOTKEY_THIS_FRAME and KEYBOARD_MANAGER:call("getTrg", HOTKEY_TOGGLE_OVERLAY) then
+		-- if correct modifiers are not held, return
+		for key,needsHeld in pairs(HOTKEY_TOGGLE_OVERLAY_MODIFIERS) do
+			if CURRENTLY_HELD_MODIFIERS[key] ~= needsHeld then
+				return;
+			end
+		end
+		-- perform hotkey action
+		DRAW_OVERLAY = not DRAW_OVERLAY;
+	end
+end
+
 -- runs every frame
 local function dpsFrame()
 	-- make sure managed resources are initialized
@@ -1640,9 +1679,8 @@ local function dpsFrame()
 
 	IS_ONLINE = (LOBBY_MANAGER and LOBBY_MANAGER:call("IsQuestOnline")) or false;
 
-	if not ASSIGNED_HOTKEY_THIS_FRAME and KEYBOARD_MANAGER:call("getTrg", HOTKEY_TOGGLE_OVERLAY) then
-		DRAW_OVERLAY = not DRAW_OVERLAY;
-	end
+	updateHeldHotkeyModifiers();
+	checkHotkeyActivated();
 
 	-- if the window is open
 	if DRAW_WINDOW_SETTINGS then
@@ -1921,7 +1959,12 @@ local function DrawWindowHotkeys()
 	if DRAW_WINDOW_HOTKEYS and not wantsIt then
 		DRAW_WINDOW_HOTKEYS = false;
 		HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = false;
+		HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER_WITH_MODIFIER = false;
 	end
+
+	imgui.text('Supports modifiers (Shift,Ctrl,Alt)');
+
+	imgui.new_line();
 
 	imgui.text('Toggle overlay:');
 	imgui.same_line();
@@ -1930,7 +1973,14 @@ local function DrawWindowHotkeys()
 		text = 'Press key...';
 	end
 	if imgui.button(text) then
-		HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = not HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER;
+		if HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER then
+			-- cancel registration
+			HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = false;
+		else
+			-- begin registration
+			HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = true;
+			HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER_WITH_MODIFIER = {};
+		end
 	end
 	imgui.same_line();
 	text = string.format('%s (%d)', ENUM_KEYBOARD_KEY[HOTKEY_TOGGLE_OVERLAY], HOTKEY_TOGGLE_OVERLAY);
@@ -2075,10 +2125,35 @@ end);
 local function registerWaitingHotkeys()
 	if HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER then
 		for key,_ in pairs(ENUM_KEYBOARD_KEY) do
-			if KEYBOARD_MANAGER:call("getDown", key) then
-				HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = false;
-				HOTKEY_TOGGLE_OVERLAY = key;
-				ASSIGNED_HOTKEY_THIS_FRAME = true;
+			-- key released
+			if ENUM_KEYBOARD_MODIFIERS[key] and KEYBOARD_MANAGER:call("getRelease", key) then
+				log.info(string.format('unregister modifier %d', key));
+				HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER_WITH_MODIFIER[key] = nil;
+			end
+			-- key pressed
+			if KEYBOARD_MANAGER:call("getTrg", key) then
+				if ENUM_KEYBOARD_MODIFIERS[key] then
+					log.info(string.format('register modifier %d', key));
+					HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER_WITH_MODIFIER[key] = true;
+				else
+					-- pressed a valid hotkey
+					log.info(string.format('register hotkey %d', key));
+					-- register it
+					HOTKEY_TOGGLE_OVERLAY = key;
+					-- register modifiers
+					-- first, require NO modifiers be held
+					for modifierKey,_ in pairs(ENUM_KEYBOARD_MODIFIERS) do
+						HOTKEY_TOGGLE_OVERLAY_MODIFIERS[modifierKey] = false;
+					end
+					-- then change requirement for any modifiers the user did actually want
+					for modifierKey,needsHeld in pairs(HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER_WITH_MODIFIER) do
+						HOTKEY_TOGGLE_OVERLAY_MODIFIERS[modifierKey] = needsHeld;
+					end
+					-- clear flags
+					HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = false;
+					-- remember that we assigned this frame so we don't actually toggle the overlay
+					ASSIGNED_HOTKEY_THIS_FRAME = true;
+				end
 			end
 		end
 	end
@@ -2137,8 +2212,14 @@ end)
 
 --#endregion
 
+-- all attacker types enabled by default
 for _,type in pairs(ATTACKER_TYPES) do
 	AddAttackerTypeToReport(type);
+end
+
+-- make sure this table has all modifiers in it
+for key,_ in pairs(ENUM_KEYBOARD_MODIFIERS) do
+	CURRENTLY_HELD_MODIFIERS[key] = false;
 end
 
 applyDefaultConfiguration();
