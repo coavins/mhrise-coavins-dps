@@ -1973,7 +1973,7 @@ end
 --#region sdk hooks
 
 -- know when we left the training room
-local function read_endTrainingRoom(args)
+local function read_endTrainingRoom()
 	cleanUpData();
 end
 
@@ -2099,7 +2099,7 @@ local function tryLoadTypeDefinitions()
 			STAGE_MANAGER_METHOD_ENDTRAININGROOM = STAGE_MANAGER_TYPE:get_method("endTrainingRoom");
 			-- register function hook
 			sdk.hook(STAGE_MANAGER_METHOD_ENDTRAININGROOM,
-				function(args) read_endTrainingRoom(args); end,
+				function() read_endTrainingRoom(); end,
 				function(retval) return retval end);
 		else
 			log_error('Failed to find snow.stage.StageManager');
