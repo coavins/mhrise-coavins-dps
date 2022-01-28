@@ -1,10 +1,12 @@
 ---@diagnostic disable
-read_globals = {
-	'sdk',
-	're',
-	'imgui',
-	'draw',
-	'log'
+files['src/'] = {
+	read_globals = {
+		'sdk',
+		're',
+		'imgui',
+		'draw',
+		'log'
+	}
 }
 
 files['tests/'] = {

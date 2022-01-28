@@ -2,7 +2,7 @@
 _G._UNIT_TESTING = true
 
 require 'tests/mock'
-require 'mhrise-coavins-dps'
+require 'src/mhrise-coavins-dps'
 
 describe("mhrise-coavins-dps", function()
 	setup(function()

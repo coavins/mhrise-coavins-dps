@@ -1,5 +1,4 @@
 name: linter
-author: coavins
 
 on: [push, pull_request]
 
@@ -15,4 +14,4 @@ jobs:
     - name: install luacheck
       run: luarocks install luacheck
     - name: run luacheck
-      run: luacheck .
+      run: luacheck src tests

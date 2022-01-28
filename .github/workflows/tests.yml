@@ -1,5 +1,4 @@
 name: tests
-author: coavins
 
 on: [push, pull_request]
 
