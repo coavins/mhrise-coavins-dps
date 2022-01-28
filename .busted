@@ -1,0 +1,10 @@
+return {
+  _all = {
+    coverage = true,
+    pattern = '.test.lua',
+    root = 'tests'
+  },
+  default = {
+    verbose = false
+  },
+}

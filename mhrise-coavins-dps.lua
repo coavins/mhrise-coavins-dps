@@ -533,14 +533,15 @@ local PLAYER_NAMES = {};
 local OTOMO_NAMES = {};
 
 -- initialized later when they become available
-local PLAYER_MANAGER   = nil;
-local ENEMY_MANAGER    = nil;
-local QUEST_MANAGER    = nil;
-local MESSAGE_MANAGER  = nil;
-local LOBBY_MANAGER    = nil;
-local AREA_MANAGER     = nil;
-local OTOMO_MANAGER    = nil;
-local KEYBOARD_MANAGER = nil;
+local MANAGER = {};
+MANAGER.PLAYER   = nil;
+MANAGER.ENEMY    = nil;
+MANAGER.QUEST    = nil;
+MANAGER.MESSAGE  = nil;
+MANAGER.LOBBY    = nil;
+MANAGER.AREA     = nil;
+MANAGER.OTOMO    = nil;
+MANAGER.KEYBOARD = nil;
 
 local SCENE_MANAGER      = sdk.get_native_singleton("via.SceneManager");
 local SCENE_MANAGER_TYPE = sdk.find_type_definition("via.SceneManager");
@@ -562,6 +563,10 @@ local SNOW_ENEMY_ENEMYCHARACTERBASE_UPDATE = SNOW_ENEMY_ENEMYCHARACTERBASE:get_m
 local function debug_line(text)
 	DEBUG_Y = DEBUG_Y + 20;
 	draw.text(text, 0, DEBUG_Y, 0xFFFFFFFF);
+end
+
+local function makeTableEmpty(table)
+	for k,v in pairs(table) do table[k]=nil end
 end
 
 local function log_info(text)
@@ -591,53 +596,53 @@ local function getScreenYFromY(y)
 end
 
 local function hasManagedResources()
-	if not PLAYER_MANAGER then
-		PLAYER_MANAGER = sdk.get_managed_singleton("snow.player.PlayerManager");
-		if not PLAYER_MANAGER then
+	if not MANAGER.PLAYER then
+		MANAGER.PLAYER = sdk.get_managed_singleton("snow.player.PlayerManager");
+		if not MANAGER.PLAYER then
 			return false;
 		end
 	end
 
-	if not QUEST_MANAGER then
-		QUEST_MANAGER = sdk.get_managed_singleton("snow.QuestManager");
-		if not QUEST_MANAGER then
+	if not MANAGER.QUEST then
+		MANAGER.QUEST = sdk.get_managed_singleton("snow.QuestManager");
+		if not MANAGER.QUEST then
 			return false;
 		end
 	end
 
-	if not ENEMY_MANAGER then
-		ENEMY_MANAGER = sdk.get_managed_singleton("snow.enemy.EnemyManager");
-		if not ENEMY_MANAGER then
+	if not MANAGER.ENEMY then
+		MANAGER.ENEMY = sdk.get_managed_singleton("snow.enemy.EnemyManager");
+		if not MANAGER.ENEMY then
 			return false;
 		end
 	end
 
-	if not MESSAGE_MANAGER then
-		MESSAGE_MANAGER = sdk.get_managed_singleton("snow.gui.MessageManager");
-		if not MESSAGE_MANAGER then
+	if not MANAGER.MESSAGE then
+		MANAGER.MESSAGE = sdk.get_managed_singleton("snow.gui.MessageManager");
+		if not MANAGER.MESSAGE then
 			return false;
 		end
 	end
 
-	if not LOBBY_MANAGER then
-		LOBBY_MANAGER = sdk.get_managed_singleton("snow.LobbyManager");
-		if not LOBBY_MANAGER then
+	if not MANAGER.LOBBY then
+		MANAGER.LOBBY = sdk.get_managed_singleton("snow.LobbyManager");
+		if not MANAGER.LOBBY then
 			return false;
 		end
 	end
 
-	if not OTOMO_MANAGER then
-		OTOMO_MANAGER = sdk.get_managed_singleton("snow.otomo.OtomoManager");
-		if not OTOMO_MANAGER then
+	if not MANAGER.OTOMO then
+		MANAGER.OTOMO = sdk.get_managed_singleton("snow.otomo.OtomoManager");
+		if not MANAGER.OTOMO then
 			return false;
 		end
 	end
 
-	if not KEYBOARD_MANAGER then
+	if not MANAGER.KEYBOARD then
 		local softKeyboard = sdk.get_managed_singleton("snow.GameKeyboard");
 		if softKeyboard then
-			KEYBOARD_MANAGER = softKeyboard:get_field("hardKeyboard");
-			if not KEYBOARD_MANAGER then
+			MANAGER.KEYBOARD = softKeyboard:get_field("hardKeyboard");
+			if not MANAGER.KEYBOARD then
 				return false;
 			end
 		else
@@ -646,8 +651,8 @@ local function hasManagedResources()
 	end
 
 	-- not required since it doesn't seem to always be available
-	if not AREA_MANAGER then
-		AREA_MANAGER = sdk.get_managed_singleton("snow.VillageAreaManager");
+	if not MANAGER.AREA then
+		MANAGER.AREA = sdk.get_managed_singleton("snow.VillageAreaManager");
 	end
 
 	return true;
@@ -666,9 +671,9 @@ end
 
 local function cleanUpData()
 	LAST_UPDATE_TIME = 0;
-	LARGE_MONSTERS  = {};
-	DAMAGE_REPORTS  = {};
-	REPORT_MONSTERS = {};
+	makeTableEmpty(LARGE_MONSTERS)
+	makeTableEmpty(DAMAGE_REPORTS)
+	makeTableEmpty(REPORT_MONSTERS)
 	log_info('cleared captured data');
 end
 
@@ -725,13 +730,13 @@ end
 
 local function updatePlayerNames()
 	-- get offline player name
-	local myHunter = LOBBY_MANAGER:get_field("_myHunterInfo");
+	local myHunter = MANAGER.LOBBY:get_field("_myHunterInfo");
 	if myHunter then
 		PLAYER_NAMES[MY_PLAYER_ID + 1] = myHunter:get_field("_name");
 	end
 
 	-- get online player names
-	local hunterInfo = LOBBY_MANAGER:get_field("_questHunterInfo");
+	local hunterInfo = MANAGER.LOBBY:get_field("_questHunterInfo");
 	if hunterInfo then
 		local hunterCount = hunterInfo:call("get_Count");
 		if hunterCount then
@@ -750,14 +755,14 @@ local function updatePlayerNames()
 	end
 
 	-- get offline otomo names
-	local firstOtomo = OTOMO_MANAGER:call("getMasterOtomoInfo", 0);
+	local firstOtomo = MANAGER.OTOMO:call("getMasterOtomoInfo", 0);
 	if firstOtomo then
 		local name = firstOtomo:get_field("Name");
 		--local level = firstOtomo:get_field("Level");
 		OTOMO_NAMES[1] = name;
 	end
 
-	local secondOtomo = OTOMO_MANAGER:call("getMasterOtomoInfo", 1);
+	local secondOtomo = MANAGER.OTOMO:call("getMasterOtomoInfo", 1);
 	if secondOtomo then
 		local name = secondOtomo:get_field("Name");
 		--local level = firstOtomo:get_field("Level");
@@ -766,7 +771,7 @@ local function updatePlayerNames()
 	end
 
 	-- get online otomo names
-	local otomoInfo = LOBBY_MANAGER:get_field("_questOtomoInfo");
+	local otomoInfo = MANAGER.LOBBY:get_field("_questOtomoInfo");
 	if otomoInfo then
 		local otomoCount = otomoInfo:call("get_Count");
 		if otomoCount then
@@ -789,29 +794,31 @@ end
 
 --#region Sanity checking
 
-if not SCENE_MANAGER then
-	log_error('could not find scene manager');
-	return;
-end
+if not _G._UNIT_TESTING then
+	if not SCENE_MANAGER then
+		log_error('could not find scene manager');
+		return;
+	end
 
-if not SCENE_MANAGER_TYPE then
-	log_error('could not find scene manager type');
-	return;
-end
+	if not SCENE_MANAGER_TYPE then
+		log_error('could not find scene manager type');
+		return;
+	end
 
-if not SCENE_MANAGER_VIEW then
-	log_error('could not find scene manager view');
-	return;
-end
+	if not SCENE_MANAGER_VIEW then
+		log_error('could not find scene manager view');
+		return;
+	end
 
-if not SNOW_ENEMY_ENEMYCHARACTERBASE then
-	log_error('could not find type snow.enemy.EnemyCharacterBase');
-	return;
-end
+	if not SNOW_ENEMY_ENEMYCHARACTERBASE then
+		log_error('could not find type snow.enemy.EnemyCharacterBase');
+		return;
+	end
 
-if not SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE then
-	log_error('could not find method snow.enemy.EnemyCharacterBase::afterCalcDamage_DamageSide');
-	return;
+	if not SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE then
+		log_error('could not find method snow.enemy.EnemyCharacterBase::afterCalcDamage_DamageSide');
+		return;
+	end
 end
 
 if not CFG['UPDATE_RATE'] or tonumber(CFG['UPDATE_RATE']) == nil then
@@ -921,7 +928,7 @@ local function initializeBossMonster(bossEnemy)
 
 	-- get name
 	local enemyType = bossEnemy:get_field("<EnemyType>k__BackingField");
-	boss.name = MESSAGE_MANAGER:call("getEnemyNameMessage", enemyType);
+	boss.name = MANAGER.MESSAGE:call("getEnemyNameMessage", enemyType);
 
 	boss.damageSources = {};
 
@@ -976,9 +983,48 @@ local function initializeBossMonsterWithDummyData(bossKey, fakeName)
 	AddMonsterToReport(bossKey, boss);
 end
 
+local function addDamageToBoss(boss, attackerId, attackerTypeId, amtPhysical, amtElemental, amtCondition)
+	local sources = boss.damageSources;
+	local attackerType = ATTACKER_TYPES[attackerTypeId];
+
+	local isOtomo   = (attackerTypeId == 19);
+
+	--log_info(string.format('damage instance from attacker %d of type %s', attackerId, attackerType));
+	if isOtomo then
+		-- separate otomo from their master
+		attackerId = getFakeAttackerIdForOtomoId(attackerId);
+	end
+
+	-- get the damage source for this attacker
+	if not sources[attackerId] then
+		sources[attackerId] = initializeDamageSource(attackerId);
+	end
+	local s = sources[attackerId];
+
+	-- get the damage counter for this type
+	if not s.damageCounters[attackerType] then
+		s.damageCounters[attackerType] = initializeDamageCounter();
+	end
+	local c = s.damageCounters[attackerType];
+
+	-- add damage facts to counter
+	c.physical  = c.physical  + amtPhysical;
+	c.elemental = c.elemental + amtElemental;
+	c.condition = c.condition + amtCondition;
+
+	-- hit count
+	s.numHit = s.numHit + 1;
+
+	-- biggest hit
+	local totalDamage = getTotalDamageForDamageCounter(c);
+	if totalDamage > s.maxHit then
+		s.maxHit = totalDamage;
+	end
+end
+
 local function initializeTestData()
-	TEST_MONSTERS = {};
-	REPORT_MONSTERS = {};
+	makeTableEmpty(TEST_MONSTERS)
+	makeTableEmpty(REPORT_MONSTERS)
 
 	initializeBossMonsterWithDummyData(111, 'Rathian');
 	initializeBossMonsterWithDummyData(222, 'Tigrex');
@@ -991,7 +1037,7 @@ end
 
 local function clearTestData()
 	TEST_MONSTERS = nil;
-	REPORT_MONSTERS = {};
+	makeTableEmpty(REPORT_MONSTERS)
 	for enemy, boss in pairs(LARGE_MONSTERS) do
 		AddMonsterToReport(enemy, boss);
 	end
@@ -1213,7 +1259,7 @@ local function mergeDamageSourcesIntoReport(report, damageSources)
 end
 
 local function generateReport(filterBosses)
-	DAMAGE_REPORTS = {};
+	makeTableEmpty(DAMAGE_REPORTS)
 
 	local report = initializeReport();
 
@@ -1301,8 +1347,8 @@ local function drawReport(index)
 		-- generate the title text
 
 		-- get quest duration
-		local timeMinutes = QUEST_MANAGER:call("getQuestElapsedTimeMin");
-		local timeSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
+		local timeMinutes = MANAGER.QUEST:call("getQuestElapsedTimeMin");
+		local timeSeconds = MANAGER.QUEST:call("getQuestElapsedTimeSec");
 		timeSeconds = timeSeconds - (timeMinutes * 60);
 
 		-- use a fake duration in test mode
@@ -1512,21 +1558,21 @@ end
 
 -- debug info stuff
 local function drawDebugStats()
-	--local kpiData         = QUEST_MANAGER:call("get_KpiData");
+	--local kpiData         = MANAGER.QUEST:call("get_KpiData");
 	--local playerPhysical  = kpiData:call("get_PlayerTotalAttackDamage");
 	--local playerElemental = kpiData:call("get_PlayerTotalElementalAttackDamage");
 	--local playerAilment   = kpiData:call("get_PlayerTotalStatusAilmentsDamage");
 	--local playerDamage    = playerPhysical + playerElemental + playerAilment;
 
 	-- get player
-	--local myPlayerId = PLAYER_MANAGER:call("getMasterPlayerID");
-	--local myPlayer = PLAYER_MANAGER:call("getPlayer", myPlayerId);
+	--local myPlayerId = MANAGER.PLAYER:call("getMasterPlayerID");
+	--local myPlayer = MANAGER.PLAYER:call("getPlayer", myPlayerId);
 
 	-- get enemy
-	local bossCount = ENEMY_MANAGER:call("getBossEnemyCount");
+	local bossCount = MANAGER.ENEMY:call("getBossEnemyCount");
 
 	for i = 0, bossCount-1 do
-		local bossEnemy = ENEMY_MANAGER:call("getBossEnemy", i);
+		local bossEnemy = MANAGER.ENEMY:call("getBossEnemy", i);
 
 		-- get this boss from the table
 		local boss = LARGE_MONSTERS[bossEnemy];
@@ -1605,7 +1651,7 @@ local function dpsUpdate()
 	readScreenDimensions();
 
 	-- get player id
-	MY_PLAYER_ID = PLAYER_MANAGER:call("getMasterPlayerID");
+	MY_PLAYER_ID = MANAGER.PLAYER:call("getMasterPlayerID");
 
 	if CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] then
 		-- get player names
@@ -1613,9 +1659,9 @@ local function dpsUpdate()
 	end
 
 	-- ensure bosses are initialized
-	local bossCount = ENEMY_MANAGER:call("getBossEnemyCount");
+	local bossCount = MANAGER.ENEMY:call("getBossEnemyCount");
 	for i = 0, bossCount-1 do
-		local bossEnemy = ENEMY_MANAGER:call("getBossEnemy", i);
+		local bossEnemy = MANAGER.ENEMY:call("getBossEnemy", i);
 
 		if not LARGE_MONSTERS[bossEnemy] then
 			-- initialize data for this boss
@@ -1637,9 +1683,9 @@ end
 
 local function updateHeldHotkeyModifiers()
 	for key,_ in pairs(ENUM_KEYBOARD_MODIFIERS) do
-		if not CURRENTLY_HELD_MODIFIERS[key] and KEYBOARD_MANAGER:call("getTrg", key) then
+		if not CURRENTLY_HELD_MODIFIERS[key] and MANAGER.KEYBOARD:call("getTrg", key) then
 			CURRENTLY_HELD_MODIFIERS[key] = true;
-		elseif CURRENTLY_HELD_MODIFIERS[key] and KEYBOARD_MANAGER:call("getRelease", key) then
+		elseif CURRENTLY_HELD_MODIFIERS[key] and MANAGER.KEYBOARD:call("getRelease", key) then
 			CURRENTLY_HELD_MODIFIERS[key] = false;
 		end
 	end
@@ -1648,7 +1694,7 @@ end
 -- TODO: enhance to accept whatever hotkey as param
 local function checkHotkeyActivated()
 	-- we pressed our hotkey and did not just assign it
-	if not ASSIGNED_HOTKEY_THIS_FRAME and KEYBOARD_MANAGER:call("getTrg", HOTKEY_TOGGLE_OVERLAY) then
+	if not ASSIGNED_HOTKEY_THIS_FRAME and MANAGER.KEYBOARD:call("getTrg", HOTKEY_TOGGLE_OVERLAY) then
 		-- if correct modifiers are not held, return
 		for key,needsHeld in pairs(HOTKEY_TOGGLE_OVERLAY_MODIFIERS) do
 			if CURRENTLY_HELD_MODIFIERS[key] ~= needsHeld then
@@ -1667,17 +1713,17 @@ local function dpsFrame()
 		return;
 	end
 
-	local questStatus = QUEST_MANAGER:get_field("_QuestStatus");
+	local questStatus = MANAGER.QUEST:get_field("_QuestStatus");
 
 	local villageArea = 0;
-	if AREA_MANAGER then
-		villageArea = AREA_MANAGER:get_field("<_CurrentAreaNo>k__BackingField");
+	if MANAGER.AREA then
+		villageArea = MANAGER.AREA:get_field("<_CurrentAreaNo>k__BackingField");
 	end
 
 	local isInQuest = (questStatus >= 2);
 	local isInTrainingHall = (villageArea == 5);
 
-	IS_ONLINE = (LOBBY_MANAGER and LOBBY_MANAGER:call("IsQuestOnline")) or false;
+	IS_ONLINE = (MANAGER.LOBBY and MANAGER.LOBBY:call("IsQuestOnline")) or false;
 
 	updateHeldHotkeyModifiers();
 	checkHotkeyActivated();
@@ -1688,11 +1734,11 @@ local function dpsFrame()
 		dpsUpdate();
 	-- when a quest is active
 	elseif isInQuest then
-		local totalSeconds = QUEST_MANAGER:call("getQuestElapsedTimeSec");
+		local totalSeconds = MANAGER.QUEST:call("getQuestElapsedTimeSec");
 		dpsUpdateOccasionally(totalSeconds);
 	-- when you are in the training area
 	elseif isInTrainingHall then
-		local totalSeconds = AREA_MANAGER:call("get_TrainingHallStayTime");
+		local totalSeconds = MANAGER.AREA:call("get_TrainingHallStayTime");
 		dpsUpdateOccasionally(totalSeconds);
 	else
 		-- clean up some things in between quests
@@ -2063,50 +2109,17 @@ local function read_AfterCalcInfo_DamageSide(args)
 		return;
 	end
 
-	local sources = boss.damageSources;
-
 	local info = sdk.to_managed_object(args[3]); -- snow.hit.EnemyCalcDamageInfo.AfterCalcInfo_DamageSide
+
 	local attackerId     = info:call("get_AttackerID");
 	local attackerTypeId = info:call("get_DamageAttackerType");
-	local attackerType   = ATTACKER_TYPES[attackerTypeId];
 
-	local isOtomo   = (attackerTypeId == 19);
-
-	--log_info(string.format('damage instance from attacker %d of type %s', attackerId, attackerType));
-	if isOtomo then
-		-- separate otomo from their master
-		attackerId = getFakeAttackerIdForOtomoId(attackerId);
-	end
-
-	-- get the damage source for this attacker
-	if not sources[attackerId] then
-		sources[attackerId] = initializeDamageSource(attackerId);
-	end
-	local s = sources[attackerId];
-
-	-- get the damage counter for this type
-	if not s.damageCounters[attackerType] then
-		s.damageCounters[attackerType] = initializeDamageCounter();
-	end
-	local c = s.damageCounters[attackerType];
-
-	local totalDamage     = tonumber(info:call("get_TotalDamage"));
 	local physicalDamage  = tonumber(info:call("get_PhysicalDamage"));
 	local elementDamage   = tonumber(info:call("get_ElementDamage"));
 	local conditionDamage = tonumber(info:call("get_ConditionDamage"));
 
-	-- add damage facts to counter
-	c.physical  = c.physical  + physicalDamage;
-	c.elemental = c.elemental + elementDamage;
-	c.condition = c.condition + conditionDamage;
-
-	-- hit count
-	s.numHit = s.numHit + 1;
-
-	-- biggest hit
-	if totalDamage > s.maxHit then
-		s.maxHit = totalDamage;
-	end
+	addDamageToBoss(boss, attackerId, attackerTypeId
+	, physicalDamage, elementDamage, conditionDamage);
 end
 
 -- register function hook
@@ -2126,12 +2139,12 @@ local function registerWaitingHotkeys()
 	if HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER then
 		for key,_ in pairs(ENUM_KEYBOARD_KEY) do
 			-- key released
-			if ENUM_KEYBOARD_MODIFIERS[key] and KEYBOARD_MANAGER:call("getRelease", key) then
+			if ENUM_KEYBOARD_MODIFIERS[key] and MANAGER.KEYBOARD:call("getRelease", key) then
 				log.info(string.format('unregister modifier %d', key));
 				HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER_WITH_MODIFIER[key] = nil;
 			end
 			-- key pressed
-			if KEYBOARD_MANAGER:call("getTrg", key) then
+			if MANAGER.KEYBOARD:call("getTrg", key) then
 				if ENUM_KEYBOARD_MODIFIERS[key] then
 					log.info(string.format('register modifier %d', key));
 					HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER_WITH_MODIFIER[key] = true;
@@ -2225,3 +2238,20 @@ end
 applyDefaultConfiguration();
 
 log_info('init complete');
+
+-- export locals for testing
+if _G._UNIT_TESTING then
+	_G.LARGE_MONSTERS  = LARGE_MONSTERS;
+	_G.DAMAGE_REPORTS  = DAMAGE_REPORTS;
+	_G.REPORT_MONSTERS = REPORT_MONSTERS;
+	_G.MANAGER = MANAGER;
+	_G.initializeDamageCounter        = initializeDamageCounter;
+	_G.getTotalDamageForDamageCounter = getTotalDamageForDamageCounter;
+	_G.mergeDamageCounters            = mergeDamageCounters;
+	_G.initializeDamageSource         = initializeDamageSource;
+	_G.initializeBossMonster          = initializeBossMonster;
+	_G.addDamageToBoss                = addDamageToBoss;
+	_G.initializeReport               = initializeReport;
+	_G.mergeDamageSourcesIntoReport   = mergeDamageSourcesIntoReport;
+	_G.generateReport                 = generateReport;
+end

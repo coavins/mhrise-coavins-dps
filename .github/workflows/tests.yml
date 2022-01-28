@@ -1,0 +1,18 @@
+name: tests
+author: coavins
+
+on: [push, pull_request]
+
+jobs:
+  run_tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: leafo/gh-actions-lua@v8
+    - uses: leafo/gh-actions-luarocks@v4
+
+    - name: install busted
+      run: luarocks install busted
+    - name: run all tests
+      run: busted .
