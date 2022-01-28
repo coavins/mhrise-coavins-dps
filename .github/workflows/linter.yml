@@ -1,0 +1,18 @@
+name: linter
+author: coavins
+
+on: [push, pull_request]
+
+jobs:
+  run_linter:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: leafo/gh-actions-lua@v8
+    - uses: leafo/gh-actions-luarocks@v4
+
+    - name: install luacheck
+      run: luarocks install luacheck
+    - name: run luacheck
+      run: luacheck .
