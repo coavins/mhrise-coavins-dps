@@ -1023,7 +1023,7 @@ local function addDamageToBoss(boss, attackerId, attackerTypeId, amtPhysical, am
 end
 
 local function initializeTestData()
-	makeTableEmpty(TEST_MONSTERS)
+	TEST_MONSTERS = {};
 	makeTableEmpty(REPORT_MONSTERS)
 
 	initializeBossMonsterWithDummyData(111, 'Rathian');
