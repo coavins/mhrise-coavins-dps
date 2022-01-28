@@ -28,7 +28,7 @@ describe("mhrise-coavins-dps", function()
 
 	describe("boss", function()
 
-		it("works with damage hook", function()
+		it("works through damage hook with one attacker", function()
 			local boss = initializeMockBossMonster();
 
 			addDamageToBoss(boss, 1, 0, 100, 200, 400);
@@ -38,7 +38,22 @@ describe("mhrise-coavins-dps", function()
 			assert.is_equal(200, sum.elemental)
 			assert.is_equal(400, sum.condition)
 			assert.is_equal(700, sum.total)
+		end)
 
+		it("works through damage hook with a full party of four", function()
+			local boss = initializeMockBossMonster();
+
+			addDamageToBoss(boss, 0, 0, 101, 202, 403);
+			addDamageToBoss(boss, 1, 0, 201, 402, 803);
+			addDamageToBoss(boss, 2, 0, 401, 802, 103);
+			addDamageToBoss(boss, 3, 0, 801, 102, 203);
+
+			local sum = sumDamageSourcesList(boss.damageSources)
+
+			assert.is_equal(101 + 201 + 401 + 801, sum.physical)
+			assert.is_equal(202 + 402 + 802 + 102, sum.elemental)
+			assert.is_equal(403 + 803 + 103 + 203, sum.condition)
+			assert.is_equal(1504 + 1508 + 1512, sum.total)
 		end)
 
 	end)
