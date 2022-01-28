@@ -542,6 +542,7 @@ MANAGER.LOBBY    = nil;
 MANAGER.AREA     = nil;
 MANAGER.OTOMO    = nil;
 MANAGER.KEYBOARD = nil;
+MANAGER.STAGE    = nil;
 
 local SCENE_MANAGER      = sdk.get_native_singleton("via.SceneManager");
 local SCENE_MANAGER_TYPE = sdk.find_type_definition("via.SceneManager");
@@ -555,6 +556,9 @@ local SNOW_ENEMY_ENEMYCHARACTERBASE = sdk.find_type_definition("snow.enemy.Enemy
 local SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE =
 	SNOW_ENEMY_ENEMYCHARACTERBASE:get_method("afterCalcDamage_DamageSide");
 local SNOW_ENEMY_ENEMYCHARACTERBASE_UPDATE = SNOW_ENEMY_ENEMYCHARACTERBASE:get_method("update");
+
+local STAGE_MANAGER_TYPE = sdk.find_type_definition("snow.stage.StageManager");
+local STAGE_MANAGER_METHOD_ENDTRAININGROOM = STAGE_MANAGER_TYPE:get_method("endTrainingRoom");
 
 --#endregion
 
@@ -2038,6 +2042,15 @@ end
 --#endregion
 
 --#region sdk hooks
+
+-- know when we left the training room
+local function read_endTrainingRoom(args)
+	cleanUpData();
+end
+sdk.hook(STAGE_MANAGER_METHOD_ENDTRAININGROOM,
+function(args)
+	read_endTrainingRoom(args);
+end, function(retval) return retval end);
 
 -- know when we return from a quest
 local function read_onChangedGameStatus(args)
