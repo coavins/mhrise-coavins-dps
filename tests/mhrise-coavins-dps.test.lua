@@ -17,7 +17,34 @@ describe("mhrise-coavins-dps", function()
 		MANAGER.MESSAGE = MockMessageManager:create()
 	end)
 
+	before_each(function()
+		cleanUpData();
+
+		-- all attacker types enabled
+		for _,type in pairs(ATTACKER_TYPES) do
+			AddAttackerTypeToReport(type);
+		end
+	end)
+
+	describe("boss", function()
+
+		it("works with damage hook", function()
+			local boss = initializeMockBossMonster();
+
+			addDamageToBoss(boss, 1, 0, 100, 200, 400);
+
+			local sum = sumDamageSourcesList(boss.damageSources)
+			assert.is_equal(100, sum.physical)
+			assert.is_equal(200, sum.elemental)
+			assert.is_equal(400, sum.condition)
+			assert.is_equal(700, sum.total)
+
+		end)
+
+	end)
+
 	describe("damage counter", function()
+
 		it("is empty when initialized", function()
 			local c = initializeDamageCounter()
 
@@ -63,19 +90,18 @@ describe("mhrise-coavins-dps", function()
 
 			assert.is_equal(635, actual)
 		end)
+
 	end)
 	describe("damage source", function()
+
 		it("is empty when initialized", function()
 			local s = initializeDamageSource()
 
 			assert.is_nil(s.id)
 		end)
+
 	end)
 	describe("report", function()
-
-		before_each(function()
-			cleanUpData();
-		end)
 
 		it("merges a boss correctly", function()
 			local r = initializeReport()
@@ -83,8 +109,8 @@ describe("mhrise-coavins-dps", function()
 
 			local s = {}
 			s[1] = initializeDamageSource(1)
-			s[1].damageCounters['weapon'] = initializeDamageCounter()
-			s[1].damageCounters['weapon'].physical = 100
+			s[1].counters['weapon'] = initializeDamageCounter()
+			s[1].counters['weapon'].physical = 100
 
 			b.damageSources = s
 
@@ -102,19 +128,19 @@ describe("mhrise-coavins-dps", function()
 
 			local s1 = {}
 			s1[1] = initializeDamageSource(1)
-			s1[1].damageCounters['weapon'] = initializeDamageCounter()
-			s1[1].damageCounters['weapon'].physical = 100
-			s1[1].damageCounters['weapon'].elemental = 50
-			s1[1].damageCounters['weapon'].condition = 7
+			s1[1].counters['weapon'] = initializeDamageCounter()
+			s1[1].counters['weapon'].physical = 100
+			s1[1].counters['weapon'].elemental = 50
+			s1[1].counters['weapon'].condition = 7
 
 			boss1.damageSources = s1;
 
 			local s2 = {}
 			s2[1] = initializeDamageSource(1)
-			s2[1].damageCounters['weapon'] = initializeDamageCounter()
-			s2[1].damageCounters['weapon'].physical = 201
-			s2[1].damageCounters['weapon'].elemental = 54
-			s2[1].damageCounters['weapon'].condition = 18
+			s2[1].counters['weapon'] = initializeDamageCounter()
+			s2[1].counters['weapon'].physical = 201
+			s2[1].counters['weapon'].elemental = 54
+			s2[1].counters['weapon'].condition = 18
 
 			boss2.damageSources = s2;
 
@@ -135,26 +161,26 @@ describe("mhrise-coavins-dps", function()
 
 			local s1 = {}
 			s1[1] = initializeDamageSource(1)
-			s1[1].damageCounters['weapon'] = initializeDamageCounter()
-			s1[1].damageCounters['weapon'].physical = 100
-			s1[1].damageCounters['weapon'].elemental = 50
-			s1[1].damageCounters['weapon'].condition = 7
+			s1[1].counters['weapon'] = initializeDamageCounter()
+			s1[1].counters['weapon'].physical = 100
+			s1[1].counters['weapon'].elemental = 50
+			s1[1].counters['weapon'].condition = 7
 
 			boss1.damageSources = s1;
 
 			local s2 = {}
 			s2[1] = initializeDamageSource(1)
-			s2[1].damageCounters['weapon'] = initializeDamageCounter()
-			s2[1].damageCounters['weapon'].physical = 201
-			s2[1].damageCounters['weapon'].elemental = 54
-			s2[1].damageCounters['weapon'].condition = 18
+			s2[1].counters['weapon'] = initializeDamageCounter()
+			s2[1].counters['weapon'].physical = 201
+			s2[1].counters['weapon'].elemental = 54
+			s2[1].counters['weapon'].condition = 18
 
 			boss2.damageSources = s2;
 
 			local s3 = {}
 			s3[1] = initializeDamageSource(1)
-			s3[1].damageCounters['weapon'] = initializeDamageCounter()
-			s3[1].damageCounters['otomo'] = initializeDamageCounter()
+			s3[1].counters['weapon'] = initializeDamageCounter()
+			s3[1].counters['otomo'] = initializeDamageCounter()
 
 			boss3.damageSources = s3;
 

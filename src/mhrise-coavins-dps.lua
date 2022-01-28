@@ -851,9 +851,9 @@ local function initializeDamageSource(attackerId)
 	local s = {};
 	s.id = attackerId;
 
-	s.damageCounters = {};
+	s.counters = {};
 	for _,type in pairs(ATTACKER_TYPES) do
-		s.damageCounters[type] = initializeDamageCounter();
+		s.counters[type] = initializeDamageCounter();
 	end
 
 	s.numHit = 0; -- how many hits
@@ -865,7 +865,7 @@ end
 local function initializeDamageSourceWithDummyPlayerData(attackerId)
 	local s = initializeDamageSource(attackerId);
 
-	s.damageCounters['weapon'] = initializeDamageCounterWithDummyData();
+	s.counters['weapon'] = initializeDamageCounterWithDummyData();
 
 	s.numHit = math.random(1,380);
 	s.maxHit = math.random(1,1000);
@@ -876,8 +876,8 @@ end
 local function initializeDamageSourceWithDummyOtomoData(attackerId)
 	local s = initializeDamageSource(attackerId);
 
-	s.damageCounters['otomo'] = initializeDamageCounter();
-	s.damageCounters['otomo'].physical = math.random(0,400);
+	s.counters['otomo'] = initializeDamageCounter();
+	s.counters['otomo'].physical = math.random(0,400);
 
 	s.numHit = math.random(1,500);
 	s.maxHit = math.random(1,100);
@@ -888,8 +888,8 @@ end
 local function initializeDamageSourceWithDummyMonsterData(attackerId)
 	local s = initializeDamageSource(attackerId);
 
-	s.damageCounters['monster'] = initializeDamageCounter();
-	s.damageCounters['monster'].physical = math.random(0,150);
+	s.counters['monster'] = initializeDamageCounter();
+	s.counters['monster'].physical = math.random(0,150);
 
 	s.numHit = math.random(1,10);
 	s.maxHit = math.random(1,50);
@@ -986,10 +986,10 @@ local function addDamageToBoss(boss, attackerId, attackerTypeId, amtPhysical, am
 	local s = sources[attackerId];
 
 	-- get the damage counter for this type
-	if not s.damageCounters[attackerType] then
-		s.damageCounters[attackerType] = initializeDamageCounter();
+	if not s.counters[attackerType] then
+		s.counters[attackerType] = initializeDamageCounter();
 	end
-	local c = s.damageCounters[attackerType];
+	local c = s.counters[attackerType];
 
 	-- add damage facts to counter
 	c.physical  = c.physical  + amtPhysical;
@@ -1091,34 +1091,54 @@ local function initializeReportItem(id)
 	return item;
 end
 
--- saves the total into the item itself
-local function calculateTotalsForReportItem(item)
-	-- initialize totals to zero
-	item.total = 0.0;
-	item.totalPhysical = 0.0;
-	item.totalElemental = 0.0;
-	item.totalCondition = 0.0;
-	item.totalOtomo = 0.0;
+local function sumDamageCountersList(counters, attackerTypeFilter)
+	local sum = {};
+	sum.total = 0.0;
+	sum.physical = 0.0;
+	sum.elemental = 0.0;
+	sum.condition = 0.0;
+	sum.otomo = 0.0;
 
 	-- get totals from counters
-	for type,counter in pairs(item.counters) do
-		if REPORT_ATTACKER_TYPES[type] then
+	for type,counter in pairs(counters) do
+		if not attackerTypeFilter or attackerTypeFilter[type] then
 			if type == 'otomo' then
-				local counterTotal = getTotalDamageForDamageCounter(counter);
-
 				-- sum together otomo's different types of damage and store it as its own type of damage instead
-				item.totalOtomo = item.totalOtomo + counterTotal;
+				local counterTotal = getTotalDamageForDamageCounter(counter);
+				sum.otomo = sum.otomo + counterTotal;
 
-				item.total = item.total + counterTotal;
+				sum.total = sum.total + counterTotal;
 			else
-				item.totalPhysical  = item.totalPhysical  + counter.physical;
-				item.totalElemental = item.totalElemental + counter.elemental;
-				item.totalCondition = item.totalCondition + counter.condition;
+				sum.physical  = sum.physical  + counter.physical;
+				sum.elemental = sum.elemental + counter.elemental;
+				sum.condition = sum.condition + counter.condition;
 
-				item.total = item.total + getTotalDamageForDamageCounter(counter);
+				sum.total = sum.total + getTotalDamageForDamageCounter(counter);
 			end
 		end
 	end
+
+	return sum;
+end
+
+local function sumDamageSourcesList(sources)
+	local sum = {};
+	sum.total = 0.0;
+	sum.physical = 0.0;
+	sum.elemental = 0.0;
+	sum.condition = 0.0;
+	sum.otomo = 0.0;
+
+	for _,source in pairs(sources) do
+		local this = sumDamageCountersList(source.counters)
+		sum.total = sum.total + this.total;
+		sum.physical  = sum.physical  + this.physical;
+		sum.elemental = sum.elemental + this.elemental;
+		sum.condition = sum.condition + this.condition;
+		sum.otomo     = sum.otomo     + this.otomo;
+	end
+
+	return sum;
 end
 
 local function mergeReportItemCounters(a, b)
@@ -1139,7 +1159,7 @@ local function mergeDamageSourceIntoReportItem(item, source)
 		end
 	end
 
-	item.counters = mergeReportItemCounters(item.counters, source.damageCounters);
+	item.counters = mergeReportItemCounters(item.counters, source.counters);
 
 	item.numHit = item.numHit + source.numHit;
 	item.maxHit = math.max(item.maxHit, source.maxHit);
@@ -1208,7 +1228,12 @@ local function mergeBossIntoReport(report, boss)
 	-- now loop all report items and calculate totals
 	for _,item in ipairs(report.items) do
 		-- calculate the item's own total damage
-		calculateTotalsForReportItem(item)
+		local sum = sumDamageCountersList(item.counters, REPORT_ATTACKER_TYPES)
+		item.total = sum.total;
+		item.totalPhysical  = sum.physical;
+		item.totalElemental = sum.elemental;
+		item.totalCondition = sum.condition;
+		item.totalOtomo     = sum.otomo;
 
 		-- remember which combatant has the most damage
 		if item.total > bestDamage then
@@ -2282,18 +2307,23 @@ log_info('init complete');
 
 -- export locals for testing
 if _G._UNIT_TESTING then
+	_G.ATTACKER_TYPES  = ATTACKER_TYPES;
+	_G.REPORT_ATTACKER_TYPES  = REPORT_ATTACKER_TYPES;
 	_G.LARGE_MONSTERS  = LARGE_MONSTERS;
 	_G.DAMAGE_REPORTS  = DAMAGE_REPORTS;
 	_G.REPORT_MONSTERS = REPORT_MONSTERS;
 	_G.MANAGER = MANAGER;
-	_G.cleanUpData = cleanUpData;
-	_G.initializeDamageCounter        = initializeDamageCounter;
+	_G.cleanUpData             = cleanUpData;
+	_G.AddAttackerTypeToReport = AddAttackerTypeToReport;
+	_G.initializeDamageCounter = initializeDamageCounter;
 	_G.getTotalDamageForDamageCounter = getTotalDamageForDamageCounter;
-	_G.mergeDamageCounters            = mergeDamageCounters;
-	_G.initializeDamageSource         = initializeDamageSource;
-	_G.initializeBossMonster          = initializeBossMonster;
-	_G.addDamageToBoss                = addDamageToBoss;
-	_G.initializeReport               = initializeReport;
-	_G.mergeBossIntoReport   = mergeBossIntoReport;
-	_G.generateReport                 = generateReport;
+	_G.sumDamageCountersList   = sumDamageCountersList;
+	_G.mergeDamageCounters     = mergeDamageCounters;
+	_G.initializeDamageSource  = initializeDamageSource;
+	_G.initializeBossMonster   = initializeBossMonster;
+	_G.addDamageToBoss         = addDamageToBoss;
+	_G.initializeReport        = initializeReport;
+	_G.mergeBossIntoReport     = mergeBossIntoReport;
+	_G.sumDamageSourcesList    = sumDamageSourcesList;
+	_G.generateReport          = generateReport;
 end
