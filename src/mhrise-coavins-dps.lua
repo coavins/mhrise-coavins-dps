@@ -1840,10 +1840,12 @@ local function DrawWindowSettings()
 	imgui.text('Settings');
 
 	imgui.same_line();
-	if imgui.button('Refresh') then
+	if imgui.button('Reset data') then
 		if isInTestMode() then
 			-- reinitialize test data
 			initializeTestData();
+		else
+			cleanUpData();
 		end
 
 		dpsUpdate();
