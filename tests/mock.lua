@@ -64,19 +64,19 @@ end
 
 sdk = {}
 
-function sdk:get_native_singleton(name)
+function sdk.get_native_singleton(name)
 	return 'singleton'
 end
 
-function sdk:find_type_definition(name)
+function sdk.find_type_definition(name)
 	return createMockTypeDefinition()
 end
 
-function sdk:call_native_func(name)
+function sdk.call_native_func(name, type, func)
 	-- do nothing
 end
 
-function sdk:hook(name, fnPre, fnPost)
+function sdk.hook(name, fnPre, fnPost)
 	-- do nothing
 end
 
