@@ -3,7 +3,7 @@
 function createMockTypeDefinition()
 	local mockTypeDefinition = {}
 
-	function mockTypeDefinition:get_method(self, name)
+	function mockTypeDefinition:get_method(name)
 		return 'no method'
 	end
 
@@ -64,19 +64,19 @@ end
 
 sdk = {}
 
-function sdk:get_native_singleton(self, name)
+function sdk:get_native_singleton(name)
 	return 'singleton'
 end
 
-function sdk:find_type_definition(self, name)
+function sdk:find_type_definition(name)
 	return createMockTypeDefinition()
 end
 
-function sdk:call_native_func(self, name)
+function sdk:call_native_func(name)
 	-- do nothing
 end
 
-function sdk:hook(self, name, fnPre, fnPost)
+function sdk:hook(name, fnPre, fnPost)
 	-- do nothing
 end
 
@@ -86,11 +86,11 @@ end
 
 re = {}
 
-function re:on_frame(self, fnFrame)
+function re:on_frame(fnFrame)
 	-- do nothing
 end
 
-function re:on_draw_ui(self, fnFrame)
+function re:on_draw_ui(fnFrame)
 	-- do nothing
 end
 

@@ -566,7 +566,7 @@ local function debug_line(text)
 end
 
 local function makeTableEmpty(table)
-	for k,v in pairs(table) do table[k]=nil end
+	for k,_ in pairs(table) do table[k]=nil end
 end
 
 local function log_info(text)
