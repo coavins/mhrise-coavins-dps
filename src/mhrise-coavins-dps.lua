@@ -918,6 +918,8 @@ local function initializeBossMonster(bossEnemy)
 	boss.hp.missing = 0.0;
 	boss.hp.percent = 0.0;
 
+	boss.combatTime = 0.0; -- amount of time boss spent in combat with anyone or anything
+
 	-- store it in the table
 	LARGE_MONSTERS[bossEnemy] = boss;
 
@@ -958,6 +960,8 @@ local function initializeBossMonsterWithDummyData(bossKey, fakeName)
 	s[1001] = initializeDamageSourceWithDummyMonsterData(1001);
 
 	boss.damageSources = s;
+
+	boss.combatTime = math.random() * 500.0 + 30.0;
 
 	TEST_MONSTERS[bossKey] = boss;
 	AddMonsterToReport(bossKey, boss);
@@ -1161,12 +1165,12 @@ local function sortReportItems_Player(a, b)
 end
 
 -- main function responsible for loading a boss into a report
-local function mergeDamageSourcesIntoReport(report, damageSources)
+local function mergeBossIntoReport(report, boss)
 	local totalDamage = 0.0;
 	local bestDamage = 0.0;
 
 	-- merge damage sources
-	for _,source in pairs(damageSources) do
+	for _,source in pairs(boss.damageSources) do
 		local effSourceId = source.id;
 
 		-- merge otomo with master
@@ -1244,7 +1248,7 @@ local function generateReport(filterBosses)
 	local report = initializeReport();
 
 	for _,boss in pairs(filterBosses) do
-		mergeDamageSourcesIntoReport(report, boss.damageSources);
+		mergeBossIntoReport(report, boss);
 	end
 
 	table.insert(DAMAGE_REPORTS, report);
@@ -2282,6 +2286,7 @@ if _G._UNIT_TESTING then
 	_G.DAMAGE_REPORTS  = DAMAGE_REPORTS;
 	_G.REPORT_MONSTERS = REPORT_MONSTERS;
 	_G.MANAGER = MANAGER;
+	_G.cleanUpData = cleanUpData;
 	_G.initializeDamageCounter        = initializeDamageCounter;
 	_G.getTotalDamageForDamageCounter = getTotalDamageForDamageCounter;
 	_G.mergeDamageCounters            = mergeDamageCounters;
@@ -2289,6 +2294,6 @@ if _G._UNIT_TESTING then
 	_G.initializeBossMonster          = initializeBossMonster;
 	_G.addDamageToBoss                = addDamageToBoss;
 	_G.initializeReport               = initializeReport;
-	_G.mergeDamageSourcesIntoReport   = mergeDamageSourcesIntoReport;
+	_G.mergeBossIntoReport   = mergeBossIntoReport;
 	_G.generateReport                 = generateReport;
 end

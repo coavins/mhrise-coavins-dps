@@ -4,6 +4,14 @@ _G._UNIT_TESTING = true
 require 'tests/mock'
 require 'src/mhrise-coavins-dps'
 
+local function initializeMockBossMonster()
+	-- automatically puts boss into cache
+	local enemy = MockEnemy:create()
+	initializeBossMonster(enemy)
+	local boss = LARGE_MONSTERS[enemy]
+	return boss;
+end
+
 describe("mhrise-coavins-dps", function()
 	setup(function()
 		MANAGER.MESSAGE = MockMessageManager:create()
@@ -64,40 +72,95 @@ describe("mhrise-coavins-dps", function()
 		end)
 	end)
 	describe("report", function()
-		it("merges a damage source correctly", function()
-			local r = initializeReport()
 
-			local bossSources = {}
-			bossSources[1] = initializeDamageSource(1)
-			bossSources[1].damageCounters['weapon'] = initializeDamageCounter()
-			bossSources[1].damageCounters['weapon'].physical = 100
+		before_each(function()
+			cleanUpData();
+		end)
+
+		it("merges a boss correctly", function()
+			local r = initializeReport()
+			local b = initializeMockBossMonster();
+
+			local s = {}
+			s[1] = initializeDamageSource(1)
+			s[1].damageCounters['weapon'] = initializeDamageCounter()
+			s[1].damageCounters['weapon'].physical = 100
+
+			b.damageSources = s
 
 			local actual = 100
 
-			mergeDamageSourcesIntoReport(r, bossSources)
+			mergeBossIntoReport(r, b)
 
 			assert.is_equal(actual, r.totalDamage)
 
 		end)
 		it("merges two bosses correctly", function()
 			local r = initializeReport()
+			local boss1 = initializeMockBossMonster();
+			local boss2 = initializeMockBossMonster();
 
-			local boss1 = {}
-			boss1[1] = initializeDamageSource(1)
-			boss1[1].damageCounters['weapon'] = initializeDamageCounter()
-			boss1[1].damageCounters['weapon'].physical = 100
-			boss1[1].damageCounters['weapon'].elemental = 50
-			boss1[1].damageCounters['weapon'].condition = 7
+			local s1 = {}
+			s1[1] = initializeDamageSource(1)
+			s1[1].damageCounters['weapon'] = initializeDamageCounter()
+			s1[1].damageCounters['weapon'].physical = 100
+			s1[1].damageCounters['weapon'].elemental = 50
+			s1[1].damageCounters['weapon'].condition = 7
 
-			local boss2 = {}
-			boss2[1] = initializeDamageSource(1)
-			boss2[1].damageCounters['weapon'] = initializeDamageCounter()
-			boss2[1].damageCounters['weapon'].physical = 201
-			boss2[1].damageCounters['weapon'].elemental = 54
-			boss2[1].damageCounters['weapon'].condition = 18
+			boss1.damageSources = s1;
 
-			mergeDamageSourcesIntoReport(r, boss1)
-			mergeDamageSourcesIntoReport(r, boss2)
+			local s2 = {}
+			s2[1] = initializeDamageSource(1)
+			s2[1].damageCounters['weapon'] = initializeDamageCounter()
+			s2[1].damageCounters['weapon'].physical = 201
+			s2[1].damageCounters['weapon'].elemental = 54
+			s2[1].damageCounters['weapon'].condition = 18
+
+			boss2.damageSources = s2;
+
+			mergeBossIntoReport(r, boss1)
+			mergeBossIntoReport(r, boss2)
+
+			local expected = 100 + 50 + 7 + 201 + 54 + 18
+			local actual = r.totalDamage
+
+			assert.is_equal(expected, actual)
+
+		end)
+		it("merges three bosses correctly", function()
+			local r = initializeReport()
+			local boss1 = initializeMockBossMonster();
+			local boss2 = initializeMockBossMonster();
+			local boss3 = initializeMockBossMonster();
+
+			local s1 = {}
+			s1[1] = initializeDamageSource(1)
+			s1[1].damageCounters['weapon'] = initializeDamageCounter()
+			s1[1].damageCounters['weapon'].physical = 100
+			s1[1].damageCounters['weapon'].elemental = 50
+			s1[1].damageCounters['weapon'].condition = 7
+
+			boss1.damageSources = s1;
+
+			local s2 = {}
+			s2[1] = initializeDamageSource(1)
+			s2[1].damageCounters['weapon'] = initializeDamageCounter()
+			s2[1].damageCounters['weapon'].physical = 201
+			s2[1].damageCounters['weapon'].elemental = 54
+			s2[1].damageCounters['weapon'].condition = 18
+
+			boss2.damageSources = s2;
+
+			local s3 = {}
+			s3[1] = initializeDamageSource(1)
+			s3[1].damageCounters['weapon'] = initializeDamageCounter()
+			s3[1].damageCounters['otomo'] = initializeDamageCounter()
+
+			boss3.damageSources = s3;
+
+			mergeBossIntoReport(r, boss1)
+			mergeBossIntoReport(r, boss2)
+			mergeBossIntoReport(r, boss3)
 
 			local expected = 100 + 50 + 7 + 201 + 54 + 18
 			local actual = r.totalDamage
@@ -106,10 +169,7 @@ describe("mhrise-coavins-dps", function()
 
 		end)
 		it("generates from boss cache correctly", function()
-			-- automatically puts boss into cache
-			local enemy = MockEnemy:create()
-			initializeBossMonster(enemy)
-			local boss = LARGE_MONSTERS[enemy]
+			local boss = initializeMockBossMonster()
 
 			addDamageToBoss(boss, 1, 0, 100, 200, 300)
 			addDamageToBoss(boss, 2, 0, 0, 100, 0)
