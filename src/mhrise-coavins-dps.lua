@@ -130,8 +130,8 @@ local function applyDefaultConfiguration()
 	-- colors
 	-- 0x 12345678
 	-- 12 = alpha
-	-- 34 = green
-	-- 56 = blue
+	-- 34 = blue
+	-- 56 = green
 	-- 78 = red
 
 	-- basic palette
