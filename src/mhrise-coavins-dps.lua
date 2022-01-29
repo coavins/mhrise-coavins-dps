@@ -73,7 +73,7 @@ local function applyDefaultConfiguration()
 	CFG['TABLE_COLS_WIDTH'][6] = 53
 	CFG['TABLE_COLS_WIDTH'][7] = 53
 	CFG['TABLE_COLS_WIDTH'][8] = 37
-	CFG['TABLE_COLS_WIDTH'][9] = 0
+	CFG['TABLE_COLS_WIDTH'][9] = 50
 
 	CFG['DRAW_BAR_TEXT_YOU'] = false -- shows "YOU" on your bar
 	TXT['DRAW_BAR_TEXT_YOU'] = 'Show "YOU" on your row'
@@ -117,10 +117,10 @@ local function applyDefaultConfiguration()
 	TXT['TABLE_HEADER_TEXT_OFFSET_X'] = 'Table text offset X'
 	MIN['TABLE_HEADER_TEXT_OFFSET_X'] = -100
 	MAX['TABLE_HEADER_TEXT_OFFSET_X'] = 100
-	CFG['TABLE_WIDTH'] = 425
+	CFG['TABLE_WIDTH'] = 434
 	TXT['TABLE_WIDTH'] = 'Table width'
-	MIN['TABLE_WIDTH'] = 0
-	MAX['TABLE_WIDTH'] = 3000
+	MIN['TABLE_WIDTH'] = 30
+	MAX['TABLE_WIDTH'] = 2000
 
 	CFG['TABLE_ROWH'] = 18
 	TXT['TABLE_ROWH'] = 'Row height'
@@ -132,7 +132,7 @@ local function applyDefaultConfiguration()
 	MIN['TABLE_ROW_PADDING'] = 0
 	MAX['TABLE_ROW_PADDING'] = 150
 
-	CFG['TABLE_ROW_TEXT_OFFSET_X'] = 0 -- x offset for damage bar text
+	CFG['TABLE_ROW_TEXT_OFFSET_X'] = 4 -- x offset for damage bar text
 	TXT['TABLE_ROW_TEXT_OFFSET_X'] = 'Row text offset X'
 	MIN['TABLE_ROW_TEXT_OFFSET_X'] = -100
 	MAX['TABLE_ROW_TEXT_OFFSET_X'] = 100
@@ -563,6 +563,7 @@ local REPORT_OTHER = false -- show monsters, etc in the report
 local MY_PLAYER_ID = nil
 local PLAYER_NAMES = {}
 local OTOMO_NAMES = {}
+local PLAYER_RANKS = {}
 
 -- initialized later when they become available
 local MANAGER = {}
@@ -576,6 +577,7 @@ MANAGER.OTOMO    = nil
 MANAGER.KEYBOARD = nil
 MANAGER.STAGE    = nil
 MANAGER.SCENE    = nil
+MANAGER.PROGRESS = nil
 
 local SCENE_MANAGER_TYPE = nil
 local SCENE_MANAGER_VIEW = nil
@@ -694,6 +696,13 @@ local function hasManagedResources()
 		end
 	end
 
+	if not MANAGER.PROGRESS then
+		MANAGER.PROGRESS = sdk.get_managed_singleton("snow.progress.ProgressManager");
+		if not MANAGER.PROGRESS then
+			return false
+		end
+	end
+
 	return true
 end
 
@@ -780,14 +789,17 @@ local function getOtomoIdFromFakeAttackerId(fakeAttackerId)
 	return fakeAttackerId - FAKE_OTOMO_RANGE_START
 end
 
-local function updatePlayerNames()
+local function updatePlayers()
 	-- get offline player name
 	local myHunter = MANAGER.LOBBY:get_field("_myHunterInfo")
 	if myHunter then
 		PLAYER_NAMES[MY_PLAYER_ID + 1] = myHunter:get_field("_name")
 	end
 
-	-- get online player names
+	-- get offline player rank
+	PLAYER_RANKS[MY_PLAYER_ID + 1] = MANAGER.PROGRESS:call("get_HunterRank")
+
+	-- get online players
 	local hunterInfo = MANAGER.LOBBY:get_field("_questHunterInfo")
 	if hunterInfo then
 		local hunterCount = hunterInfo:call("get_Count")
@@ -797,9 +809,11 @@ local function updatePlayerNames()
 				if hunter then
 					local playerId = hunter:get_field("_memberIndex")
 					local name = hunter:get_field("_name")
+					local rank = hunter:get_field("_hunterRank")
 
-					if playerId and name then
-						PLAYER_NAMES[playerId + 1] = name
+					if playerId then
+						if name then PLAYER_NAMES[playerId + 1] = name end
+						if rank then PLAYER_RANKS[playerId + 1] = rank end
 					end
 				end
 			end
@@ -1130,6 +1144,7 @@ local function initializeReportItem(id)
 	if item.id >= 0 and item.id <= 3 then
 		item.playerNumber = item.id + 1
 		item.name = PLAYER_NAMES[item.playerNumber]
+		item.rank = PLAYER_RANKS[item.playerNumber]
 	elseif attackerIdIsOtomo(item.id) then
 		item.otomoNumber = getOtomoIdFromFakeAttackerId(item.id) + 1
 		item.name = OTOMO_NAMES[item.otomoNumber]
@@ -1455,6 +1470,9 @@ local function drawReportItemColumn(item, col, x, y)
 	local text = ''
 
 	if     col == 2 then -- hr
+		if item.rank then
+			text = string.format('%s', item.rank)
+		end
 	elseif col == 3 then -- name
 		if item.playerNumber then
 			if CFG['DRAW_BAR_TEXT_YOU'] and item.id == MY_PLAYER_ID then
@@ -1483,9 +1501,9 @@ local function drawReportItemColumn(item, col, x, y)
 	elseif col == 5 then -- damage
 		text = string.format('%.0f', item.total)
 	elseif col == 6 then -- % party
-		text = string.format('%.1f%%', item.percentOfTotal * 100.0)
+		text = string.format('%.0f%%', item.percentOfTotal * 100.0)
 	elseif col == 7 then -- % best
-		text = string.format('%.1f%%', item.percentOfBest * 100.0)
+		text = string.format('%.0f%%', item.percentOfBest * 100.0)
 	elseif col == 8 then -- hits
 		text = string.format('%d', item.numHit)
 	elseif col == 9 then -- maxhit
@@ -1503,9 +1521,9 @@ local function drawReportItem(item, x, y, width, height)
 
 	-- get some values
 	local scalingFactor = CFG['TABLE_SCALE']
-	local text_offset_x = CFG['TABLE_ROW_TEXT_OFFSET_X'] * CFG['TABLE_SCALE']
-	local text_offset_y = CFG['TABLE_ROW_TEXT_OFFSET_Y'] * CFG['TABLE_SCALE']
-	local colorBlockWidth = 20 * scalingFactor
+	local text_offset_x = CFG['TABLE_ROW_TEXT_OFFSET_X'] * scalingFactor
+	local text_offset_y = CFG['TABLE_ROW_TEXT_OFFSET_Y'] * scalingFactor
+	local colorBlockWidth = 30 * scalingFactor
 	if not CFG['DRAW_BAR_COLORBLOCK'] then
 		colorBlockWidth = 0
 	end
@@ -1552,6 +1570,11 @@ local function drawReportItem(item, x, y, width, height)
 		if CFG['DRAW_BAR_COLORBLOCK'] then
 			-- color block
 			draw.filled_rect(x, y, colorBlockWidth, height, combatantColor)
+
+			-- hr
+			if item.playerNumber and item.rank and CFG['DRAW_BAR_TEXT_NAME_SHOW_HR'] then
+				draw.text(string.format('%s',item.rank), x + (3 * CFG['TABLE_SCALE']), y, CFG['COLOR_WHITE'])
+			end
 		end
 
 		-- damage bar
@@ -1561,7 +1584,7 @@ local function drawReportItem(item, x, y, width, height)
 	end
 
 	-- draw columns
-	local text_x = x + colorBlockWidth + 2 + text_offset_x
+	local text_x = x + colorBlockWidth + text_offset_x
 	local text_y = y + text_offset_y
 
 	-- now loop through defined columns
@@ -1652,6 +1675,7 @@ local function drawReport(index)
 		end
 
 		-- draw header row
+		local x = origin_x + (4 * CFG['TABLE_SCALE'])
 		local y = origin_y + grow
 
 		if CFG['DRAW_TITLE_BACKGROUND'] then
@@ -1659,11 +1683,15 @@ local function drawReport(index)
 			draw.filled_rect(origin_x, y, tableWidth, rowHeight, CFG['COLOR_TITLE_BG'])
 		end
 
-		local colorBlockWidth = 20 * CFG['TABLE_SCALE']
+		if CFG['DRAW_BAR_COLORBLOCK'] and CFG['DRAW_BAR_TEXT_NAME_SHOW_HR'] then
+			draw.text('HR', x, y, CFG['COLOR_GRAY'])
+		end
+
+		local colorBlockWidth = 30 * CFG['TABLE_SCALE']
 		if not CFG['DRAW_BAR_COLORBLOCK'] then
 			colorBlockWidth = 0
 		end
-		local x = origin_x + colorBlockWidth + 2
+		x = x + colorBlockWidth
 
 		for _, value in ipairs(CFG['TABLE_COLS']) do
 			if value > 1 then
@@ -1819,10 +1847,8 @@ local function dpsUpdate()
 	-- get player id
 	MY_PLAYER_ID = MANAGER.PLAYER:call("getMasterPlayerID")
 
-	if CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] then
-		-- get player names
-		updatePlayerNames()
-	end
+	-- get info for players
+	updatePlayers()
 
 	-- ensure bosses are initialized
 	local bossCount = MANAGER.ENEMY:call("getBossEnemyCount")
@@ -2009,6 +2035,7 @@ local function DrawWindowSettings()
 
 	showCheckboxForSetting('DRAW_BAR_TEXT_YOU')
 	showCheckboxForSetting('DRAW_BAR_TEXT_NAME_USE_REAL_NAMES')
+	showCheckboxForSetting('DRAW_BAR_TEXT_NAME_SHOW_HR')
 
 	imgui.new_line()
 
