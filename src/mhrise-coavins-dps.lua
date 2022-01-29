@@ -2402,8 +2402,14 @@ re.on_draw_ui(function()
 	if imgui.button('settings') then
 		DRAW_WINDOW_SETTINGS = not DRAW_WINDOW_SETTINGS;
 
-		if CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] then
-			initializeTestData();
+		if DRAW_WINDOW_SETTINGS then
+			if CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] then
+				initializeTestData();
+			end
+		else
+			if isInTestMode() then
+				clearTestData();
+			end
 		end
 	end
 
