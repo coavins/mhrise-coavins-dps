@@ -34,6 +34,8 @@ local function applyDefaultConfiguration()
 	TXT['DRAW_TITLE_MONSTERS'] = 'Show monsters in title'
 	CFG['DRAW_TITLE_BACKGROUND'] = true
 	TXT['DRAW_TITLE_BACKGROUND'] = 'Show title background'
+	CFG['DRAW_HEADER'] = true;
+	TXT['DRAW_HEADER'] = 'Show header'
 	CFG['DRAW_BAR_BACKGROUNDS'] = true
 	TXT['DRAW_BAR_BACKGROUNDS'] = 'Show bar background'
 	CFG['DRAW_BAR_OUTLINES']    = false
@@ -1426,6 +1428,7 @@ local function drawReport(index)
 	local origin_y = getScreenYFromY(CFG['TABLE_Y'])
 	local tableWidth = CFG['TABLE_WIDTH'] * CFG['TABLE_SCALE']
 	local rowHeight = CFG['TABLE_ROWH'] * CFG['TABLE_SCALE']
+	local growDistance = rowHeight;
 	local colorBlockWidth = 20
 	local text_offset_x = CFG['TABLE_ROW_TEXT_OFFSET_X']
 	local text_offset_y = CFG['TABLE_ROW_TEXT_OFFSET_Y']
@@ -1485,15 +1488,37 @@ local function drawReport(index)
 		draw.text(titleText, origin_x + offsetX, origin_y, CFG['COLOR_TITLE_FG'])
 	end
 
+	if CFG['DRAW_HEADER'] then
+		-- find grow without row padding
+		local grow = rowHeight
+		if CFG['TABLE_GROWS_UPWARD'] then
+			grow = rowHeight * -1
+		end
+
+		-- draw header row
+		local y = origin_y + grow
+
+		if CFG['DRAW_TITLE_BACKGROUND'] then
+			-- background
+			draw.filled_rect(origin_x, y, tableWidth, rowHeight, CFG['COLOR_TITLE_BG'])
+		end
+
+		draw.text('header', origin_x, y, CFG['COLOR_TITLE_FG'])
+	end
+
 	if CFG['TABLE_GROWS_UPWARD'] then
-		-- adjust starting position for drawing report items
-		origin_y = origin_y - rowHeight * (#report.items + 1)
+		growDistance = (rowHeight + CFG['TABLE_ROW_PADDING']) * -1
 	end
 
 	-- draw report items
 	if #report.items == 0 then
 		local x = origin_x + colorBlockWidth + 2 + text_offset_x
-		local y = origin_y + rowHeight + CFG['TABLE_ROW_PADDING'] + text_offset_y
+		local y = origin_y + growDistance + text_offset_y
+		if CFG['DRAW_HEADER'] then
+			-- skip header row
+			y = y + growDistance
+		end
+
 		draw.text('No data', x, y, CFG['COLOR_GRAY'])
 	end
 
@@ -1502,7 +1527,11 @@ local function drawReport(index)
 			goto skip_report_item
 		end
 
-		local y = origin_y + (rowHeight + CFG['TABLE_ROW_PADDING']) * i
+		local y = origin_y + growDistance * i
+		if CFG['DRAW_HEADER'] then
+			-- skip header row
+			y = y + growDistance
+		end
 
 		local combatantColor = CFG['COLOR_GRAY']
 		if item.playerNumber then
