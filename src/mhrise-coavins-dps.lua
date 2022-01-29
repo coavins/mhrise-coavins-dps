@@ -679,9 +679,13 @@ local function applySelectedPreset()
 	end
 end
 
+local function SetQuestDuration(value)
+	QUEST_DURATION = value;
+end
+
 local function cleanUpData()
 	LAST_UPDATE_TIME = 0;
-	QUEST_DURATION = 0.0;
+	SetQuestDuration(0.0);
 	makeTableEmpty(LARGE_MONSTERS)
 	makeTableEmpty(DAMAGE_REPORTS)
 	makeTableEmpty(REPORT_MONSTERS)
@@ -2319,7 +2323,7 @@ local function dpsFrame()
 	local isInQuest = (questStatus >= 2);
 
 	if isInQuest then
-		QUEST_DURATION = MANAGER.QUEST:call("getQuestElapsedTimeSec");
+		SetQuestDuration(MANAGER.QUEST:call("getQuestElapsedTimeSec"));
 	else
 		-- VillageAreaManager is unreliable, not always there, stale references
 		-- get a new reference
@@ -2331,7 +2335,7 @@ local function dpsFrame()
 
 	local isInTrainingHall = (villageArea == 5);
 	if isInTrainingHall then
-		QUEST_DURATION = MANAGER.AREA:call("get_TrainingHallStayTime");
+		SetQuestDuration(MANAGER.AREA:call("get_TrainingHallStayTime"));
 	end
 
 	IS_ONLINE = (MANAGER.LOBBY and MANAGER.LOBBY:call("IsQuestOnline")) or false;
@@ -2440,9 +2444,10 @@ if _G._UNIT_TESTING then
 	_G.DAMAGE_REPORTS  = DAMAGE_REPORTS;
 	_G.REPORT_MONSTERS = REPORT_MONSTERS;
 	_G.MANAGER = MANAGER;
-	_G.cleanUpData             = cleanUpData;
-	_G.SetReportOtomo = SetReportOtomo
-	_G.SetReportOther = SetReportOther
+	_G.SetQuestDuration = SetQuestDuration;
+	_G.cleanUpData      = cleanUpData;
+	_G.SetReportOtomo   = SetReportOtomo
+	_G.SetReportOther   = SetReportOther
 	_G.AddAttackerTypeToReport = AddAttackerTypeToReport;
 	_G.initializeDamageCounter = initializeDamageCounter;
 	_G.getTotalDamageForDamageCounter = getTotalDamageForDamageCounter;

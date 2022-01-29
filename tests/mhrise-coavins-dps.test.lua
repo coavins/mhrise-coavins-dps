@@ -20,6 +20,8 @@ describe("mhrise-coavins-dps", function()
 	before_each(function()
 		cleanUpData();
 
+		QUEST_DURATION = 0.0;
+
 		-- all attacker types enabled
 		for _,type in pairs(ATTACKER_TYPES) do
 			AddAttackerTypeToReport(type);
@@ -521,6 +523,52 @@ describe("mhrise-coavins-dps", function()
 			local r = DAMAGE_REPORTS[1]
 
 			local expected = (750 + 250 + 250 + 250 + 616 + 19842) / (100 + 10 + 5)
+			local actual = r.items[1].dps.report
+
+			assert.is_equal(expected, actual)
+		end)
+
+		it("is calculated correctly while still in combat", function()
+			-- config
+			local currentTime = 70;
+			local startTime = 50;
+			SetQuestDuration(currentTime)
+
+			local boss1 = initializeMockBossMonster()
+
+			addDamageToBoss(boss1, 1, 0, 100, 0, 0)
+
+			boss1.timeline[startTime] = true;
+
+			generateReport(REPORT_MONSTERS)
+
+			local r= DAMAGE_REPORTS[1]
+
+			local expected = 100 / (currentTime - startTime)
+			local actual = r.items[1].dps.report
+
+			assert.is_equal(expected, actual)
+		end)
+
+		it("is calculated correctly while still in combat but one monster left", function()
+			-- config
+			SetQuestDuration(100)
+
+			local boss1 = initializeMockBossMonster()
+			local boss2 = initializeMockBossMonster()
+
+			addDamageToBoss(boss1, 1, 0, 100, 0, 0)
+			addDamageToBoss(boss1, 1, 0, 200, 0, 0)
+
+			boss1.timeline[60] = true;
+			boss2.timeline[80] = true;
+			boss1.timeline[90] = false;
+
+			generateReport(REPORT_MONSTERS)
+
+			local r= DAMAGE_REPORTS[1]
+
+			local expected = 300 / 40
 			local actual = r.items[1].dps.report
 
 			assert.is_equal(expected, actual)
