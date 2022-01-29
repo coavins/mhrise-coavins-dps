@@ -994,6 +994,11 @@ local function initializeBossMonsterWithDummyData(bossKey, fakeName)
 end
 
 local function addDamageToBoss(boss, attackerId, attackerTypeId, amtPhysical, amtElemental, amtCondition)
+	local amt = initializeDamageCounter()
+	amt.physical  = amtPhysical  or 0;
+	amt.elemental = amtElemental or 0;
+	amt.condition = amtCondition or 0;
+
 	local sources = boss.damageSources;
 	local attackerType = ATTACKER_TYPES[attackerTypeId];
 
@@ -1018,15 +1023,13 @@ local function addDamageToBoss(boss, attackerId, attackerTypeId, amtPhysical, am
 	local c = s.counters[attackerType];
 
 	-- add damage facts to counter
-	c.physical  = c.physical  + amtPhysical;
-	c.elemental = c.elemental + amtElemental;
-	c.condition = c.condition + amtCondition;
+	s.counters[attackerType] = mergeDamageCounters(c, amt)
 
 	-- hit count
 	s.numHit = s.numHit + 1;
 
 	-- biggest hit
-	local totalDamage = getTotalDamageForDamageCounter(c);
+	local totalDamage = getTotalDamageForDamageCounter(amt);
 	if totalDamage > s.maxHit then
 		s.maxHit = totalDamage;
 	end

@@ -60,6 +60,28 @@ describe("mhrise-coavins-dps", function()
 
 	end)
 
+	describe("biggest hit", function()
+
+		it("counts correctly", function()
+			local boss = initializeMockBossMonster()
+
+			addDamageToBoss(boss, 1, 0, 500)
+			addDamageToBoss(boss, 1, 0, 400)
+			addDamageToBoss(boss, 1, 0, 300)
+			addDamageToBoss(boss, 1, 0, 200)
+
+			generateReport(REPORT_MONSTERS)
+
+			local r = DAMAGE_REPORTS[1]
+
+			local expected = 500
+			local actual = r.items[1].maxHit
+
+			assert.is_equal(expected, actual)
+		end)
+
+	end)
+
 	describe("damage counter", function()
 
 		it("is empty when initialized", function()
