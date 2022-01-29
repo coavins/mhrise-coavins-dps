@@ -136,6 +136,7 @@ describe("mhrise-coavins-dps", function()
 			assert.is_equal(actual, r.totalDamage)
 
 		end)
+
 		it("merges two bosses correctly", function()
 			local r = initializeReport()
 			local boss1 = initializeMockBossMonster();
@@ -168,6 +169,7 @@ describe("mhrise-coavins-dps", function()
 			assert.is_equal(expected, actual)
 
 		end)
+
 		it("merges three bosses correctly", function()
 			local r = initializeReport()
 			local boss1 = initializeMockBossMonster();
@@ -209,6 +211,7 @@ describe("mhrise-coavins-dps", function()
 			assert.is_equal(expected, actual)
 
 		end)
+
 		it("generates from boss cache correctly", function()
 			local boss = initializeMockBossMonster()
 
@@ -222,5 +225,235 @@ describe("mhrise-coavins-dps", function()
 			assert.is_equal(r.totalDamage, 700)
 			assert.is_equal(r.topDamage, 600)
 		end)
+
+		it("is accurate when pets are merged", function()
+			-- set config
+			CFG['OTOMO_DMG_IS_PLAYER_DMG'] = true;
+
+			local boss = initializeMockBossMonster()
+
+			addDamageToBoss(boss, 1, 0, 1, 2, 4)
+			addDamageToBoss(boss, 1, 19, 8, 16, 32)
+
+			generateReport(REPORT_MONSTERS)
+
+			local r = DAMAGE_REPORTS[1]
+
+			local expected = 1+2+4+8+16+32
+			local actual = r.totalDamage
+
+			assert.is_equal(expected, actual)
+		end)
+
+		it("includes otomo when they are unmerged", function()
+			-- set config
+			CFG['OTOMO_DMG_IS_PLAYER_DMG'] = false;
+			SetReportOtomo(true)
+
+			local boss = initializeMockBossMonster()
+
+			addDamageToBoss(boss, 0, 0, 1, 2, 4)
+			addDamageToBoss(boss, 0, 19, 8, 16, 32)
+
+			generateReport(REPORT_MONSTERS)
+
+			local r = DAMAGE_REPORTS[1]
+
+			local expected = 1+2+4+8+16+32
+			local actual = r.totalDamage
+
+			assert.is_equal(expected, actual)
+		end)
+
+		it("excludes otomo when they are unmerged", function()
+			-- set config
+			CFG['OTOMO_DMG_IS_PLAYER_DMG'] = false;
+			SetReportOtomo(false)
+
+			local boss = initializeMockBossMonster()
+
+			addDamageToBoss(boss, 0, 0, 1, 2, 4)
+			addDamageToBoss(boss, 0, 19, 8, 16, 32)
+
+			generateReport(REPORT_MONSTERS)
+
+			local r = DAMAGE_REPORTS[1]
+
+			local expected = 1+2+4
+			local actual = r.totalDamage
+
+			assert.is_equal(expected, actual)
+		end)
+
+		it("generates a full party correctly (merged pets)", function()
+			local boss = initializeMockBossMonster();
+
+			CFG['OTOMO_DMG_IS_PLAYER_DMG'] = true;
+
+			local damagesPhysical = {};
+			table.insert(damagesPhysical, 100);
+			table.insert(damagesPhysical, 105);
+			table.insert(damagesPhysical, 110);
+			table.insert(damagesPhysical, 115);
+			table.insert(damagesPhysical, 120);
+			table.insert(damagesPhysical, 125);
+
+			local damagesElemental = {};
+			table.insert(damagesElemental, 200);
+			table.insert(damagesElemental, 205);
+			table.insert(damagesElemental, 210);
+			table.insert(damagesElemental, 215);
+			table.insert(damagesElemental, 220);
+			table.insert(damagesElemental, 225);
+
+			local damagesCondition = {};
+			table.insert(damagesCondition, 300);
+			table.insert(damagesCondition, 305);
+			table.insert(damagesCondition, 310);
+			table.insert(damagesCondition, 315);
+			table.insert(damagesCondition, 320);
+			table.insert(damagesCondition, 325);
+
+			-- total of 3825 per attacker
+
+			for index, value in ipairs(damagesPhysical) do
+				addDamageToBoss(boss, 0, 0,
+				damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+				addDamageToBoss(boss, 1, 0,
+				damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+				addDamageToBoss(boss, 2, 0,
+				damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+				addDamageToBoss(boss, 3, 0,
+				damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+				addDamageToBoss(boss, 0, 19,
+				damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+				addDamageToBoss(boss, 1, 19,
+				damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+				addDamageToBoss(boss, 2, 19,
+				damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+				addDamageToBoss(boss, 3, 19,
+				damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			end
+
+			generateReport(REPORT_MONSTERS);
+
+			local r = DAMAGE_REPORTS[1]
+
+			assert.is_equal(3825 * 8, r.totalDamage)
+			assert.is_equal(3825 * 2, r.topDamage)
+		end)
+
 	end)
+
+	it("generates a full party correctly (unmerged pets)", function()
+		local boss = initializeMockBossMonster();
+
+		CFG['OTOMO_DMG_IS_PLAYER_DMG'] = false;
+		SetReportOtomo(true)
+
+		local damagesPhysical = {};
+		table.insert(damagesPhysical, 100);
+		table.insert(damagesPhysical, 105);
+		table.insert(damagesPhysical, 110);
+		table.insert(damagesPhysical, 115);
+		table.insert(damagesPhysical, 120);
+		table.insert(damagesPhysical, 125);
+
+		local damagesElemental = {};
+		table.insert(damagesElemental, 200);
+		table.insert(damagesElemental, 205);
+		table.insert(damagesElemental, 210);
+		table.insert(damagesElemental, 215);
+		table.insert(damagesElemental, 220);
+		table.insert(damagesElemental, 225);
+
+		local damagesCondition = {};
+		table.insert(damagesCondition, 300);
+		table.insert(damagesCondition, 305);
+		table.insert(damagesCondition, 310);
+		table.insert(damagesCondition, 315);
+		table.insert(damagesCondition, 320);
+		table.insert(damagesCondition, 325);
+
+		-- total of 3825 per attacker
+
+		for index, value in ipairs(damagesPhysical) do
+			addDamageToBoss(boss, 0, 0,
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			addDamageToBoss(boss, 1, 0,
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			addDamageToBoss(boss, 2, 0,
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			addDamageToBoss(boss, 3, 0,
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			addDamageToBoss(boss, 0, 19,
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			addDamageToBoss(boss, 1, 19,
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			addDamageToBoss(boss, 2, 19,
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			addDamageToBoss(boss, 3, 19,
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+		end
+
+		generateReport(REPORT_MONSTERS);
+
+		local r = DAMAGE_REPORTS[1]
+
+		assert.is_equal(3825 * 8, r.totalDamage)
+		assert.is_equal(3825, r.topDamage)
+	end)
+
+	it("counts random data correctly", function()
+		local boss = initializeMockBossMonster();
+
+		CFG['OTOMO_DMG_IS_PLAYER_DMG'] = false;
+		SetReportOtomo(true)
+
+		local damagesPhysical = {};
+		local damagesElemental = {};
+		local damagesCondition = {};
+
+		local expected = 0.0;
+
+		for i = 1, 10, 1 do
+			local amt = math.random(1,1000)
+			table.insert(damagesPhysical, amt)
+			expected = expected + amt
+			amt = math.random(1,1000)
+			table.insert(damagesElemental, amt)
+			expected = expected + amt
+			amt = math.random(1,1000)
+			table.insert(damagesCondition, amt)
+			expected = expected + amt
+		end
+
+		for index, value in ipairs(damagesPhysical) do
+			addDamageToBoss(boss, 0, 0,
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			addDamageToBoss(boss, 1, 0,
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			addDamageToBoss(boss, 2, 0,
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			addDamageToBoss(boss, 3, 0,
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			addDamageToBoss(boss, 0, 19,
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			addDamageToBoss(boss, 1, 19,
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			addDamageToBoss(boss, 2, 19,
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			addDamageToBoss(boss, 3, 19,
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+		end
+
+		expected = expected * 8
+
+		generateReport(REPORT_MONSTERS);
+
+		local r = DAMAGE_REPORTS[1]
+
+		assert.is_equal(expected, r.totalDamage)
+	end)
+
 end)

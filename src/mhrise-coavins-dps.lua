@@ -709,6 +709,14 @@ local function RemoveAttackerTypeFromReport(typeToRemove)
 	log_info(string.format('damage type %s removed from report', typeToRemove));
 end
 
+local function SetReportOtomo(value)
+	REPORT_OTOMO = value
+end
+
+local function SetReportOther(value)
+	REPORT_OTHER = value
+end
+
 local function attackerIdIsPlayer(attackerId)
 	if attackerId >= 0 and attackerId <= 3 then
 		return true;
@@ -2307,6 +2315,7 @@ log_info('init complete');
 
 -- export locals for testing
 if _G._UNIT_TESTING then
+	_G.CFG = CFG;
 	_G.ATTACKER_TYPES  = ATTACKER_TYPES;
 	_G.REPORT_ATTACKER_TYPES  = REPORT_ATTACKER_TYPES;
 	_G.LARGE_MONSTERS  = LARGE_MONSTERS;
@@ -2314,6 +2323,8 @@ if _G._UNIT_TESTING then
 	_G.REPORT_MONSTERS = REPORT_MONSTERS;
 	_G.MANAGER = MANAGER;
 	_G.cleanUpData             = cleanUpData;
+	_G.SetReportOtomo = SetReportOtomo
+	_G.SetReportOther = SetReportOther
 	_G.AddAttackerTypeToReport = AddAttackerTypeToReport;
 	_G.initializeDamageCounter = initializeDamageCounter;
 	_G.getTotalDamageForDamageCounter = getTotalDamageForDamageCounter;
