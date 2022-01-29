@@ -9,7 +9,7 @@ local function initializeMockBossMonster()
 	local enemy = MockEnemy:create()
 	initializeBossMonster(enemy)
 	local boss = LARGE_MONSTERS[enemy]
-	return boss;
+	return boss
 end
 
 describe("mhrise-coavins-dps", function()
@@ -18,22 +18,22 @@ describe("mhrise-coavins-dps", function()
 	end)
 
 	before_each(function()
-		cleanUpData();
+		cleanUpData()
 
 		SetQuestDuration(0.0)
 
 		-- all attacker types enabled
 		for _,type in pairs(ATTACKER_TYPES) do
-			AddAttackerTypeToReport(type);
+			AddAttackerTypeToReport(type)
 		end
 	end)
 
 	describe("boss", function()
 
 		it("works through damage hook with one attacker", function()
-			local boss = initializeMockBossMonster();
+			local boss = initializeMockBossMonster()
 
-			addDamageToBoss(boss, 1, 0, 100, 200, 400);
+			addDamageToBoss(boss, 1, 0, 100, 200, 400)
 
 			local sum = sumDamageSourcesList(boss.damageSources)
 			assert.is_equal(100, sum.physical)
@@ -43,12 +43,12 @@ describe("mhrise-coavins-dps", function()
 		end)
 
 		it("works through damage hook with a full party of four", function()
-			local boss = initializeMockBossMonster();
+			local boss = initializeMockBossMonster()
 
-			addDamageToBoss(boss, 0, 0, 101, 202, 403);
-			addDamageToBoss(boss, 1, 0, 201, 402, 803);
-			addDamageToBoss(boss, 2, 0, 401, 802, 103);
-			addDamageToBoss(boss, 3, 0, 801, 102, 203);
+			addDamageToBoss(boss, 0, 0, 101, 202, 403)
+			addDamageToBoss(boss, 1, 0, 201, 402, 803)
+			addDamageToBoss(boss, 2, 0, 401, 802, 103)
+			addDamageToBoss(boss, 3, 0, 801, 102, 203)
 
 			local sum = sumDamageSourcesList(boss.damageSources)
 
@@ -146,7 +146,7 @@ describe("mhrise-coavins-dps", function()
 
 		it("merges a boss correctly", function()
 			local r = initializeReport()
-			local b = initializeMockBossMonster();
+			local b = initializeMockBossMonster()
 
 			local s = {}
 			s[1] = initializeDamageSource(1)
@@ -165,8 +165,8 @@ describe("mhrise-coavins-dps", function()
 
 		it("merges two bosses correctly", function()
 			local r = initializeReport()
-			local boss1 = initializeMockBossMonster();
-			local boss2 = initializeMockBossMonster();
+			local boss1 = initializeMockBossMonster()
+			local boss2 = initializeMockBossMonster()
 
 			local s1 = {}
 			s1[1] = initializeDamageSource(1)
@@ -175,7 +175,7 @@ describe("mhrise-coavins-dps", function()
 			s1[1].counters['weapon'].elemental = 50
 			s1[1].counters['weapon'].condition = 7
 
-			boss1.damageSources = s1;
+			boss1.damageSources = s1
 
 			local s2 = {}
 			s2[1] = initializeDamageSource(1)
@@ -184,7 +184,7 @@ describe("mhrise-coavins-dps", function()
 			s2[1].counters['weapon'].elemental = 54
 			s2[1].counters['weapon'].condition = 18
 
-			boss2.damageSources = s2;
+			boss2.damageSources = s2
 
 			mergeBossIntoReport(r, boss1)
 			mergeBossIntoReport(r, boss2)
@@ -198,9 +198,9 @@ describe("mhrise-coavins-dps", function()
 
 		it("merges three bosses correctly", function()
 			local r = initializeReport()
-			local boss1 = initializeMockBossMonster();
-			local boss2 = initializeMockBossMonster();
-			local boss3 = initializeMockBossMonster();
+			local boss1 = initializeMockBossMonster()
+			local boss2 = initializeMockBossMonster()
+			local boss3 = initializeMockBossMonster()
 
 			local s1 = {}
 			s1[1] = initializeDamageSource(1)
@@ -209,7 +209,7 @@ describe("mhrise-coavins-dps", function()
 			s1[1].counters['weapon'].elemental = 50
 			s1[1].counters['weapon'].condition = 7
 
-			boss1.damageSources = s1;
+			boss1.damageSources = s1
 
 			local s2 = {}
 			s2[1] = initializeDamageSource(1)
@@ -218,14 +218,14 @@ describe("mhrise-coavins-dps", function()
 			s2[1].counters['weapon'].elemental = 54
 			s2[1].counters['weapon'].condition = 18
 
-			boss2.damageSources = s2;
+			boss2.damageSources = s2
 
 			local s3 = {}
 			s3[1] = initializeDamageSource(1)
 			s3[1].counters['weapon'] = initializeDamageCounter()
 			s3[1].counters['otomo'] = initializeDamageCounter()
 
-			boss3.damageSources = s3;
+			boss3.damageSources = s3
 
 			mergeBossIntoReport(r, boss1)
 			mergeBossIntoReport(r, boss2)
@@ -254,7 +254,7 @@ describe("mhrise-coavins-dps", function()
 
 		it("is accurate when pets are merged", function()
 			-- set config
-			CFG['OTOMO_DMG_IS_PLAYER_DMG'] = true;
+			CFG['OTOMO_DMG_IS_PLAYER_DMG'] = true
 
 			local boss = initializeMockBossMonster()
 
@@ -273,7 +273,7 @@ describe("mhrise-coavins-dps", function()
 
 		it("includes otomo when they are unmerged", function()
 			-- set config
-			CFG['OTOMO_DMG_IS_PLAYER_DMG'] = false;
+			CFG['OTOMO_DMG_IS_PLAYER_DMG'] = false
 			SetReportOtomo(true)
 
 			local boss = initializeMockBossMonster()
@@ -293,7 +293,7 @@ describe("mhrise-coavins-dps", function()
 
 		it("excludes otomo when they are unmerged", function()
 			-- set config
-			CFG['OTOMO_DMG_IS_PLAYER_DMG'] = false;
+			CFG['OTOMO_DMG_IS_PLAYER_DMG'] = false
 			SetReportOtomo(false)
 
 			local boss = initializeMockBossMonster()
@@ -312,56 +312,56 @@ describe("mhrise-coavins-dps", function()
 		end)
 
 		it("generates a full party correctly (merged pets)", function()
-			local boss = initializeMockBossMonster();
+			local boss = initializeMockBossMonster()
 
-			CFG['OTOMO_DMG_IS_PLAYER_DMG'] = true;
+			CFG['OTOMO_DMG_IS_PLAYER_DMG'] = true
 
-			local damagesPhysical = {};
-			table.insert(damagesPhysical, 100);
-			table.insert(damagesPhysical, 105);
-			table.insert(damagesPhysical, 110);
-			table.insert(damagesPhysical, 115);
-			table.insert(damagesPhysical, 120);
-			table.insert(damagesPhysical, 125);
+			local damagesPhysical = {}
+			table.insert(damagesPhysical, 100)
+			table.insert(damagesPhysical, 105)
+			table.insert(damagesPhysical, 110)
+			table.insert(damagesPhysical, 115)
+			table.insert(damagesPhysical, 120)
+			table.insert(damagesPhysical, 125)
 
-			local damagesElemental = {};
-			table.insert(damagesElemental, 200);
-			table.insert(damagesElemental, 205);
-			table.insert(damagesElemental, 210);
-			table.insert(damagesElemental, 215);
-			table.insert(damagesElemental, 220);
-			table.insert(damagesElemental, 225);
+			local damagesElemental = {}
+			table.insert(damagesElemental, 200)
+			table.insert(damagesElemental, 205)
+			table.insert(damagesElemental, 210)
+			table.insert(damagesElemental, 215)
+			table.insert(damagesElemental, 220)
+			table.insert(damagesElemental, 225)
 
-			local damagesCondition = {};
-			table.insert(damagesCondition, 300);
-			table.insert(damagesCondition, 305);
-			table.insert(damagesCondition, 310);
-			table.insert(damagesCondition, 315);
-			table.insert(damagesCondition, 320);
-			table.insert(damagesCondition, 325);
+			local damagesCondition = {}
+			table.insert(damagesCondition, 300)
+			table.insert(damagesCondition, 305)
+			table.insert(damagesCondition, 310)
+			table.insert(damagesCondition, 315)
+			table.insert(damagesCondition, 320)
+			table.insert(damagesCondition, 325)
 
 			-- total of 3825 per attacker
 
 			for index,_ in ipairs(damagesPhysical) do
 				addDamageToBoss(boss, 0, 0,
-				damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 				addDamageToBoss(boss, 1, 0,
-				damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 				addDamageToBoss(boss, 2, 0,
-				damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 				addDamageToBoss(boss, 3, 0,
-				damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 				addDamageToBoss(boss, 0, 19,
-				damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 				addDamageToBoss(boss, 1, 19,
-				damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 				addDamageToBoss(boss, 2, 19,
-				damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 				addDamageToBoss(boss, 3, 19,
-				damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 			end
 
-			generateReport(REPORT_MONSTERS);
+			generateReport(REPORT_MONSTERS)
 
 			local r = DAMAGE_REPORTS[1]
 
@@ -372,57 +372,57 @@ describe("mhrise-coavins-dps", function()
 	end)
 
 	it("generates a full party correctly (unmerged pets)", function()
-		local boss = initializeMockBossMonster();
+		local boss = initializeMockBossMonster()
 
-		CFG['OTOMO_DMG_IS_PLAYER_DMG'] = false;
+		CFG['OTOMO_DMG_IS_PLAYER_DMG'] = false
 		SetReportOtomo(true)
 
-		local damagesPhysical = {};
-		table.insert(damagesPhysical, 100);
-		table.insert(damagesPhysical, 105);
-		table.insert(damagesPhysical, 110);
-		table.insert(damagesPhysical, 115);
-		table.insert(damagesPhysical, 120);
-		table.insert(damagesPhysical, 125);
+		local damagesPhysical = {}
+		table.insert(damagesPhysical, 100)
+		table.insert(damagesPhysical, 105)
+		table.insert(damagesPhysical, 110)
+		table.insert(damagesPhysical, 115)
+		table.insert(damagesPhysical, 120)
+		table.insert(damagesPhysical, 125)
 
-		local damagesElemental = {};
-		table.insert(damagesElemental, 200);
-		table.insert(damagesElemental, 205);
-		table.insert(damagesElemental, 210);
-		table.insert(damagesElemental, 215);
-		table.insert(damagesElemental, 220);
-		table.insert(damagesElemental, 225);
+		local damagesElemental = {}
+		table.insert(damagesElemental, 200)
+		table.insert(damagesElemental, 205)
+		table.insert(damagesElemental, 210)
+		table.insert(damagesElemental, 215)
+		table.insert(damagesElemental, 220)
+		table.insert(damagesElemental, 225)
 
-		local damagesCondition = {};
-		table.insert(damagesCondition, 300);
-		table.insert(damagesCondition, 305);
-		table.insert(damagesCondition, 310);
-		table.insert(damagesCondition, 315);
-		table.insert(damagesCondition, 320);
-		table.insert(damagesCondition, 325);
+		local damagesCondition = {}
+		table.insert(damagesCondition, 300)
+		table.insert(damagesCondition, 305)
+		table.insert(damagesCondition, 310)
+		table.insert(damagesCondition, 315)
+		table.insert(damagesCondition, 320)
+		table.insert(damagesCondition, 325)
 
 		-- total of 3825 per attacker
 
 		for index,_ in ipairs(damagesPhysical) do
 			addDamageToBoss(boss, 0, 0,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 			addDamageToBoss(boss, 1, 0,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 			addDamageToBoss(boss, 2, 0,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 			addDamageToBoss(boss, 3, 0,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 			addDamageToBoss(boss, 0, 19,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 			addDamageToBoss(boss, 1, 19,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 			addDamageToBoss(boss, 2, 19,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 			addDamageToBoss(boss, 3, 19,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 		end
 
-		generateReport(REPORT_MONSTERS);
+		generateReport(REPORT_MONSTERS)
 
 		local r = DAMAGE_REPORTS[1]
 
@@ -431,16 +431,16 @@ describe("mhrise-coavins-dps", function()
 	end)
 
 	it("counts random data correctly", function()
-		local boss = initializeMockBossMonster();
+		local boss = initializeMockBossMonster()
 
-		CFG['OTOMO_DMG_IS_PLAYER_DMG'] = false;
+		CFG['OTOMO_DMG_IS_PLAYER_DMG'] = false
 		SetReportOtomo(true)
 
-		local damagesPhysical = {};
-		local damagesElemental = {};
-		local damagesCondition = {};
+		local damagesPhysical = {}
+		local damagesElemental = {}
+		local damagesCondition = {}
 
-		local expected = 0.0;
+		local expected = 0.0
 
 		for _=1,10,1 do
 			local amt = math.random(1,1000)
@@ -456,26 +456,26 @@ describe("mhrise-coavins-dps", function()
 
 		for index,_ in ipairs(damagesPhysical) do
 			addDamageToBoss(boss, 0, 0,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 			addDamageToBoss(boss, 1, 0,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 			addDamageToBoss(boss, 2, 0,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 			addDamageToBoss(boss, 3, 0,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 			addDamageToBoss(boss, 0, 19,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 			addDamageToBoss(boss, 1, 19,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 			addDamageToBoss(boss, 2, 19,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 			addDamageToBoss(boss, 3, 19,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
+			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 		end
 
 		expected = expected * 8
 
-		generateReport(REPORT_MONSTERS);
+		generateReport(REPORT_MONSTERS)
 
 		local r = DAMAGE_REPORTS[1]
 
@@ -489,8 +489,8 @@ describe("mhrise-coavins-dps", function()
 
 			addDamageToBoss(boss, 1, 0, 750, 250, 0)
 
-			boss.timeline[0] = true;
-			boss.timeline[100] = false;
+			boss.timeline[0] = true
+			boss.timeline[100] = false
 
 			generateReport(REPORT_MONSTERS)
 
@@ -509,16 +509,16 @@ describe("mhrise-coavins-dps", function()
 			addDamageToBoss(boss1, 1, 0, 750, 250, 0)
 			addDamageToBoss(boss2, 1, 0, 250, 250, 0)
 
-			boss1.timeline[0] = true;
-			boss1.timeline[100] = false;
-			boss2.timeline[50] = true;
-			boss2.timeline[150] = false;
+			boss1.timeline[0] = true
+			boss1.timeline[100] = false
+			boss2.timeline[50] = true
+			boss2.timeline[150] = false
 
 			generateReport(REPORT_MONSTERS)
 
 			local r = DAMAGE_REPORTS[1]
 
-			local expected = (750+250+250+250) / 150.0;
+			local expected = (750+250+250+250) / 150.0
 			local actual = r.items[1].dps.report
 
 			assert.is_equal(expected, actual)
@@ -533,12 +533,12 @@ describe("mhrise-coavins-dps", function()
 			addDamageToBoss(boss2, 1, 0, 250, 250, 0)
 			addDamageToBoss(boss3, 1, 0, 616, 19842, 0)
 
-			boss1.timeline[0] = true;
-			boss1.timeline[100] = false;
-			boss2.timeline[100] = true;
-			boss2.timeline[110] = false;
-			boss3.timeline[200] = true;
-			boss3.timeline[205] = false;
+			boss1.timeline[0] = true
+			boss1.timeline[100] = false
+			boss2.timeline[100] = true
+			boss2.timeline[110] = false
+			boss3.timeline[200] = true
+			boss3.timeline[205] = false
 
 			generateReport(REPORT_MONSTERS)
 
@@ -552,15 +552,15 @@ describe("mhrise-coavins-dps", function()
 
 		it("is calculated correctly while still in combat", function()
 			-- config
-			local currentTime = 70;
-			local startTime = 50;
+			local currentTime = 70
+			local startTime = 50
 			SetQuestDuration(currentTime)
 
 			local boss1 = initializeMockBossMonster()
 
 			addDamageToBoss(boss1, 1, 0, 100, 0, 0)
 
-			boss1.timeline[startTime] = true;
+			boss1.timeline[startTime] = true
 
 			generateReport(REPORT_MONSTERS)
 
@@ -582,9 +582,9 @@ describe("mhrise-coavins-dps", function()
 			addDamageToBoss(boss1, 1, 0, 100, 0, 0)
 			addDamageToBoss(boss1, 1, 0, 200, 0, 0)
 
-			boss1.timeline[60] = true;
-			boss2.timeline[80] = true;
-			boss1.timeline[90] = false;
+			boss1.timeline[60] = true
+			boss2.timeline[80] = true
+			boss1.timeline[90] = false
 
 			generateReport(REPORT_MONSTERS)
 
