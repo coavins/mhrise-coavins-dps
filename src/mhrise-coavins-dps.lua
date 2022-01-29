@@ -10,7 +10,7 @@ local MAX = {};
 
 local function applyDefaultConfiguration()
 	-- general settings
-	CFG['UPDATE_RATE'] = 0.5; -- in seconds, so 0.5 means two updates per second
+	CFG['UPDATE_RATE'] = 0.20; -- in seconds, so 0.5 means two updates per second
 	TXT['UPDATE_RATE'] = 'Update frequency (in seconds)';
 	MIN['UPDATE_RATE'] = 0.01;
 	MAX['UPDATE_RATE'] = 10.00;
@@ -57,6 +57,8 @@ local function applyDefaultConfiguration()
 	TXT['DRAW_BAR_TEXT_YOU'] = 'Show "YOU" on your row';
 	CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = true; -- show real player names instead of IDs
 	TXT['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = 'Reveal character names';
+	CFG['DRAW_BAR_TEXT_DPS_REPORT'] = true; -- shows report dps
+	TXT['DRAW_BAR_TEXT_DPS_REPORT'] = 'Show DPS for time monsters spent in combat';
 	CFG['DRAW_BAR_TEXT_TOTAL_DAMAGE']        = false; -- shows total damage dealt
 	TXT['DRAW_BAR_TEXT_TOTAL_DAMAGE'] = 'Show total damage done';
 	CFG['DRAW_BAR_TEXT_PERCENT_OF_PARTY']    = true; -- shows your share of party damage
@@ -489,6 +491,7 @@ local DRAW_WINDOW_REPORT = false;
 local DRAW_WINDOW_HOTKEYS = false;
 local WINDOW_FLAGS = 0x10120;
 local IS_ONLINE = false;
+local QUEST_DURATION = 0.0;
 
 local CURRENTLY_HELD_MODIFIERS = {};
 local ASSIGNED_HOTKEY_THIS_FRAME = false;
@@ -678,6 +681,7 @@ end
 
 local function cleanUpData()
 	LAST_UPDATE_TIME = 0;
+	QUEST_DURATION = 0.0;
 	makeTableEmpty(LARGE_MONSTERS)
 	makeTableEmpty(DAMAGE_REPORTS)
 	makeTableEmpty(REPORT_MONSTERS)
@@ -926,7 +930,9 @@ local function initializeBossMonster(bossEnemy)
 	boss.hp.missing = 0.0;
 	boss.hp.percent = 0.0;
 
-	boss.seconds = 0.0; -- amount of time boss spent in combat with anyone or anything
+	boss.timeline = {}; -- don't ask...
+	boss.lastTime = 0;
+	boss.isInCombat = false;
 
 	-- store it in the table
 	LARGE_MONSTERS[bossEnemy] = boss;
@@ -969,7 +975,15 @@ local function initializeBossMonsterWithDummyData(bossKey, fakeName)
 
 	boss.damageSources = s;
 
-	boss.combatTime = math.random() * 500.0 + 30.0;
+	boss.hp = {};
+	boss.hp.current = 0.0;
+	boss.hp.max     = 0.0;
+	boss.hp.missing = 0.0;
+	boss.hp.percent = 0.0;
+
+	boss.timeline = {};
+	boss.lastTime = 0;
+	boss.isInCombat = false;
 
 	TEST_MONSTERS[bossKey] = boss;
 	AddMonsterToReport(bossKey, boss);
@@ -1048,6 +1062,10 @@ local function initializeReport()
 	report.topDamage = 0.0;
 	report.totalDamage = 0.0;
 
+	report.timeline = {}; -- events for timestamps
+	report.timestamps = {}; -- ordered timestamps
+	report.time = 0.0;
+
 	return report;
 end
 
@@ -1097,7 +1115,7 @@ local function initializeReportItem(id)
 
 	item.dps = {}
 	item.dps.quest    = 0.0
-	item.dps.monster  = 0.0
+	item.dps.report   = 0.0
 	item.dps.personal = 0.0
 
 	item.percentOfTotal = 0.0;
@@ -1202,6 +1220,46 @@ local function sortReportItems_Player(a, b)
 	end
 end
 
+local function mergeBossTimelineIntoReport(report, boss)
+	for t,e in pairs(boss.timeline) do
+		local d;
+		if e then d =  1;
+		else      d = -1;
+		end
+
+		if report.timeline[t] then
+			report.timeline[t] = report.timeline[t] + d;
+		else
+			report.timeline[t] = d;
+			table.insert(report.timestamps, t);
+		end
+	end
+
+	table.sort(report.timestamps);
+end
+
+local function calculateReportTime(report)
+	report.time = 0.0;
+	local tally = 0;
+	local a = 0.0;
+	for _,timestamp in ipairs(report.timestamps) do
+		local e = report.timeline[timestamp];
+		local old = tally;
+		local new = tally + e;
+		if old <= 0 and new > 0 then
+			a = timestamp;
+		elseif old > 0 and new <= 0 then
+			report.time = report.time + (timestamp - a);
+			a = 0.0;
+		end
+		tally = new;
+	end
+
+	if tally > 0 then
+		report.time = report.time + (QUEST_DURATION - a);
+	end
+end
+
 -- main function responsible for loading a boss into a report
 local function mergeBossIntoReport(report, boss)
 	local totalDamage = 0.0;
@@ -1243,6 +1301,10 @@ local function mergeBossIntoReport(report, boss)
 		end
 	end
 
+	-- merge boss into report timeline
+	mergeBossTimelineIntoReport(report, boss);
+	calculateReportTime(report);
+
 	-- now loop all report items and update the totals after adding this boss
 	for _,item in ipairs(report.items) do
 		-- calculate the item's own total damage
@@ -1254,9 +1316,8 @@ local function mergeBossIntoReport(report, boss)
 		item.totalOtomo     = sum.otomo;
 
 		-- calculate dps
-		item.seconds.monster = item.seconds.monster + boss.seconds
-		if item.seconds.monster > 0 then
-			item.dps.monster = item.total / item.seconds.monster
+		if report.time > 0 then
+			item.dps.report = item.total / report.time;
 		end
 
 		-- remember which combatant has the most damage
@@ -1518,6 +1579,16 @@ local function drawReport(index)
 			if item.id == MY_PLAYER_ID then
 				barText = barText .. 'YOU' .. spacer;
 			end
+		end
+
+		if fixedSpacing and barText ~= '' then
+			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE']);
+			text_x = text_x + (5 * paddingCount);
+			barText = '';
+		end
+
+		if CFG['DRAW_BAR_TEXT_DPS_REPORT'] then
+			barText = barText .. string.format('%.1f', item.dps.report)  .. spacer;
 		end
 
 		if fixedSpacing and barText ~= '' then
@@ -2049,8 +2120,19 @@ local function updateBossEnemy(args)
 		return;
 	end
 
-	-- get is in combat
-	boss.isInCombat = enemy:call("get_IsCombatMode");
+	local wasInCombat = boss.isInCombat;
+	local isInCombat = enemy:call("get_IsCombatMode");
+
+	if QUEST_DURATION > 0 and wasInCombat ~= isInCombat then
+		boss.timeline[QUEST_DURATION] = isInCombat
+		boss.lastTime = QUEST_DURATION;
+		boss.isInCombat = isInCombat;
+		if isInCombat then
+			log_info(string.format('%s entered combat at %.4f', boss.name, QUEST_DURATION))
+		else
+			log_info(string.format('%s exited combat at %.4f', boss.name, QUEST_DURATION))
+		end
+	end
 
 	-- get health
 	local physicalParam = enemy:get_field("<PhysicalParam>k__BackingField");
@@ -2219,7 +2301,9 @@ local function dpsFrame()
 	local questStatus = MANAGER.QUEST:get_field("_QuestStatus");
 	local isInQuest = (questStatus >= 2);
 
-	if not isInQuest then
+	if isInQuest then
+		QUEST_DURATION = MANAGER.QUEST:call("getQuestElapsedTimeSec");
+	else
 		-- VillageAreaManager is unreliable, not always there, stale references
 		-- get a new reference
 		MANAGER.AREA = sdk.get_managed_singleton("snow.VillageAreaManager");
@@ -2229,6 +2313,9 @@ local function dpsFrame()
 	end
 
 	local isInTrainingHall = (villageArea == 5);
+	if isInTrainingHall then
+		QUEST_DURATION = MANAGER.AREA:call("get_TrainingHallStayTime");
+	end
 
 	IS_ONLINE = (MANAGER.LOBBY and MANAGER.LOBBY:call("IsQuestOnline")) or false;
 
@@ -2241,12 +2328,10 @@ local function dpsFrame()
 		dpsUpdate();
 	-- when a quest is active
 	elseif isInQuest then
-		local totalSeconds = MANAGER.QUEST:call("getQuestElapsedTimeSec");
-		dpsUpdateOccasionally(totalSeconds);
+		dpsUpdateOccasionally(QUEST_DURATION);
 	-- when you are in the training area
 	elseif isInTrainingHall then
-		local totalSeconds = MANAGER.AREA:call("get_TrainingHallStayTime");
-		dpsUpdateOccasionally(totalSeconds);
+		dpsUpdateOccasionally(QUEST_DURATION);
 	else
 		-- clean up some things in between quests
 		if LAST_UPDATE_TIME ~= 0 then

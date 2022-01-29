@@ -23,7 +23,8 @@ files['tests/'] = {
 
 files['tests/*.test.lua'] = {
 	globals = {
-		'MANAGER'
+		'MANAGER',
+		'CFG'
 	},
 	std = '+busted',
 	enable = {'111','112','212'}

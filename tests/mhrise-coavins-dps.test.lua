@@ -318,7 +318,7 @@ describe("mhrise-coavins-dps", function()
 
 			-- total of 3825 per attacker
 
-			for index, value in ipairs(damagesPhysical) do
+			for index,_ in ipairs(damagesPhysical) do
 				addDamageToBoss(boss, 0, 0,
 				damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
 				addDamageToBoss(boss, 1, 0,
@@ -379,7 +379,7 @@ describe("mhrise-coavins-dps", function()
 
 		-- total of 3825 per attacker
 
-		for index, value in ipairs(damagesPhysical) do
+		for index,_ in ipairs(damagesPhysical) do
 			addDamageToBoss(boss, 0, 0,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
 			addDamageToBoss(boss, 1, 0,
@@ -418,7 +418,7 @@ describe("mhrise-coavins-dps", function()
 
 		local expected = 0.0;
 
-		for i = 1, 10, 1 do
+		for _=1,10,1 do
 			local amt = math.random(1,1000)
 			table.insert(damagesPhysical, amt)
 			expected = expected + amt
@@ -430,7 +430,7 @@ describe("mhrise-coavins-dps", function()
 			expected = expected + amt
 		end
 
-		for index, value in ipairs(damagesPhysical) do
+		for index,_ in ipairs(damagesPhysical) do
 			addDamageToBoss(boss, 0, 0,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index]);
 			addDamageToBoss(boss, 1, 0,
@@ -465,14 +465,15 @@ describe("mhrise-coavins-dps", function()
 
 			addDamageToBoss(boss, 1, 0, 750, 250, 0)
 
-			boss.seconds = 100
+			boss.timeline[0] = true;
+			boss.timeline[100] = false;
 
 			generateReport(REPORT_MONSTERS)
 
 			local r = DAMAGE_REPORTS[1]
 
 			local expected = 10.0
-			local actual = r.items[1].dps.monster
+			local actual = r.items[1].dps.report
 
 			assert.is_equal(expected, actual)
 		end)
@@ -484,15 +485,17 @@ describe("mhrise-coavins-dps", function()
 			addDamageToBoss(boss1, 1, 0, 750, 250, 0)
 			addDamageToBoss(boss2, 1, 0, 250, 250, 0)
 
-			boss1.seconds = 100
-			boss2.seconds = 100
+			boss1.timeline[0] = true;
+			boss1.timeline[100] = false;
+			boss2.timeline[50] = true;
+			boss2.timeline[150] = false;
 
 			generateReport(REPORT_MONSTERS)
 
 			local r = DAMAGE_REPORTS[1]
 
-			local expected = 7.5
-			local actual = r.items[1].dps.monster
+			local expected = (750+250+250+250) / 150.0;
+			local actual = r.items[1].dps.report
 
 			assert.is_equal(expected, actual)
 		end)
@@ -506,16 +509,19 @@ describe("mhrise-coavins-dps", function()
 			addDamageToBoss(boss2, 1, 0, 250, 250, 0)
 			addDamageToBoss(boss3, 1, 0, 616, 19842, 0)
 
-			boss1.seconds = 100
-			boss2.seconds = 100
-			boss3.seconds = 611
+			boss1.timeline[0] = true;
+			boss1.timeline[100] = false;
+			boss2.timeline[100] = true;
+			boss2.timeline[110] = false;
+			boss3.timeline[200] = true;
+			boss3.timeline[205] = false;
 
 			generateReport(REPORT_MONSTERS)
 
 			local r = DAMAGE_REPORTS[1]
 
-			local expected = (750 + 250 + 250 + 250 + 616 + 19842) / (100 + 100 + 611)
-			local actual = r.items[1].dps.monster
+			local expected = (750 + 250 + 250 + 250 + 616 + 19842) / (100 + 10 + 5)
+			local actual = r.items[1].dps.report
 
 			assert.is_equal(expected, actual)
 		end)
