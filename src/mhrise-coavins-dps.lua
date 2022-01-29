@@ -1924,6 +1924,7 @@ local function DrawWindowSettings()
 	showCheckboxForSetting('DRAW_BAR_TEXT_NAME');
 	showCheckboxForSetting('DRAW_BAR_TEXT_YOU');
 	showCheckboxForSetting('DRAW_BAR_TEXT_NAME_USE_REAL_NAMES');
+	showCheckboxForSetting('DRAW_BAR_TEXT_DPS_REPORT');
 	showCheckboxForSetting('DRAW_BAR_TEXT_TOTAL_DAMAGE');
 	showCheckboxForSetting('DRAW_BAR_TEXT_PERCENT_OF_PARTY');
 	showCheckboxForSetting('DRAW_BAR_TEXT_PERCENT_OF_BEST');
