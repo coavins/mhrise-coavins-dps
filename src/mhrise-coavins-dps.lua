@@ -1565,7 +1565,7 @@ local function drawReportItem(item, x, y, width, height)
 	local text_y = y + text_offset_y
 
 	-- now loop through defined columns
-	for i,col in ipairs(CFG['TABLE_COLS']) do
+	for _,col in ipairs(CFG['TABLE_COLS']) do
 		if col > 1 then
 			drawReportItemColumn(item, col, text_x, text_y)
 
@@ -1665,7 +1665,7 @@ local function drawReport(index)
 		end
 		local x = origin_x + colorBlockWidth + 2
 
-		for i, value in ipairs(CFG['TABLE_COLS']) do
+		for _, value in ipairs(CFG['TABLE_COLS']) do
 			if value > 1 then
 				drawReportHeaderColumn(value, x, y)
 
@@ -1913,7 +1913,6 @@ local function showInputsForTableColumns()
 		-- skip 'None'
 		if i > 1 then
 			-- show slider for width
-			local currentWidth = CFG['TABLE_COLS_WIDTH'][i]
 			local changedWidth, newWidth = imgui.slider_int('Width: ' .. TABLE_COLUMNS[i], currentWidth, 0, 250)
 			if changedWidth then
 				CFG['TABLE_COLS_WIDTH'][i] = newWidth
