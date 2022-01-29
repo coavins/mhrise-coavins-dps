@@ -1684,9 +1684,18 @@ local function drawDebugStats()
 			return;
 		end
 
+		local isInCombat = bossEnemy:call("get_IsCombatMode");
+		local notInCombat = bossEnemy:call("get_IsNonCombatMode");
+		local isCapture = bossEnemy:call("isCapture");
+
 		local is_combat_str;
-		if boss.isInCombat then is_combat_str = " (In Combat)";
-		                   else is_combat_str = "";
+		if isInCombat then is_combat_str = " (In Combat)";
+		              else is_combat_str = "";
+		end
+
+		local non_combat_str;
+		if notInCombat then non_combat_str = " (Not Combat)";
+		               else non_combat_str = "";
 		end
 
 		local hpStr = string.format('%.0f / %.0f (%.1f%%) -%.0f'
@@ -1695,7 +1704,12 @@ local function drawDebugStats()
 			, boss.hp.percent * 100
 			, boss.hp.missing);
 
-		debug_line(string.format("%s %s %s", boss.name, hpStr, is_combat_str));
+		local text = string.format("%s %s %s %s", boss.name, hpStr, is_combat_str, non_combat_str);
+		if isCapture then
+			text = text .. ' captured';
+		end
+
+		debug_line(text);
 
 	end
 
@@ -2121,20 +2135,6 @@ local function updateBossEnemy(args)
 		return;
 	end
 
-	local wasInCombat = boss.isInCombat;
-	local isInCombat = enemy:call("get_IsCombatMode");
-
-	if QUEST_DURATION > 0 and wasInCombat ~= isInCombat then
-		boss.timeline[QUEST_DURATION] = isInCombat
-		boss.lastTime = QUEST_DURATION;
-		boss.isInCombat = isInCombat;
-		if isInCombat then
-			log_info(string.format('%s entered combat at %.4f', boss.name, QUEST_DURATION))
-		else
-			log_info(string.format('%s exited combat at %.4f', boss.name, QUEST_DURATION))
-		end
-	end
-
 	-- get health
 	local physicalParam = enemy:get_field("<PhysicalParam>k__BackingField");
 	if physicalParam then
@@ -2148,6 +2148,22 @@ local function updateBossEnemy(args)
 			else
 				boss.hp.percent = 0;
 			end
+		end
+	end
+
+	local isCapture = enemy:call("isCapture");
+	local isCombatMode = enemy:call("get_IsCombatMode");
+	local isInCombat = isCombatMode and boss.hp.current > 0 and not isCapture;
+	local wasInCombat = boss.isInCombat;
+
+	if QUEST_DURATION > 0 and wasInCombat ~= isInCombat then
+		boss.timeline[QUEST_DURATION] = isInCombat
+		boss.lastTime = QUEST_DURATION;
+		boss.isInCombat = isInCombat;
+		if isInCombat then
+			log_info(string.format('%s entered combat at %.4f', boss.name, QUEST_DURATION))
+		else
+			log_info(string.format('%s exited combat at %.4f', boss.name, QUEST_DURATION))
 		end
 	end
 end
