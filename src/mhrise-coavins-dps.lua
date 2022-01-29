@@ -42,16 +42,33 @@ local function applyDefaultConfiguration()
 	TXT['DRAW_BAR_OUTLINES'] = 'Show bar outlines'
 	CFG['DRAW_BAR_COLORBLOCK'] = true -- shows block at the front of the bar with player's color
 	TXT['DRAW_BAR_COLORBLOCK'] = 'Show color block'
-	CFG['DRAW_BAR_TEXT_PADDING'] = 3
-	TXT['DRAW_BAR_TEXT_PADDING'] = 'Column padding'
-	MIN['DRAW_BAR_TEXT_PADDING'] = 0
-	MAX['DRAW_BAR_TEXT_PADDING'] = 35
-	CFG['DRAW_BAR_TEXT_PADDING_FIXED'] = false
-	TXT['DRAW_BAR_TEXT_PADDING_FIXED'] = 'Fixed column widths'
+
 	CFG['DRAW_BAR_USE_PLAYER_COLORS'] = true
 	TXT['DRAW_BAR_USE_PLAYER_COLORS'] = 'Show player bars with their assigned color'
 	CFG['DRAW_BAR_USE_UNIQUE_COLORS'] = true
 	TXT['DRAW_BAR_USE_UNIQUE_COLORS'] = 'Show each type of damage in a different color'
+
+	CFG['TABLE_COLS'] = {}
+	CFG['TABLE_COLS'][1] = 1
+	CFG['TABLE_COLS'][2] = 3
+	CFG['TABLE_COLS'][3] = 4
+	CFG['TABLE_COLS'][4] = 5
+	CFG['TABLE_COLS'][5] = 6
+	CFG['TABLE_COLS'][6] = 7
+	CFG['TABLE_COLS'][7] = 8
+	CFG['TABLE_COLS'][8] = 9
+	CFG['TABLE_COLS'][9] = 1
+
+	CFG['TABLE_COLS_WIDTH'] = {}
+	CFG['TABLE_COLS_WIDTH'][1] = 30
+	CFG['TABLE_COLS_WIDTH'][2] = 106
+	CFG['TABLE_COLS_WIDTH'][3] = 39
+	CFG['TABLE_COLS_WIDTH'][4] = 58
+	CFG['TABLE_COLS_WIDTH'][5] = 53
+	CFG['TABLE_COLS_WIDTH'][6] = 53
+	CFG['TABLE_COLS_WIDTH'][7] = 37
+	CFG['TABLE_COLS_WIDTH'][8] = 47
+	CFG['TABLE_COLS_WIDTH'][9] = 40
 
 	CFG['DRAW_BAR_TEXT_NAME']                = true -- shows name of combatant
 	TXT['DRAW_BAR_TEXT_NAME'] = 'Show names'
@@ -107,7 +124,7 @@ local function applyDefaultConfiguration()
 	TXT['TABLE_HEADER_TEXT_OFFSET_X'] = 'Table text offset X'
 	MIN['TABLE_HEADER_TEXT_OFFSET_X'] = -100
 	MAX['TABLE_HEADER_TEXT_OFFSET_X'] = 100
-	CFG['TABLE_WIDTH'] = 350
+	CFG['TABLE_WIDTH'] = 425
 	TXT['TABLE_WIDTH'] = 'Table width'
 	MIN['TABLE_WIDTH'] = 0
 	MAX['TABLE_WIDTH'] = 3000
@@ -270,6 +287,18 @@ PRESET_MHROVERLAY['COLOR_BAR_DMG_PHYSICAL'] = 0xAFE069AE
 --#endregion Presets
 
 --#region enums
+
+-- list of available columns for the table
+local TABLE_COLUMNS = {}
+TABLE_COLUMNS[1] = 'None'
+TABLE_COLUMNS[2] = 'HR'
+TABLE_COLUMNS[3] = 'Name'
+TABLE_COLUMNS[4] = 'DPS'
+TABLE_COLUMNS[5] = 'Damage'
+TABLE_COLUMNS[6] = '% Party'
+TABLE_COLUMNS[7] = '% Best'
+TABLE_COLUMNS[8] = 'Hits'
+TABLE_COLUMNS[9] = 'MaxHit'
 
 -- via.hid.KeyboardKey
 local ENUM_KEYBOARD_KEY = {}
@@ -1418,6 +1447,142 @@ local function drawRichDamageBar(item, x, y, maxWidth, h, colorPhysical, colorEl
 	--debug_line(string.format('total: %d', source.damageTotal))
 end
 
+local function drawReportHeaderColumn(col, x, y)
+	local text = TABLE_COLUMNS[col]
+
+	draw.text(text, x, y, CFG['COLOR_GRAY'])
+end
+
+local function drawReportItemColumn(item, col, x, y)
+	local text = ''
+
+	if     col == 2 then -- hr
+	elseif col == 3 then -- name
+		if item.playerNumber then
+			if CFG['DRAW_BAR_TEXT_YOU'] and item.id == MY_PLAYER_ID then
+				text = 'YOU'
+			elseif CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] and item.name then
+				text = string.format('%s', item.name)
+			else
+				text = string.format('Player %.0f', item.id + 1)
+			end
+		elseif item.otomoNumber then
+			if CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] and item.name then
+				if IS_ONLINE then
+					text = string.format('%s (%.0f)', item.name, item.otomoNumber)
+				else
+					text = string.format('%s', item.name)
+				end
+			else
+				text = string.format('Buddy %.0f', item.otomoNumber)
+			end
+		else
+			-- just draw the name
+			text = string.format('%s', item.name or '')
+		end
+	elseif col == 4 then -- dps
+		text = string.format('%.1f', item.dps.report)
+	elseif col == 5 then -- damage
+		text = string.format('%.0f', item.total)
+	elseif col == 6 then -- % party
+		text = string.format('%.1f%%', item.percentOfTotal * 100.0)
+	elseif col == 7 then -- % best
+		text = string.format('%.1f%%', item.percentOfBest * 100.0)
+	elseif col == 8 then -- hits
+		text = string.format('%d', item.numHit)
+	elseif col == 9 then -- maxhit
+		text = string.format('%.0f', item.maxHit)
+	end
+
+	draw.text(text, x, y, CFG['COLOR_WHITE'])
+end
+
+local function drawReportItem(item, x, y, width, height)
+	--if item.total == 0 then
+		-- skip items with no damage
+		--return
+	--end
+
+	-- get some values
+	local scalingFactor = CFG['TABLE_SCALE']
+	local text_offset_x = CFG['TABLE_ROW_TEXT_OFFSET_X'] * CFG['TABLE_SCALE']
+	local text_offset_y = CFG['TABLE_ROW_TEXT_OFFSET_Y'] * CFG['TABLE_SCALE']
+	local colorBlockWidth = 20 * scalingFactor
+	if not CFG['DRAW_BAR_COLORBLOCK'] then
+		colorBlockWidth = 0
+	end
+
+	local damageBarWidthMultiplier = item.percentOfBest
+	if CFG['DRAW_BAR_RELATIVE_TO_PARTY'] then
+		damageBarWidthMultiplier = item.percentOfTotal
+	end
+
+	-- get some colors
+	local combatantColor = CFG['COLOR_GRAY']
+	if item.playerNumber then
+		combatantColor = CFG['COLOR_PLAYER'][item.id]
+	elseif item.otomoNumber then
+		combatantColor = CFG['COLOR_OTOMO']
+	end
+
+	local physicalColor = CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][item.id]
+	if not physicalColor or not CFG['DRAW_BAR_USE_PLAYER_COLORS'] then
+		physicalColor = CFG['COLOR_BAR_DMG_PHYSICAL']
+	end
+
+	local elementalColor = CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][item.id]
+	if not elementalColor then
+		elementalColor = CFG['COLOR_BAR_DMG_ELEMENT']
+	end
+
+	-- draw the actual bar
+	if CFG['USE_MINIMAL_BARS'] then
+		-- bar is overlaid on top of the color block
+		-- color block
+		draw.filled_rect(x, y, colorBlockWidth, height, elementalColor)
+
+		-- damage bar
+		local damageBarWidth = colorBlockWidth * damageBarWidthMultiplier
+		draw.filled_rect(x, y, damageBarWidth, height, combatantColor)
+	else
+		-- bar takes up the entire width of the table
+		if CFG['DRAW_BAR_BACKGROUNDS'] then
+			-- draw background
+			draw.filled_rect(x, y, width, height, CFG['COLOR_BAR_BG'])
+		end
+
+		if CFG['DRAW_BAR_COLORBLOCK'] then
+			-- color block
+			draw.filled_rect(x, y, colorBlockWidth, height, combatantColor)
+		end
+
+		-- damage bar
+		local damageBarWidth = (width - colorBlockWidth) * damageBarWidthMultiplier
+		--draw.filled_rect(origin_x + colorBlockWidth, y, damageBarWidth, rowHeight, physicalColor)
+		drawRichDamageBar(item, x + colorBlockWidth, y, damageBarWidth, height, physicalColor, elementalColor)
+	end
+
+	-- draw columns
+	local text_x = x + colorBlockWidth + 2 + text_offset_x
+	local text_y = y + text_offset_y
+
+	-- now loop through defined columns
+	for i,col in ipairs(CFG['TABLE_COLS']) do
+		if col > 1 then
+			drawReportItemColumn(item, col, text_x, text_y)
+
+			local colWidth = CFG['TABLE_COLS_WIDTH'][i] * CFG['TABLE_SCALE']
+
+			text_x = text_x + colWidth
+		end
+	end
+
+	if CFG['DRAW_BAR_OUTLINES'] then
+		-- draw outline
+		draw.outline_rect(x, y, width, height, CFG['COLOR_BAR_OUTLINE'])
+	end
+end
+
 local function drawReport(index)
 	local report = DAMAGE_REPORTS[index]
 	if not report then
@@ -1429,13 +1594,6 @@ local function drawReport(index)
 	local tableWidth = CFG['TABLE_WIDTH'] * CFG['TABLE_SCALE']
 	local rowHeight = CFG['TABLE_ROWH'] * CFG['TABLE_SCALE']
 	local growDistance = rowHeight;
-	local colorBlockWidth = 20
-	local text_offset_x = CFG['TABLE_ROW_TEXT_OFFSET_X']
-	local text_offset_y = CFG['TABLE_ROW_TEXT_OFFSET_Y']
-
-	if not CFG['DRAW_BAR_COLORBLOCK'] then
-		colorBlockWidth = 0
-	end
 
 	if CFG['TABLE_GROWS_UPWARD'] then
 		origin_y = origin_y - rowHeight
@@ -1503,15 +1661,33 @@ local function drawReport(index)
 			draw.filled_rect(origin_x, y, tableWidth, rowHeight, CFG['COLOR_TITLE_BG'])
 		end
 
-		draw.text('header', origin_x, y, CFG['COLOR_TITLE_FG'])
+		local colorBlockWidth = 20 * CFG['TABLE_SCALE']
+		if not CFG['DRAW_BAR_COLORBLOCK'] then
+			colorBlockWidth = 0
+		end
+		local x = origin_x + colorBlockWidth + 2
+
+		for i, value in ipairs(CFG['TABLE_COLS']) do
+			if value > 1 then
+				drawReportHeaderColumn(value, x, y)
+
+				local colWidth = CFG['TABLE_COLS_WIDTH'][i] * CFG['TABLE_SCALE']
+				x = x + colWidth
+			end
+		end
 	end
 
 	if CFG['TABLE_GROWS_UPWARD'] then
 		growDistance = (rowHeight + CFG['TABLE_ROW_PADDING']) * -1
 	end
 
-	-- draw report items
 	if #report.items == 0 then
+		local colorBlockWidth = 20
+		if not CFG['DRAW_BAR_COLORBLOCK'] then
+			colorBlockWidth = 0
+		end
+		local text_offset_x = CFG['TABLE_ROW_TEXT_OFFSET_X']
+		local text_offset_y = CFG['TABLE_ROW_TEXT_OFFSET_Y']
 		local x = origin_x + colorBlockWidth + 2 + text_offset_x
 		local y = origin_y + growDistance + text_offset_y
 		if CFG['DRAW_HEADER'] then
@@ -1522,177 +1698,15 @@ local function drawReport(index)
 		draw.text('No data', x, y, CFG['COLOR_GRAY'])
 	end
 
+	-- draw report items
 	for i,item in ipairs(report.items) do
-		if item.total == 0 then
-			goto skip_report_item
-		end
-
 		local y = origin_y + growDistance * i
 		if CFG['DRAW_HEADER'] then
 			-- skip header row
 			y = y + growDistance
 		end
 
-		local combatantColor = CFG['COLOR_GRAY']
-		if item.playerNumber then
-			combatantColor = CFG['COLOR_PLAYER'][item.id]
-		elseif item.otomoNumber then
-			combatantColor = CFG['COLOR_OTOMO']
-		end
-
-		local physicalColor = CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][item.id]
-		if not physicalColor or not CFG['DRAW_BAR_USE_PLAYER_COLORS'] then
-			physicalColor = CFG['COLOR_BAR_DMG_PHYSICAL']
-		end
-
-		local elementalColor = CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][item.id]
-		if not elementalColor then
-			elementalColor = CFG['COLOR_BAR_DMG_ELEMENT']
-		end
-
-		local damageBarWidthMultiplier = item.percentOfBest
-		if CFG['DRAW_BAR_RELATIVE_TO_PARTY'] then
-			damageBarWidthMultiplier = item.percentOfTotal
-		end
-
-		if CFG['USE_MINIMAL_BARS'] then
-			-- color block
-			draw.filled_rect(origin_x, y, colorBlockWidth, rowHeight, elementalColor)
-
-			-- damage bar
-			local damageBarWidth = colorBlockWidth * damageBarWidthMultiplier
-			draw.filled_rect(origin_x, y, damageBarWidth, rowHeight, combatantColor)
-		else
-			if CFG['DRAW_BAR_BACKGROUNDS'] then
-				-- draw background
-				draw.filled_rect(origin_x, y, tableWidth, rowHeight, CFG['COLOR_BAR_BG'])
-			end
-
-			if CFG['DRAW_BAR_COLORBLOCK'] then
-				-- color block
-				draw.filled_rect(origin_x, y, colorBlockWidth, rowHeight, combatantColor)
-			end
-
-			-- damage bar
-			local damageBarWidth = (tableWidth - colorBlockWidth) * damageBarWidthMultiplier
-			--draw.filled_rect(origin_x + colorBlockWidth, y, damageBarWidth, rowHeight, physicalColor)
-			drawRichDamageBar(item, origin_x + colorBlockWidth, y, damageBarWidth, rowHeight, physicalColor, elementalColor)
-		end
-
-		-- draw text (TODO: REFACTOR THIS MESS)
-		local text_x = origin_x + colorBlockWidth + 2 + text_offset_x
-		local text_y = y + text_offset_y
-		local barText = ''
-		local paddingCount = CFG['DRAW_BAR_TEXT_PADDING']
-		local spacer = string.rep(' ', paddingCount)
-		local fixedSpacing = CFG['DRAW_BAR_TEXT_PADDING_FIXED']
-
-		if CFG['DRAW_BAR_TEXT_NAME'] then
-			-- player names
-			if item.playerNumber then
-				if CFG['DRAW_BAR_TEXT_YOU'] and item.id == MY_PLAYER_ID then
-					barText = barText .. 'YOU' .. spacer
-				elseif CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] and item.name then
-					barText = barText .. string.format('%s', item.name)  .. spacer
-				else
-					barText = barText .. string.format('Player %.0f', item.id + 1) .. spacer
-				end
-			elseif item.otomoNumber then
-				if CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] and item.name then
-					if IS_ONLINE then
-						barText = barText .. string.format('%s (%.0f)', item.name, item.otomoNumber) .. spacer
-					else
-						barText = barText .. string.format('%s', item.name) .. spacer
-					end
-				else
-					barText = barText .. string.format('Buddy %.0f', item.otomoNumber) .. spacer
-				end
-			else
-				-- just draw the name
-				barText = barText .. string.format('%s', item.name or '') .. spacer
-			end
-		elseif CFG['DRAW_BAR_TEXT_YOU'] then
-			if item.id == MY_PLAYER_ID then
-				barText = barText .. 'YOU' .. spacer
-			end
-		end
-
-		if fixedSpacing and barText ~= '' then
-			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE'])
-			text_x = text_x + (5 * paddingCount)
-			barText = ''
-		end
-
-		if CFG['DRAW_BAR_TEXT_DPS_REPORT'] then
-			barText = barText .. string.format('%.1f', item.dps.report)  .. spacer
-		end
-
-		if fixedSpacing and barText ~= '' then
-			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE'])
-			text_x = text_x + (5 * paddingCount)
-			barText = ''
-		end
-
-		if CFG['DRAW_BAR_TEXT_TOTAL_DAMAGE'] then
-			barText = barText .. string.format('%.0f', item.total)  .. spacer
-		end
-
-		if fixedSpacing and barText ~= '' then
-			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE'])
-			text_x = text_x + (5 * paddingCount)
-			barText = ''
-		end
-
-		if CFG['DRAW_BAR_TEXT_PERCENT_OF_PARTY'] then
-			barText = barText .. string.format('%.1f%%', item.percentOfTotal * 100.0)  .. spacer
-		end
-
-		if fixedSpacing and barText ~= '' then
-			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE'])
-			text_x = text_x + (5 * paddingCount)
-			barText = ''
-		end
-
-		if CFG['DRAW_BAR_TEXT_PERCENT_OF_BEST'] then
-			barText = barText .. string.format('(%.1f%%)', item.percentOfBest * 100.0)  .. spacer
-		end
-
-		if fixedSpacing and barText ~= '' then
-			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE'])
-			text_x = text_x + (5 * paddingCount)
-			barText = ''
-		end
-
-		if CFG['DRAW_BAR_TEXT_HIT_COUNT'] then
-			barText = barText .. string.format('%d', item.numHit)  .. spacer
-		end
-
-		if fixedSpacing and barText ~= '' then
-			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE'])
-			text_x = text_x + (5 * paddingCount)
-			barText = ''
-		end
-
-		if CFG['DRAW_BAR_TEXT_BIGGEST_HIT'] then
-			barText = barText .. string.format('[%.0f]', item.maxHit)  .. spacer
-		end
-
-		if fixedSpacing and barText ~= '' then
-			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE'])
-			text_x = text_x + (5 * paddingCount)
-			barText = ''
-		end
-
-		if not fixedSpacing then
-			draw.text(barText, text_x, text_y, CFG['COLOR_WHITE'])
-		end
-
-		if CFG['DRAW_BAR_OUTLINES'] then
-			-- draw outline
-			draw.outline_rect(origin_x, y, tableWidth, rowHeight, CFG['COLOR_BAR_OUTLINE'])
-		end
-
-		::skip_report_item::
+		drawReportItem(item, origin_x, y, tableWidth, rowHeight)
 	end
 end
 
@@ -1885,6 +1899,23 @@ local function showSliderForIntSetting(setting)
 	end
 end
 
+local function showInputsForTableColumns()
+	-- draw combo and slider for each table col
+	for i,currentCol in ipairs(CFG['TABLE_COLS']) do
+		-- show combo for choice
+		local changedCol, newCol = imgui.combo('Column ' .. i, currentCol, TABLE_COLUMNS)
+		if changedCol then
+			CFG['TABLE_COLS'][i] = newCol
+		end
+		-- show slider for width
+		local currentWidth = CFG['TABLE_COLS_WIDTH'][i]
+		local changedWidth, newWidth = imgui.slider_int('Width ' .. i, currentWidth, 0, 250)
+		if changedWidth then
+			CFG['TABLE_COLS_WIDTH'][i] = newWidth
+		end
+	end
+end
+
 local function DrawWindowSettings()
 	local changed, wantsIt, value
 
@@ -1964,22 +1995,24 @@ local function DrawWindowSettings()
 	showCheckboxForSetting('DRAW_BAR_BACKGROUNDS')
 	showCheckboxForSetting('DRAW_BAR_OUTLINES')
 	showCheckboxForSetting('DRAW_BAR_COLORBLOCK')
-	showSliderForIntSetting('DRAW_BAR_TEXT_PADDING')
-	showCheckboxForSetting('DRAW_BAR_TEXT_PADDING_FIXED')
 	showCheckboxForSetting('DRAW_BAR_USE_PLAYER_COLORS')
 	showCheckboxForSetting('DRAW_BAR_USE_UNIQUE_COLORS')
 
 	imgui.new_line()
 
-	showCheckboxForSetting('DRAW_BAR_TEXT_NAME')
+	--showCheckboxForSetting('DRAW_BAR_TEXT_NAME')
 	showCheckboxForSetting('DRAW_BAR_TEXT_YOU')
 	showCheckboxForSetting('DRAW_BAR_TEXT_NAME_USE_REAL_NAMES')
-	showCheckboxForSetting('DRAW_BAR_TEXT_DPS_REPORT')
-	showCheckboxForSetting('DRAW_BAR_TEXT_TOTAL_DAMAGE')
-	showCheckboxForSetting('DRAW_BAR_TEXT_PERCENT_OF_PARTY')
-	showCheckboxForSetting('DRAW_BAR_TEXT_PERCENT_OF_BEST')
-	showCheckboxForSetting('DRAW_BAR_TEXT_HIT_COUNT')
-	showCheckboxForSetting('DRAW_BAR_TEXT_BIGGEST_HIT')
+	--showCheckboxForSetting('DRAW_BAR_TEXT_DPS_REPORT')
+	--showCheckboxForSetting('DRAW_BAR_TEXT_TOTAL_DAMAGE')
+	--showCheckboxForSetting('DRAW_BAR_TEXT_PERCENT_OF_PARTY')
+	--showCheckboxForSetting('DRAW_BAR_TEXT_PERCENT_OF_BEST')
+	--showCheckboxForSetting('DRAW_BAR_TEXT_HIT_COUNT')
+	--showCheckboxForSetting('DRAW_BAR_TEXT_BIGGEST_HIT')
+
+	imgui.new_line()
+
+	showInputsForTableColumns()
 
 	imgui.new_line()
 
