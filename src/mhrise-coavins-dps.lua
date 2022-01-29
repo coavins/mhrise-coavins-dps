@@ -1642,7 +1642,7 @@ local function drawReport(index)
 		end
 
 		if CFG['DRAW_BAR_TEXT_BIGGEST_HIT'] then
-			barText = barText .. string.format('[%d]', item.maxHit)  .. spacer;
+			barText = barText .. string.format('[%.0f]', item.maxHit)  .. spacer;
 		end
 
 		if fixedSpacing and barText ~= '' then
