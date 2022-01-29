@@ -20,7 +20,7 @@ describe("mhrise-coavins-dps", function()
 	before_each(function()
 		cleanUpData();
 
-		QUEST_DURATION = 0.0;
+		SetQuestDuration(0.0)
 
 		-- all attacker types enabled
 		for _,type in pairs(ATTACKER_TYPES) do
