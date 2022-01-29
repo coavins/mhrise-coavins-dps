@@ -48,46 +48,39 @@ local function applyDefaultConfiguration()
 	CFG['DRAW_BAR_USE_UNIQUE_COLORS'] = true
 	TXT['DRAW_BAR_USE_UNIQUE_COLORS'] = 'Show each type of damage in a different color'
 
+	-- table column configuration
+	-- first number is position on table
+	-- second number is which column goes there
+	-- see TABLE_COLUMNS enum further down
 	CFG['TABLE_COLS'] = {}
-	CFG['TABLE_COLS'][1] = 1
-	CFG['TABLE_COLS'][2] = 3
-	CFG['TABLE_COLS'][3] = 4
-	CFG['TABLE_COLS'][4] = 5
-	CFG['TABLE_COLS'][5] = 6
-	CFG['TABLE_COLS'][6] = 7
-	CFG['TABLE_COLS'][7] = 8
-	CFG['TABLE_COLS'][8] = 9
+	CFG['TABLE_COLS'][1] = 3
+	CFG['TABLE_COLS'][2] = 4
+	CFG['TABLE_COLS'][3] = 5
+	CFG['TABLE_COLS'][4] = 6
+	CFG['TABLE_COLS'][5] = 7
+	CFG['TABLE_COLS'][6] = 8
+	CFG['TABLE_COLS'][7] = 9
+	CFG['TABLE_COLS'][8] = 1
 	CFG['TABLE_COLS'][9] = 1
 
+	-- desired width for each type of column
 	CFG['TABLE_COLS_WIDTH'] = {}
-	CFG['TABLE_COLS_WIDTH'][1] = 30
-	CFG['TABLE_COLS_WIDTH'][2] = 106
-	CFG['TABLE_COLS_WIDTH'][3] = 39
-	CFG['TABLE_COLS_WIDTH'][4] = 58
-	CFG['TABLE_COLS_WIDTH'][5] = 53
+	CFG['TABLE_COLS_WIDTH'][1] = 0
+	CFG['TABLE_COLS_WIDTH'][2] = 30
+	CFG['TABLE_COLS_WIDTH'][3] = 106
+	CFG['TABLE_COLS_WIDTH'][4] = 39
+	CFG['TABLE_COLS_WIDTH'][5] = 58
 	CFG['TABLE_COLS_WIDTH'][6] = 53
-	CFG['TABLE_COLS_WIDTH'][7] = 37
-	CFG['TABLE_COLS_WIDTH'][8] = 47
-	CFG['TABLE_COLS_WIDTH'][9] = 40
+	CFG['TABLE_COLS_WIDTH'][7] = 53
+	CFG['TABLE_COLS_WIDTH'][8] = 37
+	CFG['TABLE_COLS_WIDTH'][9] = 0
 
-	CFG['DRAW_BAR_TEXT_NAME']                = true -- shows name of combatant
-	TXT['DRAW_BAR_TEXT_NAME'] = 'Show names'
-	CFG['DRAW_BAR_TEXT_YOU']                 = false -- shows "YOU" on your bar
+	CFG['DRAW_BAR_TEXT_YOU'] = false -- shows "YOU" on your bar
 	TXT['DRAW_BAR_TEXT_YOU'] = 'Show "YOU" on your row'
 	CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = true -- show real player names instead of IDs
 	TXT['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = 'Reveal character names'
-	CFG['DRAW_BAR_TEXT_DPS_REPORT'] = true -- shows report dps
-	TXT['DRAW_BAR_TEXT_DPS_REPORT'] = 'Show DPS for time monsters spent in combat'
-	CFG['DRAW_BAR_TEXT_TOTAL_DAMAGE']        = false -- shows total damage dealt
-	TXT['DRAW_BAR_TEXT_TOTAL_DAMAGE'] = 'Show total damage done'
-	CFG['DRAW_BAR_TEXT_PERCENT_OF_PARTY']    = true -- shows your share of party damage
-	TXT['DRAW_BAR_TEXT_PERCENT_OF_PARTY'] = 'Show percent of party damage'
-	CFG['DRAW_BAR_TEXT_PERCENT_OF_BEST']     = false -- shows how close you are to the top damage dealer
-	TXT['DRAW_BAR_TEXT_PERCENT_OF_BEST'] = 'Show percent of leader\'s damage'
-	CFG['DRAW_BAR_TEXT_HIT_COUNT']           = false -- shows how many hits you've landed
-	TXT['DRAW_BAR_TEXT_HIT_COUNT'] = 'Show number of hits'
-	CFG['DRAW_BAR_TEXT_BIGGEST_HIT']         = false -- shows how much damage your biggest hit did
-	TXT['DRAW_BAR_TEXT_BIGGEST_HIT'] = 'Show damage dealt by biggest hit'
+	CFG['DRAW_BAR_TEXT_NAME_SHOW_HR'] = true -- show HR in the color block
+	TXT['DRAW_BAR_TEXT_NAME_SHOW_HR'] = 'Reveal player HR'
 
 	-- the damage bars will be removed, and the player blocks will receive shading instead
 	CFG['USE_MINIMAL_BARS'] = false
@@ -239,14 +232,19 @@ local PRESET_FYLEX = {}
 PRESET_FYLEX['OTOMO_DMG_IS_PLAYER_DMG'] = false
 PRESET_FYLEX['DRAW_TITLE_TEXT'] = false
 PRESET_FYLEX['DRAW_TITLE_BACKGROUND'] = false
-PRESET_FYLEX['DRAW_BAR_TEXT_NAME'] = true
+PRESET_FYLEX['DRAW_HEADER'] = false
 PRESET_FYLEX['DRAW_BAR_TEXT_YOU'] = false
 PRESET_FYLEX['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = true
-PRESET_FYLEX['DRAW_BAR_TEXT_TOTAL_DAMAGE'] = true
-PRESET_FYLEX['DRAW_BAR_TEXT_PERCENT_OF_PARTY'] = true
-PRESET_FYLEX['DRAW_BAR_TEXT_PERCENT_OF_BEST'] = false
-PRESET_FYLEX['DRAW_BAR_TEXT_HIT_COUNT'] = false
-PRESET_FYLEX['DRAW_BAR_TEXT_BIGGEST_HIT'] = false
+PRESET_FYLEX['TABLE_COLS'] = {}
+PRESET_FYLEX['TABLE_COLS'][1] = 3
+PRESET_FYLEX['TABLE_COLS'][2] = 5
+PRESET_FYLEX['TABLE_COLS'][3] = 6
+PRESET_FYLEX['TABLE_COLS'][4] = 1
+PRESET_FYLEX['TABLE_COLS'][5] = 1
+PRESET_FYLEX['TABLE_COLS'][6] = 1
+PRESET_FYLEX['TABLE_COLS'][7] = 1
+PRESET_FYLEX['TABLE_COLS'][8] = 1
+PRESET_FYLEX['TABLE_COLS'][9] = 1
 PRESET_FYLEX['USE_MINIMAL_BARS'] = true
 PRESET_FYLEX['TABLE_SORT_IN_ORDER'] = false
 PRESET_FYLEX['TABLE_X'] = 0.72
@@ -1571,7 +1569,7 @@ local function drawReportItem(item, x, y, width, height)
 		if col > 1 then
 			drawReportItemColumn(item, col, text_x, text_y)
 
-			local colWidth = CFG['TABLE_COLS_WIDTH'][i] * CFG['TABLE_SCALE']
+			local colWidth = CFG['TABLE_COLS_WIDTH'][col] * CFG['TABLE_SCALE']
 
 			text_x = text_x + colWidth
 		end
@@ -1671,7 +1669,7 @@ local function drawReport(index)
 			if value > 1 then
 				drawReportHeaderColumn(value, x, y)
 
-				local colWidth = CFG['TABLE_COLS_WIDTH'][i] * CFG['TABLE_SCALE']
+				local colWidth = CFG['TABLE_COLS_WIDTH'][value] * CFG['TABLE_SCALE']
 				x = x + colWidth
 			end
 		end
@@ -1900,6 +1898,7 @@ local function showSliderForIntSetting(setting)
 end
 
 local function showInputsForTableColumns()
+	imgui.text('Configure columns')
 	-- draw combo and slider for each table col
 	for i,currentCol in ipairs(CFG['TABLE_COLS']) do
 		-- show combo for choice
@@ -1907,13 +1906,21 @@ local function showInputsForTableColumns()
 		if changedCol then
 			CFG['TABLE_COLS'][i] = newCol
 		end
-		-- show slider for width
-		local currentWidth = CFG['TABLE_COLS_WIDTH'][i]
-		local changedWidth, newWidth = imgui.slider_int('Width ' .. i, currentWidth, 0, 250)
-		if changedWidth then
-			CFG['TABLE_COLS_WIDTH'][i] = newWidth
+	end
+	imgui.new_line()
+	imgui.text('Configure width')
+	for i,currentWidth in ipairs(CFG['TABLE_COLS_WIDTH']) do
+		-- skip 'None'
+		if i > 1 then
+			-- show slider for width
+			local currentWidth = CFG['TABLE_COLS_WIDTH'][i]
+			local changedWidth, newWidth = imgui.slider_int('Width: ' .. TABLE_COLUMNS[i], currentWidth, 0, 250)
+			if changedWidth then
+				CFG['TABLE_COLS_WIDTH'][i] = newWidth
+			end
 		end
 	end
+	imgui.new_line()
 end
 
 local function DrawWindowSettings()
@@ -1991,6 +1998,7 @@ local function DrawWindowSettings()
 
 	showCheckboxForSetting('DRAW_TITLE_TEXT')
 	showCheckboxForSetting('DRAW_TITLE_MONSTERS')
+	showCheckboxForSetting('DRAW_HEADER')
 	showCheckboxForSetting('DRAW_TITLE_BACKGROUND')
 	showCheckboxForSetting('DRAW_BAR_BACKGROUNDS')
 	showCheckboxForSetting('DRAW_BAR_OUTLINES')
@@ -2000,15 +2008,8 @@ local function DrawWindowSettings()
 
 	imgui.new_line()
 
-	--showCheckboxForSetting('DRAW_BAR_TEXT_NAME')
 	showCheckboxForSetting('DRAW_BAR_TEXT_YOU')
 	showCheckboxForSetting('DRAW_BAR_TEXT_NAME_USE_REAL_NAMES')
-	--showCheckboxForSetting('DRAW_BAR_TEXT_DPS_REPORT')
-	--showCheckboxForSetting('DRAW_BAR_TEXT_TOTAL_DAMAGE')
-	--showCheckboxForSetting('DRAW_BAR_TEXT_PERCENT_OF_PARTY')
-	--showCheckboxForSetting('DRAW_BAR_TEXT_PERCENT_OF_BEST')
-	--showCheckboxForSetting('DRAW_BAR_TEXT_HIT_COUNT')
-	--showCheckboxForSetting('DRAW_BAR_TEXT_BIGGEST_HIT')
 
 	imgui.new_line()
 
