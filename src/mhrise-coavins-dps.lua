@@ -926,7 +926,7 @@ local function initializeBossMonster(bossEnemy)
 	boss.hp.missing = 0.0;
 	boss.hp.percent = 0.0;
 
-	boss.combatTime = 0.0; -- amount of time boss spent in combat with anyone or anything
+	boss.seconds = 0.0; -- amount of time boss spent in combat with anyone or anything
 
 	-- store it in the table
 	LARGE_MONSTERS[bossEnemy] = boss;
@@ -1090,6 +1090,16 @@ local function initializeReportItem(id)
 	item.totalCondition = 0.0;
 	item.totalOtomo = 0.0;
 
+	item.seconds = {}
+	item.seconds.quest    = 0.0
+	item.seconds.monster  = 0.0
+	item.seconds.personal = 0.0
+
+	item.dps = {}
+	item.dps.quest    = 0.0
+	item.dps.monster  = 0.0
+	item.dps.personal = 0.0
+
 	item.percentOfTotal = 0.0;
 	item.percentOfBest = 0.0;
 
@@ -1233,7 +1243,7 @@ local function mergeBossIntoReport(report, boss)
 		end
 	end
 
-	-- now loop all report items and calculate totals
+	-- now loop all report items and update the totals after adding this boss
 	for _,item in ipairs(report.items) do
 		-- calculate the item's own total damage
 		local sum = sumDamageCountersList(item.counters, REPORT_ATTACKER_TYPES)
@@ -1242,6 +1252,12 @@ local function mergeBossIntoReport(report, boss)
 		item.totalElemental = sum.elemental;
 		item.totalCondition = sum.condition;
 		item.totalOtomo     = sum.otomo;
+
+		-- calculate dps
+		item.seconds.monster = item.seconds.monster + boss.seconds
+		if item.seconds.monster > 0 then
+			item.dps.monster = item.total / item.seconds.monster
+		end
 
 		-- remember which combatant has the most damage
 		if item.total > bestDamage then

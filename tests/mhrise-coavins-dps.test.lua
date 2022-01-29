@@ -107,6 +107,7 @@ describe("mhrise-coavins-dps", function()
 		end)
 
 	end)
+
 	describe("damage source", function()
 
 		it("is empty when initialized", function()
@@ -116,6 +117,7 @@ describe("mhrise-coavins-dps", function()
 		end)
 
 	end)
+
 	describe("report", function()
 
 		it("merges a boss correctly", function()
@@ -454,6 +456,70 @@ describe("mhrise-coavins-dps", function()
 		local r = DAMAGE_REPORTS[1]
 
 		assert.is_equal(expected, r.totalDamage)
+	end)
+
+	describe("dps", function()
+
+		it("is calculated correctly for one boss", function()
+			local boss = initializeMockBossMonster()
+
+			addDamageToBoss(boss, 1, 0, 750, 250, 0)
+
+			boss.seconds = 100
+
+			generateReport(REPORT_MONSTERS)
+
+			local r = DAMAGE_REPORTS[1]
+
+			local expected = 10.0
+			local actual = r.items[1].dps.monster
+
+			assert.is_equal(expected, actual)
+		end)
+
+		it("is calculated correctly for two bosses", function()
+			local boss1 = initializeMockBossMonster()
+			local boss2 = initializeMockBossMonster()
+
+			addDamageToBoss(boss1, 1, 0, 750, 250, 0)
+			addDamageToBoss(boss2, 1, 0, 250, 250, 0)
+
+			boss1.seconds = 100
+			boss2.seconds = 100
+
+			generateReport(REPORT_MONSTERS)
+
+			local r = DAMAGE_REPORTS[1]
+
+			local expected = 7.5
+			local actual = r.items[1].dps.monster
+
+			assert.is_equal(expected, actual)
+		end)
+
+		it("is calculated correctly for three bosses", function()
+			local boss1 = initializeMockBossMonster()
+			local boss2 = initializeMockBossMonster()
+			local boss3 = initializeMockBossMonster()
+
+			addDamageToBoss(boss1, 1, 0, 750, 250, 0)
+			addDamageToBoss(boss2, 1, 0, 250, 250, 0)
+			addDamageToBoss(boss3, 1, 0, 616, 19842, 0)
+
+			boss1.seconds = 100
+			boss2.seconds = 100
+			boss3.seconds = 611
+
+			generateReport(REPORT_MONSTERS)
+
+			local r = DAMAGE_REPORTS[1]
+
+			local expected = (750 + 250 + 250 + 250 + 616 + 19842) / (100 + 100 + 611)
+			local actual = r.items[1].dps.monster
+
+			assert.is_equal(expected, actual)
+		end)
+
 	end)
 
 end)
