@@ -522,7 +522,7 @@ local function loadPresets()
 	local paths = fs.glob([[mhrise-coavins-dps\\presets\\.*json]])
 
 	for _,path in ipairs(paths) do
-		local name = string.match(path, '\\(%a+).json')
+		local name = string.match(path, '\\([%a%s]+).json')
 		log_info(name)
 		local file = readDataFile('presets/' .. name .. '.json')
 		if file then
