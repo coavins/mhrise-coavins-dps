@@ -6,57 +6,6 @@ if _G._UNIT_TESTING then
 	json = require 'tests/mock_json'
 end
 
-	--[[
-	-- colors
-	-- 0x 12345678
-	-- 12 = alpha
-	-- 34 = blue
-	-- 56 = green
-	-- 78 = red
-
-	-- basic palette
-	CFG['COLOR_WHITE']  = 0xFFFFFFFF
-	CFG['COLOR_GRAY']   = 0xFFAFAFAF
-	CFG['COLOR_BLACK']  = 0xFF000000
-	CFG['COLOR_RED']    = 0xAF3232FF
-	CFG['COLOR_BLUE']   = 0xAFFF3232
-	CFG['COLOR_YELLOW'] = 0xAF32FFFF
-	CFG['COLOR_GREEN']  = 0xAF32FF32
-
-	-- players
-	CFG['COLOR_PLAYER'] = {}
-	CFG['COLOR_PLAYER'][0] = CFG['COLOR_RED']
-	CFG['COLOR_PLAYER'][1] = CFG['COLOR_BLUE']
-	CFG['COLOR_PLAYER'][2] = CFG['COLOR_YELLOW']
-	CFG['COLOR_PLAYER'][3] = CFG['COLOR_GREEN']
-
-	CFG['COLOR_OTOMO'] = 0xAFFCD032
-
-	-- table colors
-	CFG['COLOR_TITLE_BG']         = 0x88000000
-	CFG['COLOR_TITLE_FG']         = 0xFFDADADA
-	CFG['COLOR_BAR_BG']           = 0x44000000
-	CFG['COLOR_BAR_OUTLINE']      = 0x44000000
-
-	CFG['COLOR_BAR_DMG_PHYSICAL'] = 0xAF616658
-	CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'] = {}
-	CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][0] = 0xAF2828CC -- red
-	CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][1] = 0xAFCC2828 -- blue
-	CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][2] = 0xAF28CCCC -- yellow
-	CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][3] = 0xAF28CC28 -- green
-
-	CFG['COLOR_BAR_DMG_ELEMENT']  = 0xAF919984
-	CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'] = {}
-	CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][0] = 0xAF1C1C8C -- red
-	CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][1] = 0xAF8C1C1C -- blue
-	CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][2] = 0xAF1C8C8C -- yellow
-	CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][3] = 0xAF1C8C1C -- green
-
-	CFG['COLOR_BAR_DMG_AILMENT']  = 0xAF3E37A3
-	CFG['COLOR_BAR_DMG_OTOMO']    = 0xAFF0BB00
-	CFG['COLOR_BAR_DMG_OTHER']    = 0xAF616658
-	]]
-
 --#region Presets
 
 --[[
@@ -630,7 +579,7 @@ local function loadSavedConfigIfExist()
 	local file = readDataFile('saves/save.json'); -- file might not exist
 	if file and file.CFG then
 		-- load save file on top of current config
-		local loadedAny = mergeCfgIntoLeft(CFG, file.CFG);
+		local loadedAny = mergeCfgIntoLeft(_CFG, file.CFG);
 
 		if loadedAny then
 			log_info('loaded configuration from saves/save.json');
@@ -1935,15 +1884,29 @@ local function DrawWindowSettings()
 	if changed then
 		DPS_ENABLED = wantsIt
 	end
-	--[[
-	imgui.same_line()
-	if imgui.button('Save settings') then
 
+
+	if imgui.button('Save settings') then
+		saveCurrentConfig()
 	end
 	imgui.same_line()
 	if imgui.button('Load settings') then
+		loadSavedConfigIfExist()
+		if CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN') then
+			initializeTestData()
+		else
+			clearTestData()
+		end
 	end
-	]]
+
+	if imgui.button('Reset to default') then
+		loadDefaultConfig()
+		if CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN') then
+			initializeTestData()
+		else
+			clearTestData()
+		end
+	end
 
 	-- Show test data
 	changed, wantsIt = imgui.checkbox('Show test data while menu is open', CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'))
@@ -1974,7 +1937,7 @@ local function DrawWindowSettings()
 	imgui.text('Settings')
 
 	imgui.same_line()
-	if imgui.button('Reset data') then
+	if imgui.button('Clear data') then
 		if isInTestMode() then
 			-- reinitialize test data
 			initializeTestData()
