@@ -990,6 +990,7 @@ local function initializeReport()
 	report.timeline = {} -- events for timestamps
 	report.timestamps = {} -- ordered timestamps
 	report.time = 0.0
+	report.questTime = 0.0
 
 	return report
 end
@@ -1166,6 +1167,8 @@ end
 
 local function calculateReportTime(report)
 	report.time = 0.0
+	report.questTime = QUEST_DURATION
+
 	local tally = 0
 	local a = 0.0
 	for _,timestamp in ipairs(report.timestamps) do
@@ -1244,6 +1247,10 @@ local function mergeBossIntoReport(report, boss)
 		-- calculate dps
 		if report.time > 0 then
 			item.dps.report = item.total / report.time
+		end
+
+		if report.questTime > 0 then
+			item.dps.quest = item.total / report.questTime
 		end
 
 		-- remember which combatant has the most damage
@@ -1383,6 +1390,8 @@ local function drawReportItemColumn(item, col, x, y)
 		text = string.format('%d', item.numHit)
 	elseif col == 9 then -- maxhit
 		text = string.format('%.0f', item.maxHit)
+	elseif col == 10 then -- qDPS
+		text = string.format('%.1f', item.dps.quest)
 	end
 
 	d2d.text(FONT, text, x, y, COLOR('WHITE'))
