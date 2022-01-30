@@ -4,6 +4,10 @@
             "TEXT": "Combine buddies with their hunters",
             "VALUE": true
         },
+        "CONDITION_LIKE_DAMAGE": {
+            "TEXT": "Ailment buildup counts as damage",
+            "VALUE": false
+        },
         "DRAW_BAR_COLORBLOCK": {
             "TEXT": "Show color block",
             "VALUE": true
@@ -62,8 +66,10 @@
         },
         "TABLE_COLS": [
             3.0,
+            10.0,
             4.0,
             5.0,
+            11.0,
             6.0,
             7.0,
             8.0,
@@ -80,7 +86,9 @@
             53.0,
             53.0,
             37.0,
-            50.0
+            50.0,
+            39.0,
+            58.0
         ],
         "TABLE_GROWS_UPWARD": {
             "TEXT": "Table grows upward instead of down",
@@ -134,13 +142,13 @@
             "MAX": 2000.0,
             "MIN": 30.0,
             "TEXT": "Table width",
-            "VALUE": 434.0
+            "VALUE": 524.0
         },
         "TABLE_X": {
             "MAX": 1.0,
             "MIN": 0.0,
             "TEXT": "Horizontal position",
-            "VALUE": 0.65
+            "VALUE": 0.5799999833106995
         },
         "TABLE_Y": {
             "MAX": 1.0,
@@ -195,5 +203,34 @@
         "TITLE_FG": 4292532954.0,
         "WHITE": 4294967295.0,
         "YELLOW": 2952789810.0
+    },
+    "FILTERS": {
+        "ATTACKER_TYPES": {
+            "ballistahate": true,
+            "barrelbombl": true,
+            "barrelbombs": true,
+            "capturebullet": true,
+            "capturesmokebomb": true,
+            "detonationgrenade": true,
+            "ecbatexplode": true,
+            "fg005": true,
+            "hmballista": true,
+            "hmcannon": true,
+            "hmdragonator": true,
+            "hmflamethrower": true,
+            "hmgatling": true,
+            "hmnpc": true,
+            "hmtrap": true,
+            "kunai": true,
+            "makimushi": true,
+            "monster": true,
+            "nitro": true,
+            "onibimine": true,
+            "otomo": true,
+            "waterbeetle": true,
+            "weapon": true
+        },
+        "INCLUDE_OTHER": false,
+        "INCLUDE_OTOMO": true
     }
 }
