@@ -661,6 +661,11 @@ local function getOtomoIdFromFakeAttackerId(fakeAttackerId)
 end
 
 local function updatePlayers()
+	-- clear existing info
+	makeTableEmpty(PLAYER_NAMES)
+	makeTableEmpty(PLAYER_RANKS)
+	makeTableEmpty(OTOMO_NAMES)
+
 	-- get offline player name
 	local myHunter = MANAGER.LOBBY:get_field("_myHunterInfo")
 	if myHunter then
@@ -671,7 +676,13 @@ local function updatePlayers()
 	PLAYER_RANKS[MY_PLAYER_ID + 1] = MANAGER.PROGRESS:call("get_HunterRank")
 
 	-- get online players
-	local hunterInfo = MANAGER.LOBBY:get_field("_questHunterInfo")
+	local hunterInfo
+	if IS_IN_QUEST then
+		hunterInfo = MANAGER.LOBBY:get_field("_questHunterInfo")
+	else
+		hunterInfo = MANAGER.LOBBY:get_field("_hunterInfo")
+	end
+
 	if hunterInfo then
 		local hunterCount = hunterInfo:call("get_Count")
 		if hunterCount then
@@ -708,7 +719,13 @@ local function updatePlayers()
 	end
 
 	-- get online otomo names
-	local otomoInfo = MANAGER.LOBBY:get_field("_questOtomoInfo")
+	local otomoInfo
+	if IS_IN_QUEST then
+		otomoInfo = MANAGER.LOBBY:get_field("_questOtomoInfo")
+	else
+		otomoInfo = MANAGER.LOBBY:get_field("_OtomoInfo")
+	end
+
 	if otomoInfo then
 		local otomoCount = otomoInfo:call("get_Count")
 		if otomoCount then
