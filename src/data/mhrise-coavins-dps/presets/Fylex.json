@@ -1,0 +1,199 @@
+{
+    "CFG": {
+        "COMBINE_OTOMO_WITH_HUNTER": {
+            "TEXT": "Combine buddies with their hunters",
+            "VALUE": false
+        },
+        "DRAW_BAR_COLORBLOCK": {
+            "TEXT": "Show color block",
+            "VALUE": true
+        },
+        "DRAW_BAR_OUTLINES": {
+            "TEXT": "Show bar outlines",
+            "VALUE": false
+        },
+        "DRAW_BAR_RELATIVE_TO_PARTY": {
+            "TEXT": "Damage bars will represent share of overall party DPS",
+            "VALUE": false
+        },
+        "DRAW_BAR_REVEAL_HR": {
+            "TEXT": "Reveal player HR",
+            "VALUE": true
+        },
+        "DRAW_BAR_TEXT_NAME_USE_REAL_NAMES": {
+            "TEXT": "Reveal character names",
+            "VALUE": true
+        },
+        "DRAW_BAR_TEXT_YOU": {
+            "TEXT": "Show \"YOU\" on your row",
+            "VALUE": false
+        },
+        "DRAW_BAR_USE_PLAYER_COLORS": {
+            "TEXT": "Show player bars with their assigned color",
+            "VALUE": true
+        },
+        "DRAW_BAR_USE_UNIQUE_COLORS": {
+            "TEXT": "Show each type of damage in a different color",
+            "VALUE": true
+        },
+        "DRAW_HEADER": {
+            "TEXT": "Show header",
+            "VALUE": false
+        },
+        "DRAW_TABLE_BACKGROUND": {
+            "TEXT": "Show table background",
+            "VALUE": false
+        },
+        "DRAW_TITLE_BACKGROUND": {
+            "TEXT": "Show title background",
+            "VALUE": false
+        },
+        "DRAW_TITLE_MONSTER": {
+            "TEXT": "Show selected monsters in title",
+            "VALUE": true
+        },
+        "DRAW_TITLE_TEXT": {
+            "TEXT": "Show title text",
+            "VALUE": false
+        },
+        "SHOW_TEST_DATA_WHILE_MENU_IS_OPEN": {
+            "TEXT": "Show test data while menu is open",
+            "VALUE": true
+        },
+        "TABLE_COLS": [
+            3.0,
+            4.0,
+            5.0,
+            6.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "TABLE_COLS_WIDTH": [
+            0.0,
+            30.0,
+            106.0,
+            39.0,
+            58.0,
+            53.0,
+            53.0,
+            37.0,
+            50.0
+        ],
+        "TABLE_GROWS_UPWARD": {
+            "TEXT": "Table grows upward instead of down",
+            "VALUE": false
+        },
+        "TABLE_HEADER_TEXT_OFFSET_X": {
+            "MAX": 100.0,
+            "MIN": -100.0,
+            "TEXT": "Table text offset X",
+            "VALUE": 3.0
+        },
+        "TABLE_ROWH": {
+            "MAX": 100.0,
+            "MIN": 0.0,
+            "TEXT": "Row height",
+            "VALUE": 18.0
+        },
+        "TABLE_ROW_PADDING": {
+            "MAX": 150.0,
+            "MIN": 0.0,
+            "TEXT": "Row padding",
+            "VALUE": 0.0
+        },
+        "TABLE_ROW_TEXT_OFFSET_X": {
+            "MAX": 100.0,
+            "MIN": -100.0,
+            "TEXT": "Text offset X",
+            "VALUE": 4.0
+        },
+        "TABLE_ROW_TEXT_OFFSET_Y": {
+            "MAX": 100.0,
+            "MIN": -100.0,
+            "TEXT": "Text offset Y",
+            "VALUE": 0.0
+        },
+        "TABLE_SCALE": {
+            "MAX": 10.0,
+            "MIN": 0.0,
+            "TEXT": "Scaling factor",
+            "VALUE": 1.0
+        },
+        "TABLE_SORT_ASC": {
+            "TEXT": "Sort ascending",
+            "VALUE": false
+        },
+        "TABLE_SORT_IN_ORDER": {
+            "TEXT": "Sort by player",
+            "VALUE": false
+        },
+        "TABLE_WIDTH": {
+            "MAX": 2000.0,
+            "MIN": 30.0,
+            "TEXT": "Table width",
+            "VALUE": 434.0
+        },
+        "TABLE_X": {
+            "MAX": 1.0,
+            "MIN": 0.0,
+            "TEXT": "Horizontal position",
+            "VALUE": 0.7200000286102295
+        },
+        "TABLE_Y": {
+            "MAX": 1.0,
+            "MIN": 0.0,
+            "TEXT": "Vertical position",
+            "VALUE": 0.009999999776482582
+        },
+        "UPDATE_RATE": {
+            "MAX": 10.0,
+            "MIN": 0.01,
+            "TEXT": "Update frequency (in seconds)",
+            "VALUE": 0.2
+        },
+        "USE_MINIMAL_BARS": {
+            "TEXT": "Use a minimalist style for the damage bars",
+            "VALUE": true
+        }
+    },
+    "COLORS": {
+        "BAR_BG": 1140850688.0,
+        "BAR_DMG_AILMENT": 2940090275.0,
+        "BAR_DMG_ELEMENT": 2945554820.0,
+        "BAR_DMG_ELEMENT_UNIQUE": [
+            2937855116.0,
+            2945195036.0,
+            2937883788.0,
+            2937883676.0
+        ],
+        "BAR_DMG_OTHER": 2942395992.0,
+        "BAR_DMG_OTOMO": 2951789312.0,
+        "BAR_DMG_PHYSICAL": 2942395992.0,
+        "BAR_DMG_PHYSICAL_UNIQUE": [
+            2938644684.0,
+            2949392424.0,
+            2938686668.0,
+            2938686504.0
+        ],
+        "BAR_OUTLINE": 1140850688.0,
+        "BLACK": 4278190080.0,
+        "BLUE": 2952737330.0,
+        "GRAY": 4289703855.0,
+        "GREEN": 2939354930.0,
+        "OTOMO": 2952581170.0,
+        "PLAYER": [
+            2939302655.0,
+            2952737330.0,
+            2939355135.0,
+            2939354930.0
+        ],
+        "RED": 2939302655.0,
+        "TITLE_BG": 2281701376.0,
+        "TITLE_FG": 4292532954.0,
+        "WHITE": 4294967295.0,
+        "YELLOW": 2939355135.0
+    }
+}

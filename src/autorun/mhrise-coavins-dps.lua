@@ -503,7 +503,7 @@ local function hasManagedResources()
 	end
 
 	if not MANAGER.PROGRESS then
-		MANAGER.PROGRESS = sdk.get_managed_singleton("snow.progress.ProgressManager");
+		MANAGER.PROGRESS = sdk.get_managed_singleton("snow.progress.ProgressManager")
 		if not MANAGER.PROGRESS then
 			return false
 		end
@@ -544,91 +544,100 @@ end
 
 -- returns file json
 local function readDataFile(filename)
-	filename = CFG_DIR .. filename;
-	return json.load_file(filename);
+	filename = CFG_DIR .. filename
+	return json.load_file(filename)
 end
 
 -- merges second cfg into first
 -- returns true if anything was done
 local function mergeCfgIntoLeft(cfg1, cfg2)
-	local mergedAny = false;
-
+	if cfg2 then
 		for name,setting in pairs(cfg2) do
-			mergedAny = true;
-			cfg1[name].VALUE = setting.VALUE; -- load only the values
+			if name == 'TABLE_COLS' or name == 'TABLE_COLS_WIDTH' then
+				cfg1[name] = setting
+			else
+				cfg1[name].VALUE = setting.VALUE -- load only the values
+			end
 		end
+	end
+end
 
-	return mergedAny;
+local function mergeColorsIntoLeft(colors1, colors2)
+	if colors2 then
+		for name,setting in pairs(colors2) do
+			colors1[name] = setting
+		end
+	end
 end
 
 -- returns true on success
 local function loadDefaultConfig()
-	local file = readDataFile('default.json');
+	local file = readDataFile('default.json')
 	if not file then
-		log_error('failed to load default.json');
-		return false;
+		log_error('failed to load default.json')
+		return false
 	end
 
-	_CFG = file['CFG'];
-	_COLORS = file['COLORS'];
+	_CFG = file['CFG']
+	_COLORS = file['COLORS']
 
-	return true;
+	return true
 end
 
 local function loadSavedConfigIfExist()
-	local file = readDataFile('saves/save.json'); -- file might not exist
-	if file and file.CFG then
+	local file = readDataFile('saves/save.json') -- file might not exist
+	if file then
 		-- load save file on top of current config
-		local loadedAny = mergeCfgIntoLeft(_CFG, file.CFG);
+		mergeCfgIntoLeft(_CFG, file.CFG)
+		mergeColorsIntoLeft(_COLORS, file.COLORS)
 
-		if loadedAny then
-			log_info('loaded configuration from saves/save.json');
-		end
+		log_info('loaded configuration from saves/save.json')
 	end
 end
 
 local function saveCurrentConfig()
-	local file = {};
-	file['CFG'] = _CFG;
+	local file = {}
+	file['CFG'] = _CFG
+	file['COLORS'] = _COLORS
 
 	-- save current config to disk, replacing any existing file
-	local success = json.dump_file(CFG_DIR .. 'saves/save.json', file);
+	local success = json.dump_file(CFG_DIR .. 'saves/save.json', file)
 	if success then
-		log_info('saved configuration to saves/save.json');
+		log_info('saved configuration to saves/save.json')
 	else
-		log_error('failed to save configuration to saves/save.json');
+		log_error('failed to save configuration to saves/save.json')
 	end
 end
 
 -- load presets
 local function loadPresets()
 	-- hardcode the names until we have the privilege of iterating the presets folder
-	local namesOnDisk = {};
-	--table.insert(namesOnDisk, 'Simple');
+	local namesOnDisk = {}
+	--table.insert(namesOnDisk, 'Simple')
 
 	for _,name in ipairs(namesOnDisk) do
-		local file = readDataFile('presets/' .. name .. '.json');
+		local file = readDataFile('presets/' .. name .. '.json')
 		if file then
-			_PRESETS[name] = file;
-			log_info('loaded preset ' .. name);
+			_PRESETS[name] = file
+			log_info('loaded preset ' .. name)
 		end
 	end
 
 	-- build preset options list
 	for name,_ in pairs(_PRESETS) do
-		table.insert(PRESET_OPTIONS, name);
+		table.insert(PRESET_OPTIONS, name)
 	end
-	table.sort(PRESET_OPTIONS);
-	table.insert(PRESET_OPTIONS, 1, 'Select a preset');
+	table.sort(PRESET_OPTIONS)
+	table.insert(PRESET_OPTIONS, 1, 'Select a preset')
 end
 
 local function applySelectedPreset()
-	local name = PRESET_OPTIONS[PRESET_OPTIONS_SELECTED];
-	local preset = _PRESETS[name];
+	local name = PRESET_OPTIONS[PRESET_OPTIONS_SELECTED]
+	local preset = _PRESETS[name]
 	if preset and preset.CFG then
-		local loadedAny = mergeCfgIntoLeft(CFG, preset.CFG);
+		local loadedAny = mergeCfgIntoLeft(CFG, preset.CFG)
 		if loadedAny then
-			log_info('applied preset ' .. name);
+			log_info('applied preset ' .. name)
 		end
 	end
 end
@@ -1478,6 +1487,11 @@ local function drawReportItem(item, x, y, width, height)
 		-- damage bar
 		local damageBarWidth = colorBlockWidth * damageBarWidthMultiplier
 		draw.filled_rect(x, y, damageBarWidth, height, combatantColor)
+
+		-- hr
+		if item.playerNumber and item.rank and CFG('DRAW_BAR_REVEAL_HR') then
+			draw.text(string.format('%s',item.rank), x + (3 * CFG('TABLE_SCALE')), y, COLOR('WHITE'))
+		end
 	else
 		-- bar takes up the entire width of the table
 		if CFG('DRAW_TABLE_BACKGROUND') then
