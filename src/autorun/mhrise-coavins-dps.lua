@@ -902,6 +902,8 @@ local function initializeBossMonsterWithDummyData(bossKey, fakeName)
 	boss.hp.percent = 0.0
 
 	boss.timeline = {}
+	boss.timeline[math.random(100,150)] = true
+	boss.timeline[math.random(200,300)] = false
 	boss.lastTime = 0
 	boss.isInCombat = false
 
