@@ -1,146 +1,7 @@
 -- dps meter for monster hunter rise
 -- written by github.com/coavins
 
---#region Configuration
-
-local CFG = {}
-local TXT = {}
-local MIN = {}
-local MAX = {}
-
-local function applyDefaultConfiguration()
-	-- general settings
-	CFG['UPDATE_RATE'] = 0.20 -- in seconds, so 0.5 means two updates per second
-	TXT['UPDATE_RATE'] = 'Update frequency (in seconds)'
-	MIN['UPDATE_RATE'] = 0.01
-	MAX['UPDATE_RATE'] = 10.00
-
-	-- when the settings window is open, test data will be shown in the graph
-	CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] = true
-	TXT['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] = 'Show test data while menu is open'
-
-	-- when true, damage from palicoes and palamutes will be counted as if dealt by their hunter
-	-- when false, damage from palicoes and palamutes will be ignored completely
-	CFG['OTOMO_DMG_IS_PLAYER_DMG'] = true
-	TXT['OTOMO_DMG_IS_PLAYER_DMG'] = 'Combine buddies with their hunter'
-
-	CFG['DRAW_BAR_RELATIVE_TO_PARTY'] = false
-	TXT['DRAW_BAR_RELATIVE_TO_PARTY'] = 'Damage bars will represent share of overall party DPS'
-
-	-- table settings
-	CFG['DRAW_TITLE_TEXT'] = true
-	TXT['DRAW_TITLE_TEXT'] = 'Show title text'
-	CFG['DRAW_TITLE_MONSTERS'] = true
-	TXT['DRAW_TITLE_MONSTERS'] = 'Show monsters in title'
-	CFG['DRAW_TITLE_BACKGROUND'] = true
-	TXT['DRAW_TITLE_BACKGROUND'] = 'Show title background'
-	CFG['DRAW_HEADER'] = true;
-	TXT['DRAW_HEADER'] = 'Show header'
-	CFG['DRAW_BAR_BACKGROUNDS'] = true
-	TXT['DRAW_BAR_BACKGROUNDS'] = 'Show bar background'
-	CFG['DRAW_BAR_OUTLINES']    = false
-	TXT['DRAW_BAR_OUTLINES'] = 'Show bar outlines'
-	CFG['DRAW_BAR_COLORBLOCK'] = true -- shows block at the front of the bar with player's color
-	TXT['DRAW_BAR_COLORBLOCK'] = 'Show color block'
-
-	CFG['DRAW_BAR_USE_PLAYER_COLORS'] = true
-	TXT['DRAW_BAR_USE_PLAYER_COLORS'] = 'Show player bars with their assigned color'
-	CFG['DRAW_BAR_USE_UNIQUE_COLORS'] = true
-	TXT['DRAW_BAR_USE_UNIQUE_COLORS'] = 'Show each type of damage in a different color'
-
-	-- table column configuration
-	-- first number is position on table
-	-- second number is which column goes there
-	-- see TABLE_COLUMNS enum further down
-	CFG['TABLE_COLS'] = {}
-	CFG['TABLE_COLS'][1] = 3
-	CFG['TABLE_COLS'][2] = 4
-	CFG['TABLE_COLS'][3] = 5
-	CFG['TABLE_COLS'][4] = 6
-	CFG['TABLE_COLS'][5] = 7
-	CFG['TABLE_COLS'][6] = 8
-	CFG['TABLE_COLS'][7] = 9
-	CFG['TABLE_COLS'][8] = 1
-	CFG['TABLE_COLS'][9] = 1
-
-	-- desired width for each type of column
-	CFG['TABLE_COLS_WIDTH'] = {}
-	CFG['TABLE_COLS_WIDTH'][1] = 0
-	CFG['TABLE_COLS_WIDTH'][2] = 30
-	CFG['TABLE_COLS_WIDTH'][3] = 106
-	CFG['TABLE_COLS_WIDTH'][4] = 39
-	CFG['TABLE_COLS_WIDTH'][5] = 58
-	CFG['TABLE_COLS_WIDTH'][6] = 53
-	CFG['TABLE_COLS_WIDTH'][7] = 53
-	CFG['TABLE_COLS_WIDTH'][8] = 37
-	CFG['TABLE_COLS_WIDTH'][9] = 50
-
-	CFG['DRAW_BAR_TEXT_YOU'] = false -- shows "YOU" on your bar
-	TXT['DRAW_BAR_TEXT_YOU'] = 'Show "YOU" on your row'
-	CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = true -- show real player names instead of IDs
-	TXT['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = 'Reveal character names'
-	CFG['DRAW_BAR_TEXT_NAME_SHOW_HR'] = true -- show HR in the color block
-	TXT['DRAW_BAR_TEXT_NAME_SHOW_HR'] = 'Reveal player HR'
-
-	-- the damage bars will be removed, and the player blocks will receive shading instead
-	CFG['USE_MINIMAL_BARS'] = false
-	TXT['USE_MINIMAL_BARS'] = 'Use a minimalist style for the damage bars'
-
-	-- rows will be added on top of the title bar instead, making it easier to place the table at the bottom of the screen
-	CFG['TABLE_GROWS_UPWARD'] = false
-	TXT['TABLE_GROWS_UPWARD'] = 'Table grows upward instead of down'
-
-	-- when true, the row with the highest damage will be on bottom. you might want to use this with TABLE_GROWS_UPWARD
-	CFG['TABLE_SORT_ASC'] = false
-	TXT['TABLE_SORT_ASC'] = 'Sort ascending'
-	-- when true, player 1 will be first and player 4 will be last
-	CFG['TABLE_SORT_IN_ORDER'] = false
-	TXT['TABLE_SORT_IN_ORDER'] = 'Sort by player'
-
-	-- table position
-	-- X/Y here is expressed as a percentage
-	-- 0 is left/top of screen, 1 is right/bottom
-	CFG['TABLE_X'] = 0.65
-	TXT['TABLE_X'] = 'Horizontal position'
-	MIN['TABLE_X'] = 0.0
-	MAX['TABLE_X'] = 1.0
-	CFG['TABLE_Y'] = 0.00
-	TXT['TABLE_Y'] = 'Vertical position'
-	MIN['TABLE_Y'] = 0.0
-	MAX['TABLE_Y'] = 1.0
-	CFG['TABLE_SCALE'] = 1.0 -- multiplier for width and height
-	TXT['TABLE_SCALE'] = 'Scaling factor'
-	MIN['TABLE_SCALE'] = 0.0
-	MAX['TABLE_SCALE'] = 10.00
-
-	CFG['TABLE_HEADER_TEXT_OFFSET_X'] = 3
-	TXT['TABLE_HEADER_TEXT_OFFSET_X'] = 'Table text offset X'
-	MIN['TABLE_HEADER_TEXT_OFFSET_X'] = -100
-	MAX['TABLE_HEADER_TEXT_OFFSET_X'] = 100
-	CFG['TABLE_WIDTH'] = 434
-	TXT['TABLE_WIDTH'] = 'Table width'
-	MIN['TABLE_WIDTH'] = 30
-	MAX['TABLE_WIDTH'] = 2000
-
-	CFG['TABLE_ROWH'] = 18
-	TXT['TABLE_ROWH'] = 'Row height'
-	MIN['TABLE_ROWH'] = 0
-	MAX['TABLE_ROWH'] = 100
-
-	CFG['TABLE_ROW_PADDING'] = 0
-	TXT['TABLE_ROW_PADDING'] = 'Row padding'
-	MIN['TABLE_ROW_PADDING'] = 0
-	MAX['TABLE_ROW_PADDING'] = 150
-
-	CFG['TABLE_ROW_TEXT_OFFSET_X'] = 4 -- x offset for damage bar text
-	TXT['TABLE_ROW_TEXT_OFFSET_X'] = 'Row text offset X'
-	MIN['TABLE_ROW_TEXT_OFFSET_X'] = -100
-	MAX['TABLE_ROW_TEXT_OFFSET_X'] = 100
-	CFG['TABLE_ROW_TEXT_OFFSET_Y'] = 0 -- y offset for damage bar text
-	TXT['TABLE_ROW_TEXT_OFFSET_Y'] = 'Row text offset Y'
-	MIN['TABLE_ROW_TEXT_OFFSET_Y'] = -100
-	MAX['TABLE_ROW_TEXT_OFFSET_Y'] = 100
-
+	--[[
 	-- colors
 	-- 0x 12345678
 	-- 12 = alpha
@@ -189,15 +50,13 @@ local function applyDefaultConfiguration()
 	CFG['COLOR_BAR_DMG_AILMENT']  = 0xAF3E37A3
 	CFG['COLOR_BAR_DMG_OTOMO']    = 0xAFF0BB00
 	CFG['COLOR_BAR_DMG_OTHER']    = 0xAF616658
-end
-
---#endregion Configuration
+	]]
 
 --#region Presets
 
 local PRESET_STANDARD = {}
-PRESET_STANDARD['OTOMO_DMG_IS_PLAYER_DMG'] = true
-PRESET_STANDARD['DRAW_BAR_BACKGROUNDS'] = true
+PRESET_STANDARD['COMBINE_OTOMO_WITH_HUNTER'] = true
+PRESET_STANDARD['DRAW_TABLE_BACKGROUND'] = true
 PRESET_STANDARD['DRAW_BAR_OUTLINES'] = false
 PRESET_STANDARD['DRAW_BAR_TEXT_NAME'] = true
 PRESET_STANDARD['DRAW_BAR_TEXT_YOU'] = true
@@ -212,8 +71,8 @@ PRESET_STANDARD['TABLE_WIDTH'] = 350
 PRESET_STANDARD['TABLE_ROWH'] = 18
 
 local PRESET_DETAILED = {}
-PRESET_DETAILED['OTOMO_DMG_IS_PLAYER_DMG'] = true
-PRESET_DETAILED['DRAW_BAR_BACKGROUNDS'] = true
+PRESET_DETAILED['COMBINE_OTOMO_WITH_HUNTER'] = true
+PRESET_DETAILED['DRAW_TABLE_BACKGROUND'] = true
 PRESET_DETAILED['DRAW_BAR_OUTLINES'] = false
 PRESET_DETAILED['DRAW_BAR_TEXT_NAME'] = true
 PRESET_DETAILED['DRAW_BAR_TEXT_YOU'] = true
@@ -229,7 +88,7 @@ PRESET_DETAILED['TABLE_WIDTH'] = 350
 PRESET_DETAILED['TABLE_ROWH'] = 18
 
 local PRESET_FYLEX = {}
-PRESET_FYLEX['OTOMO_DMG_IS_PLAYER_DMG'] = false
+PRESET_FYLEX['COMBINE_OTOMO_WITH_HUNTER'] = false
 PRESET_FYLEX['DRAW_TITLE_TEXT'] = false
 PRESET_FYLEX['DRAW_TITLE_BACKGROUND'] = false
 PRESET_FYLEX['DRAW_HEADER'] = false
@@ -253,7 +112,7 @@ PRESET_FYLEX['TABLE_Y'] = 0.01
 local PRESET_MHROVERLAY = {}
 PRESET_MHROVERLAY['DRAW_TITLE_TEXT'] = false
 PRESET_MHROVERLAY['DRAW_TITLE_BACKGROUND'] = false
-PRESET_MHROVERLAY['DRAW_BAR_BACKGROUNDS'] = true
+PRESET_MHROVERLAY['DRAW_TABLE_BACKGROUND'] = true
 PRESET_MHROVERLAY['DRAW_BAR_COLORBLOCK'] = false
 PRESET_MHROVERLAY['DRAW_BAR_TEXT_PADDING'] = 26
 PRESET_MHROVERLAY['DRAW_BAR_TEXT_PADDING_FIXED'] = true
@@ -522,29 +381,21 @@ local WINDOW_FLAGS = 0x10120
 local IS_ONLINE = false
 local QUEST_DURATION = 0.0
 
+local _CFG = {}
+local CFG_DIR = 'mhrise-coavins-dps/'
+local _COLORS = {}
+local _HOTKEYS = {} -- todo
+
+local _PRESETS = {}
+local PRESET_OPTIONS = {}
+local PRESET_OPTIONS_SELECTED = 1
+
 local CURRENTLY_HELD_MODIFIERS = {}
 local ASSIGNED_HOTKEY_THIS_FRAME = false
 local HOTKEY_TOGGLE_OVERLAY = 109 -- 109 is numpad minus
 local HOTKEY_TOGGLE_OVERLAY_MODIFIERS = {} -- modifiers that must be held for this hotkey
 local HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = false -- if true, will register next key press as the new hotkey
 local HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER_WITH_MODIFIER = {} -- table of modifiers for new hotkey
-
-local PRESETS = {}
-local PRESET_OPTIONS = {}
-local PRESET_OPTIONS_SELECTED = 1
-
--- load presets
-PRESETS['Standard'] = PRESET_STANDARD
-PRESETS['Detailed'] = PRESET_DETAILED
-PRESETS['Fylex'] = PRESET_FYLEX
-PRESETS['MHR Overlay'] = PRESET_MHROVERLAY
-
--- build preset options list
-for name,_ in pairs(PRESETS) do
-	table.insert(PRESET_OPTIONS, name)
-end
-table.sort(PRESET_OPTIONS)
-table.insert(PRESET_OPTIONS, 1, 'Select a preset')
 
 local SCREEN_W = 0
 local SCREEN_H = 0
@@ -706,13 +557,121 @@ local function hasManagedResources()
 	return true
 end
 
+local function CFG(name)
+	return _CFG[name].VALUE
+end
+
+local function SetCFG(name, value)
+	_CFG[name].VALUE = value
+end
+
+local function TXT(name)
+	return _CFG[name].TEXT
+end
+
+local function MIN(name)
+	return _CFG[name].MIN
+end
+
+local function MAX(name)
+	return _CFG[name].MAX
+end
+
+local function COLOR(name)
+	return _COLORS[name]
+end
+
+local function SetColor(name, value)
+	_COLORS[name] = value
+end
+
+-- returns file json
+local function readDataFile(filename)
+	filename = CFG_DIR .. filename;
+	return json.load_file(filename);
+end
+
+-- merges second cfg into first
+-- returns true if anything was done
+local function mergeCfgIntoLeft(cfg1, cfg2)
+	local mergedAny = false;
+
+		for name,setting in pairs(cfg2) do
+			mergedAny = true;
+			cfg1[name].VALUE = setting.VALUE; -- load only the values
+		end
+
+	return mergedAny;
+end
+
+-- returns true on success
+local function loadDefaultConfig()
+	local file = readDataFile('default.json');
+	if not file then
+		log_error('failed to load default.json');
+		return false;
+	end
+
+	_CFG = file['CFG'];
+	_COLORS = file['COLORS'];
+
+	return true;
+end
+
+local function loadSavedConfigIfExist()
+	local file = readDataFile('saves/save.json'); -- file might not exist
+	if file and file.CFG then
+		-- load save file on top of current config
+		local loadedAny = mergeCfgIntoLeft(CFG, file.CFG);
+
+		if loadedAny then
+			log_info('loaded configuration from saves/save.json');
+		end
+	end
+end
+
+local function saveCurrentConfig()
+	local file = {};
+	file['CFG'] = _CFG;
+
+	-- save current config to disk, replacing any existing file
+	local success = json.dump_file(CFG_DIR .. 'saves/save.json', file);
+	if success then
+		log_info('saved configuration to saves/save.json');
+	else
+		log_error('failed to save configuration to saves/save.json');
+	end
+end
+
+-- load presets
+local function loadPresets()
+	-- hardcode the names until we have the privilege of iterating the presets folder
+	local namesOnDisk = {};
+	--table.insert(namesOnDisk, 'Simple');
+
+	for _,name in ipairs(namesOnDisk) do
+		local file = readDataFile('presets/' .. name .. '.json');
+		if file then
+			_PRESETS[name] = file;
+			log_info('loaded preset ' .. name);
+		end
+	end
+
+	-- build preset options list
+	for name,_ in pairs(_PRESETS) do
+		table.insert(PRESET_OPTIONS, name);
+	end
+	table.sort(PRESET_OPTIONS);
+	table.insert(PRESET_OPTIONS, 1, 'Select a preset');
+end
+
 local function applySelectedPreset()
-	applyDefaultConfiguration()
-	local name = PRESET_OPTIONS[PRESET_OPTIONS_SELECTED]
-	local preset = PRESETS[name]
-	if preset then
-		for setting,value in pairs(preset) do
-			CFG[setting] = value
+	local name = PRESET_OPTIONS[PRESET_OPTIONS_SELECTED];
+	local preset = _PRESETS[name];
+	if preset and preset.CFG then
+		local loadedAny = mergeCfgIntoLeft(CFG, preset.CFG);
+		if loadedAny then
+			log_info('applied preset ' .. name);
 		end
 	end
 end
@@ -860,14 +819,16 @@ end
 
 --#region Sanity checking
 
-if not CFG['UPDATE_RATE'] or tonumber(CFG['UPDATE_RATE']) == nil then
-	CFG['UPDATE_RATE'] = 0.5
-end
-if CFG['UPDATE_RATE'] < 0.01 then
-	CFG['UPDATE_RATE'] = 0.01
-end
-if CFG['UPDATE_RATE'] > 3 then
-	CFG['UPDATE_RATE'] = 3
+local function sanityCheck()
+	if not CFG('UPDATE_RATE') or tonumber(CFG('UPDATE_RATE')) == nil then
+		SetCFG('UPDATE_RATE', 0.5)
+	end
+	if CFG('UPDATE_RATE') < 0.01 then
+		SetCFG('UPDATE_RATE', 0.01)
+	end
+	if CFG('UPDATE_RATE') > 3 then
+		SetCFG('UPDATE_RATE', 3)
+	end
 end
 
 --#endregion
@@ -1321,7 +1282,7 @@ local function mergeBossIntoReport(report, boss)
 		local effSourceId = source.id
 
 		-- merge otomo with master
-		if CFG['OTOMO_DMG_IS_PLAYER_DMG'] and attackerIdIsOtomo(effSourceId) then
+		if CFG('COMBINE_OTOMO_WITH_HUNTER') and attackerIdIsOtomo(effSourceId) then
 			local otomoId = getOtomoIdFromFakeAttackerId(effSourceId)
 
 			-- handle primary otomo
@@ -1394,9 +1355,9 @@ local function mergeBossIntoReport(report, boss)
 	end
 
 	-- sort report items
-	if CFG['TABLE_SORT_IN_ORDER'] then
+	if CFG('TABLE_SORT_IN_ORDER') then
 		table.sort(report.items, sortReportItems_Player)
-	elseif CFG['TABLE_SORT_ASC'] then
+	elseif CFG('TABLE_SORT_ASC') then
 		table.sort(report.items, sortReportItems_ASC)
 	else
 		table.sort(report.items, sortReportItems_DESC)
@@ -1421,11 +1382,11 @@ end
 
 local function drawRichDamageBar(item, x, y, maxWidth, h, colorPhysical, colorElemental)
 	local w
-	local colorAilment = CFG['COLOR_BAR_DMG_AILMENT']
-	local colorOtomo = CFG['COLOR_BAR_DMG_OTOMO']
-	local colorOther = CFG['COLOR_BAR_DMG_OTHER']
+	local colorAilment = COLOR('BAR_DMG_AILMENT')
+	local colorOtomo = COLOR('BAR_DMG_OTOMO')
+	local colorOther = COLOR('BAR_DMG_OTHER')
 
-	if not CFG['DRAW_BAR_USE_UNIQUE_COLORS'] then
+	if not CFG('DRAW_BAR_USE_UNIQUE_COLORS') then
 		colorElemental = colorPhysical
 		colorAilment = colorPhysical
 		colorOtomo = colorPhysical
@@ -1463,7 +1424,7 @@ end
 local function drawReportHeaderColumn(col, x, y)
 	local text = TABLE_COLUMNS[col]
 
-	draw.text(text, x, y, CFG['COLOR_GRAY'])
+	draw.text(text, x, y, COLOR('GRAY'))
 end
 
 local function drawReportItemColumn(item, col, x, y)
@@ -1475,15 +1436,15 @@ local function drawReportItemColumn(item, col, x, y)
 		end
 	elseif col == 3 then -- name
 		if item.playerNumber then
-			if CFG['DRAW_BAR_TEXT_YOU'] and item.id == MY_PLAYER_ID then
+			if CFG('DRAW_BAR_TEXT_YOU') and item.id == MY_PLAYER_ID then
 				text = 'YOU'
-			elseif CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] and item.name then
+			elseif CFG('DRAW_BAR_TEXT_NAME_USE_REAL_NAMES') and item.name then
 				text = string.format('%s', item.name)
 			else
 				text = string.format('Player %.0f', item.id + 1)
 			end
 		elseif item.otomoNumber then
-			if CFG['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] and item.name then
+			if CFG('DRAW_BAR_TEXT_NAME_USE_REAL_NAMES') and item.name then
 				if IS_ONLINE then
 					text = string.format('%s (%.0f)', item.name, item.otomoNumber)
 				else
@@ -1510,7 +1471,7 @@ local function drawReportItemColumn(item, col, x, y)
 		text = string.format('%.0f', item.maxHit)
 	end
 
-	draw.text(text, x, y, CFG['COLOR_WHITE'])
+	draw.text(text, x, y, COLOR('WHITE'))
 end
 
 local function drawReportItem(item, x, y, width, height)
@@ -1520,39 +1481,39 @@ local function drawReportItem(item, x, y, width, height)
 	--end
 
 	-- get some values
-	local scalingFactor = CFG['TABLE_SCALE']
-	local text_offset_x = CFG['TABLE_ROW_TEXT_OFFSET_X'] * scalingFactor
-	local text_offset_y = CFG['TABLE_ROW_TEXT_OFFSET_Y'] * scalingFactor
+	local scalingFactor = CFG('TABLE_SCALE')
+	local text_offset_x = CFG('TABLE_ROW_TEXT_OFFSET_X') * scalingFactor
+	local text_offset_y = CFG('TABLE_ROW_TEXT_OFFSET_Y') * scalingFactor
 	local colorBlockWidth = 30 * scalingFactor
-	if not CFG['DRAW_BAR_COLORBLOCK'] then
+	if not CFG('DRAW_BAR_COLORBLOCK') then
 		colorBlockWidth = 0
 	end
 
 	local damageBarWidthMultiplier = item.percentOfBest
-	if CFG['DRAW_BAR_RELATIVE_TO_PARTY'] then
+	if CFG('DRAW_BAR_RELATIVE_TO_PARTY') then
 		damageBarWidthMultiplier = item.percentOfTotal
 	end
 
 	-- get some colors
-	local combatantColor = CFG['COLOR_GRAY']
+	local combatantColor = COLOR('GRAY')
 	if item.playerNumber then
-		combatantColor = CFG['COLOR_PLAYER'][item.id]
+		combatantColor = COLOR('PLAYER')[item.playerNumber]
 	elseif item.otomoNumber then
-		combatantColor = CFG['COLOR_OTOMO']
+		combatantColor = COLOR('OTOMO')
 	end
 
-	local physicalColor = CFG['COLOR_BAR_DMG_PHYSICAL_UNIQUE'][item.id]
-	if not physicalColor or not CFG['DRAW_BAR_USE_PLAYER_COLORS'] then
-		physicalColor = CFG['COLOR_BAR_DMG_PHYSICAL']
+	local physicalColor = COLOR('BAR_DMG_PHYSICAL_UNIQUE')[item.playerNumber]
+	if not physicalColor or not CFG('DRAW_BAR_USE_PLAYER_COLORS') then
+		physicalColor = COLOR('BAR_DMG_PHYSICAL')
 	end
 
-	local elementalColor = CFG['COLOR_BAR_DMG_ELEMENT_UNIQUE'][item.id]
+	local elementalColor = COLOR('BAR_DMG_ELEMENT_UNIQUE')[item.playerNumber]
 	if not elementalColor then
-		elementalColor = CFG['COLOR_BAR_DMG_ELEMENT']
+		elementalColor = COLOR('BAR_DMG_ELEMENT')
 	end
 
 	-- draw the actual bar
-	if CFG['USE_MINIMAL_BARS'] then
+	if CFG('USE_MINIMAL_BARS') then
 		-- bar is overlaid on top of the color block
 		-- color block
 		draw.filled_rect(x, y, colorBlockWidth, height, elementalColor)
@@ -1562,18 +1523,18 @@ local function drawReportItem(item, x, y, width, height)
 		draw.filled_rect(x, y, damageBarWidth, height, combatantColor)
 	else
 		-- bar takes up the entire width of the table
-		if CFG['DRAW_BAR_BACKGROUNDS'] then
+		if CFG('DRAW_TABLE_BACKGROUND') then
 			-- draw background
-			draw.filled_rect(x, y, width, height, CFG['COLOR_BAR_BG'])
+			draw.filled_rect(x, y, width, height, COLOR('BAR_BG'))
 		end
 
-		if CFG['DRAW_BAR_COLORBLOCK'] then
+		if CFG('DRAW_BAR_COLORBLOCK') then
 			-- color block
 			draw.filled_rect(x, y, colorBlockWidth, height, combatantColor)
 
 			-- hr
-			if item.playerNumber and item.rank and CFG['DRAW_BAR_TEXT_NAME_SHOW_HR'] then
-				draw.text(string.format('%s',item.rank), x + (3 * CFG['TABLE_SCALE']), y, CFG['COLOR_WHITE'])
+			if item.playerNumber and item.rank and CFG('DRAW_BAR_REVEAL_HR') then
+				draw.text(string.format('%s',item.rank), x + (3 * CFG('TABLE_SCALE')), y, COLOR('WHITE'))
 			end
 		end
 
@@ -1588,19 +1549,19 @@ local function drawReportItem(item, x, y, width, height)
 	local text_y = y + text_offset_y
 
 	-- now loop through defined columns
-	for _,col in ipairs(CFG['TABLE_COLS']) do
+	for _,col in ipairs(_CFG['TABLE_COLS']) do
 		if col > 1 then
 			drawReportItemColumn(item, col, text_x, text_y)
 
-			local colWidth = CFG['TABLE_COLS_WIDTH'][col] * CFG['TABLE_SCALE']
+			local colWidth = _CFG['TABLE_COLS_WIDTH'][col] * CFG('TABLE_SCALE')
 
 			text_x = text_x + colWidth
 		end
 	end
 
-	if CFG['DRAW_BAR_OUTLINES'] then
+	if CFG('DRAW_BAR_OUTLINES') then
 		-- draw outline
-		draw.outline_rect(x, y, width, height, CFG['COLOR_BAR_OUTLINE'])
+		draw.outline_rect(x, y, width, height, COLOR('BAR_OUTLINE'))
 	end
 end
 
@@ -1610,23 +1571,23 @@ local function drawReport(index)
 		return
 	end
 
-	local origin_x = getScreenXFromX(CFG['TABLE_X'])
-	local origin_y = getScreenYFromY(CFG['TABLE_Y'])
-	local tableWidth = CFG['TABLE_WIDTH'] * CFG['TABLE_SCALE']
-	local rowHeight = CFG['TABLE_ROWH'] * CFG['TABLE_SCALE']
-	local growDistance = rowHeight + CFG['TABLE_ROW_PADDING']
+	local origin_x = getScreenXFromX(CFG('TABLE_X'))
+	local origin_y = getScreenYFromY(CFG('TABLE_Y'))
+	local tableWidth = CFG('TABLE_WIDTH') * CFG('TABLE_SCALE')
+	local rowHeight = CFG('TABLE_ROWH') * CFG('TABLE_SCALE')
+	local growDistance = rowHeight + CFG('TABLE_ROW_PADDING')
 
-	if CFG['TABLE_GROWS_UPWARD'] then
+	if CFG('TABLE_GROWS_UPWARD') then
 		origin_y = origin_y - rowHeight
 	end
 
 	-- title bar
-	if CFG['DRAW_TITLE_BACKGROUND'] then
+	if CFG('DRAW_TITLE_BACKGROUND') then
 		-- title background
-		draw.filled_rect(origin_x, origin_y, tableWidth, rowHeight, CFG['COLOR_TITLE_BG'])
+		draw.filled_rect(origin_x, origin_y, tableWidth, rowHeight, COLOR('TITLE_BG'))
 	end
 
-	if CFG['DRAW_TITLE_TEXT'] then
+	if CFG('DRAW_TITLE_TEXT') then
 		-- generate the title text
 
 		-- get quest duration
@@ -1643,7 +1604,7 @@ local function drawReport(index)
 		local timeText = string.format("%d:%02.0f", timeMinutes, timeSeconds)
 		local monsterText = ''
 
-		if CFG['DRAW_TITLE_MONSTERS'] then
+		if CFG('DRAW_TITLE_MONSTER') then
 			monsterText = ' - '
 			-- add monster names
 			local monsterCount = 0
@@ -1663,71 +1624,71 @@ local function drawReport(index)
 		end
 
 		local titleText = timeText .. monsterText
-		local offsetX = CFG['TABLE_HEADER_TEXT_OFFSET_X']
-		draw.text(titleText, origin_x + offsetX, origin_y, CFG['COLOR_TITLE_FG'])
+		local offsetX = CFG('TABLE_HEADER_TEXT_OFFSET_X')
+		draw.text(titleText, origin_x + offsetX, origin_y, COLOR('TITLE_FG'))
 	end
 
-	if CFG['DRAW_HEADER'] then
+	if CFG('DRAW_HEADER') then
 		-- find grow without row padding
 		local grow = rowHeight
-		if CFG['TABLE_GROWS_UPWARD'] then
+		if CFG('TABLE_GROWS_UPWARD') then
 			grow = rowHeight * -1
 		end
 
 		-- draw header row
-		local x = origin_x + (4 * CFG['TABLE_SCALE'])
+		local x = origin_x + (4 * CFG('TABLE_SCALE'))
 		local y = origin_y + grow
 
-		if CFG['DRAW_TITLE_BACKGROUND'] then
+		if CFG('DRAW_TITLE_BACKGROUND') then
 			-- background
-			draw.filled_rect(origin_x, y, tableWidth, rowHeight, CFG['COLOR_TITLE_BG'])
+			draw.filled_rect(origin_x, y, tableWidth, rowHeight, COLOR('TITLE_BG'))
 		end
 
-		if CFG['DRAW_BAR_COLORBLOCK'] and CFG['DRAW_BAR_TEXT_NAME_SHOW_HR'] then
-			draw.text('HR', x, y, CFG['COLOR_GRAY'])
+		if CFG('DRAW_BAR_COLORBLOCK') and CFG('DRAW_BAR_REVEAL_HR') then
+			draw.text('HR', x, y, COLOR('GRAY'))
 		end
 
-		local colorBlockWidth = 30 * CFG['TABLE_SCALE']
-		if not CFG['DRAW_BAR_COLORBLOCK'] then
+		local colorBlockWidth = 30 * CFG('TABLE_SCALE')
+		if not CFG('DRAW_BAR_COLORBLOCK') then
 			colorBlockWidth = 0
 		end
 		x = x + colorBlockWidth
 
-		for _, value in ipairs(CFG['TABLE_COLS']) do
+		for _, value in ipairs(_CFG['TABLE_COLS']) do
 			if value > 1 then
 				drawReportHeaderColumn(value, x, y)
 
-				local colWidth = CFG['TABLE_COLS_WIDTH'][value] * CFG['TABLE_SCALE']
+				local colWidth = _CFG['TABLE_COLS_WIDTH'][value] * CFG('TABLE_SCALE')
 				x = x + colWidth
 			end
 		end
 	end
 
-	if CFG['TABLE_GROWS_UPWARD'] then
-		growDistance = (rowHeight + CFG['TABLE_ROW_PADDING']) * -1
+	if CFG('TABLE_GROWS_UPWARD') then
+		growDistance = (rowHeight + CFG('TABLE_ROW_PADDING')) * -1
 	end
 
 	if #report.items == 0 then
 		local colorBlockWidth = 20
-		if not CFG['DRAW_BAR_COLORBLOCK'] then
+		if not CFG('DRAW_BAR_COLORBLOCK') then
 			colorBlockWidth = 0
 		end
-		local text_offset_x = CFG['TABLE_ROW_TEXT_OFFSET_X']
-		local text_offset_y = CFG['TABLE_ROW_TEXT_OFFSET_Y']
+		local text_offset_x = CFG('TABLE_ROW_TEXT_OFFSET_X')
+		local text_offset_y = CFG('TABLE_ROW_TEXT_OFFSET_Y')
 		local x = origin_x + colorBlockWidth + 2 + text_offset_x
 		local y = origin_y + growDistance + text_offset_y
-		if CFG['DRAW_HEADER'] then
+		if CFG('DRAW_HEADER') then
 			-- skip header row
 			y = y + growDistance
 		end
 
-		draw.text('No data', x, y, CFG['COLOR_GRAY'])
+		draw.text('No data', x, y, COLOR('GRAY'))
 	end
 
 	-- draw report items
 	for i,item in ipairs(report.items) do
 		local y = origin_y + growDistance * i
-		if CFG['DRAW_HEADER'] then
+		if CFG('DRAW_HEADER') then
 			-- skip header row
 			y = y + growDistance
 		end
@@ -1867,7 +1828,7 @@ end
 
 -- update based on wall clock
 local function dpsUpdateOccasionally(realSeconds)
-	if realSeconds > LAST_UPDATE_TIME + CFG['UPDATE_RATE'] then
+	if realSeconds > LAST_UPDATE_TIME + CFG('UPDATE_RATE') then
 		dpsUpdate()
 		LAST_UPDATE_TIME = realSeconds
 	end
@@ -1903,45 +1864,46 @@ end
 --#region imgui interface
 
 local function showCheckboxForSetting(setting)
-	local changed, value = imgui.checkbox(TXT[setting], CFG[setting])
+	local changed, value = imgui.checkbox(TXT(setting), CFG(setting))
 	if changed then
-		CFG[setting] = value
+		SetCFG(setting, value)
 	end
 end
 
 local function showSliderForFloatSetting(setting)
-	local changed, value = imgui.slider_float(TXT[setting], CFG[setting], MIN[setting], MAX[setting], '%.2f')
+	local changed, value = imgui.slider_float(TXT(setting), CFG(setting), MIN(setting), MAX(setting), '%.2f')
 	if changed then
-		CFG[setting] = value
+		SetCFG(setting, value)
 	end
 end
 
 local function showSliderForIntSetting(setting)
-	local changed, value = imgui.slider_int(TXT[setting], CFG[setting], MIN[setting], MAX[setting], '%d')
+	local changed, value = imgui.slider_int(TXT(setting), CFG(setting), MIN(setting), MAX(setting), '%d')
 	if changed then
-		CFG[setting] = value
+		SetCFG(setting, value)
 	end
 end
 
 local function showInputsForTableColumns()
 	imgui.text('Configure columns')
+	--imgui.text(tostring(_CFG['TABLE_COLS'].VALUE[1]))
 	-- draw combo and slider for each table col
-	for i,currentCol in ipairs(CFG['TABLE_COLS']) do
+	for i,currentCol in ipairs(_CFG['TABLE_COLS']) do
 		-- show combo for choice
 		local changedCol, newCol = imgui.combo('Column ' .. i, currentCol, TABLE_COLUMNS)
 		if changedCol then
-			CFG['TABLE_COLS'][i] = newCol
+			_CFG['TABLE_COLS'][i] = newCol
 		end
 	end
 	imgui.new_line()
 	imgui.text('Configure width')
-	for i,currentWidth in ipairs(CFG['TABLE_COLS_WIDTH']) do
+	for i,currentWidth in ipairs(_CFG['TABLE_COLS_WIDTH']) do
 		-- skip 'None'
 		if i > 1 then
 			-- show slider for width
 			local changedWidth, newWidth = imgui.slider_int('Width: ' .. TABLE_COLUMNS[i], currentWidth, 0, 250)
 			if changedWidth then
-				CFG['TABLE_COLS_WIDTH'][i] = newWidth
+				_CFG['TABLE_COLS_WIDTH'][i] = newWidth
 			end
 		end
 	end
@@ -1976,9 +1938,9 @@ local function DrawWindowSettings()
 	]]
 
 	-- Show test data
-	changed, wantsIt = imgui.checkbox('Show test data while menu is open', CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'])
+	changed, wantsIt = imgui.checkbox('Show test data while menu is open', CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'))
 	if changed then
-		CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] = wantsIt
+		SetCFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN', wantsIt)
 		if wantsIt then
 			initializeTestData()
 		else
@@ -2016,16 +1978,16 @@ local function DrawWindowSettings()
 	end
 
 	--showSliderForFloatSetting('UPDATE_RATE')
-	showCheckboxForSetting('OTOMO_DMG_IS_PLAYER_DMG')
+	showCheckboxForSetting('COMBINE_OTOMO_WITH_HUNTER')
 	showCheckboxForSetting('DRAW_BAR_RELATIVE_TO_PARTY')
 
 	imgui.new_line()
 
 	showCheckboxForSetting('DRAW_TITLE_TEXT')
-	showCheckboxForSetting('DRAW_TITLE_MONSTERS')
+	showCheckboxForSetting('DRAW_TITLE_MONSTER')
 	showCheckboxForSetting('DRAW_HEADER')
 	showCheckboxForSetting('DRAW_TITLE_BACKGROUND')
-	showCheckboxForSetting('DRAW_BAR_BACKGROUNDS')
+	showCheckboxForSetting('DRAW_TABLE_BACKGROUND')
 	showCheckboxForSetting('DRAW_BAR_OUTLINES')
 	showCheckboxForSetting('DRAW_BAR_COLORBLOCK')
 	showCheckboxForSetting('DRAW_BAR_USE_PLAYER_COLORS')
@@ -2035,7 +1997,7 @@ local function DrawWindowSettings()
 
 	showCheckboxForSetting('DRAW_BAR_TEXT_YOU')
 	showCheckboxForSetting('DRAW_BAR_TEXT_NAME_USE_REAL_NAMES')
-	showCheckboxForSetting('DRAW_BAR_TEXT_NAME_SHOW_HR')
+	showCheckboxForSetting('DRAW_BAR_REVEAL_HR')
 
 	imgui.new_line()
 
@@ -2492,7 +2454,7 @@ re.on_draw_ui(function()
 		DRAW_WINDOW_SETTINGS = not DRAW_WINDOW_SETTINGS
 
 		if DRAW_WINDOW_SETTINGS then
-			if CFG['SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'] then
+			if CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN') then
 				initializeTestData()
 			end
 		else
@@ -2519,6 +2481,22 @@ end)
 
 --#endregion
 
+-- last minute initialization
+
+-- load default settings
+if not loadDefaultConfig() then
+	return -- halt script
+end
+
+-- load any saved settings
+loadSavedConfigIfExist()
+
+-- load presets into cache
+loadPresets()
+
+-- perform sanity checks
+sanityCheck()
+
 -- all attacker types enabled by default
 for _,type in pairs(ATTACKER_TYPES) do
 	AddAttackerTypeToReport(type)
@@ -2528,8 +2506,6 @@ end
 for key,_ in pairs(ENUM_KEYBOARD_MODIFIERS) do
 	CURRENTLY_HELD_MODIFIERS[key] = false
 end
-
-applyDefaultConfiguration()
 
 log_info('init complete')
 

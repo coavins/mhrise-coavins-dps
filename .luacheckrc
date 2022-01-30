@@ -5,7 +5,8 @@ files['src/'] = {
 		're',
 		'imgui',
 		'draw',
-		'log'
+		'log',
+		'json'
 	}
 }
 
