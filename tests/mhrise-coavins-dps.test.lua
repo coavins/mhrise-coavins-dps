@@ -2,6 +2,9 @@
 _G._UNIT_TESTING = true
 
 require 'tests/mock'
+require 'tests/mock_json'
+require 'tests/mock_fs'
+require 'tests/mock_d2d'
 require 'src/autorun/mhrise-coavins-dps'
 
 local function initializeMockBossMonster()

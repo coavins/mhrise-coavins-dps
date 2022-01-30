@@ -1,5 +1,5 @@
 local jsonlua = require 'tests/json'
-local json = {}
+json = {}
 
 json.load_file = function(filename)
 	local file = io.open('src/data/' .. filename, 'r')
@@ -10,5 +10,3 @@ json.load_file = function(filename)
 	end
 	return nil
 end
-
-return json

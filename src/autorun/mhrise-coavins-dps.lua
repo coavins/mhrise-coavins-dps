@@ -1,11 +1,6 @@
 -- dps meter for monster hunter rise
 -- written by github.com/coavins
 
-if _G._UNIT_TESTING then
-	-- luacheck: globals json
-	json = require 'tests/mock_json'
-end
-
 --#region enums
 
 -- list of available columns for the table
