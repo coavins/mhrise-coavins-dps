@@ -4,16 +4,37 @@
 --#region enums
 
 -- list of available columns for the table
+-- the values here will appear in the header, if enabled
+-- only add new columns to the end of this table
 local TABLE_COLUMNS = {}
 TABLE_COLUMNS[1] = 'None'
 TABLE_COLUMNS[2] = 'HR'
 TABLE_COLUMNS[3] = 'Name'
-TABLE_COLUMNS[4] = 'DPS'
+TABLE_COLUMNS[4] = 'mDPS'
 TABLE_COLUMNS[5] = 'Damage'
-TABLE_COLUMNS[6] = '% Party'
-TABLE_COLUMNS[7] = '% Best'
+TABLE_COLUMNS[6] = 'Party%'
+TABLE_COLUMNS[7] = 'Best%'
 TABLE_COLUMNS[8] = 'Hits'
 TABLE_COLUMNS[9] = 'MaxHit'
+TABLE_COLUMNS[10] = 'qDPS'
+
+-- list of columns sorted for the combo box
+local TABLE_COLUMNS_OPTIONS_ID = {}
+TABLE_COLUMNS_OPTIONS_ID[1] = 1
+TABLE_COLUMNS_OPTIONS_ID[2] = 2
+TABLE_COLUMNS_OPTIONS_ID[3] = 3
+TABLE_COLUMNS_OPTIONS_ID[4] = 10
+TABLE_COLUMNS_OPTIONS_ID[5] = 4
+TABLE_COLUMNS_OPTIONS_ID[6] = 5
+TABLE_COLUMNS_OPTIONS_ID[7] = 6
+TABLE_COLUMNS_OPTIONS_ID[8] = 7
+TABLE_COLUMNS_OPTIONS_ID[9] = 8
+TABLE_COLUMNS_OPTIONS_ID[10] = 9
+
+local TABLE_COLUMNS_OPTIONS_READABLE = {}
+for i,col in ipairs(TABLE_COLUMNS_OPTIONS_ID) do
+	TABLE_COLUMNS_OPTIONS_READABLE[i] = TABLE_COLUMNS[col]
+end
 
 -- via.hid.KeyboardKey
 local ENUM_KEYBOARD_KEY = {}
@@ -459,7 +480,11 @@ local function mergeCfgIntoLeft(cfg1, cfg2)
 	if cfg2 then
 		for name,setting in pairs(cfg2) do
 			if name == 'TABLE_COLS' or name == 'TABLE_COLS_WIDTH' then
-				cfg1[name] = setting
+				local t1 = cfg1[name]
+				local t2 = setting
+				for i, v in ipairs(t2) do
+					t1[i] = v
+				end
 			else
 				cfg1[name].VALUE = setting.VALUE -- load only the values
 			end
@@ -1780,18 +1805,24 @@ local function showSliderForIntSetting(setting)
 end
 
 local function showInputsForTableColumns()
-	imgui.text('Configure columns')
-	--imgui.text(tostring(_CFG['TABLE_COLS'].VALUE[1]))
-	-- draw combo and slider for each table col
+	-- draw combo and slider for each column
+	imgui.text('Column order')
 	for i,currentCol in ipairs(_CFG['TABLE_COLS']) do
+		local selected = 1
+		-- find option id for selected column
+		for idxId,key in ipairs(TABLE_COLUMNS_OPTIONS_ID) do
+			if key == currentCol then
+				selected = idxId
+			end
+		end
 		-- show combo for choice
-		local changedCol, newCol = imgui.combo('Column ' .. i, currentCol, TABLE_COLUMNS)
+		local changedCol, newCol = imgui.combo('Column ' .. i, selected, TABLE_COLUMNS_OPTIONS_READABLE)
 		if changedCol then
-			_CFG['TABLE_COLS'][i] = newCol
+			_CFG['TABLE_COLS'][i] = TABLE_COLUMNS_OPTIONS_ID[newCol]
 		end
 	end
 	imgui.new_line()
-	imgui.text('Configure width')
+	imgui.text('Column width')
 	for i,currentWidth in ipairs(_CFG['TABLE_COLS_WIDTH']) do
 		-- skip 'None'
 		if i > 1 then
