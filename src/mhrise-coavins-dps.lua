@@ -1614,7 +1614,7 @@ local function drawReport(index)
 	local origin_y = getScreenYFromY(CFG['TABLE_Y'])
 	local tableWidth = CFG['TABLE_WIDTH'] * CFG['TABLE_SCALE']
 	local rowHeight = CFG['TABLE_ROWH'] * CFG['TABLE_SCALE']
-	local growDistance = rowHeight;
+	local growDistance = rowHeight + CFG['TABLE_ROW_PADDING']
 
 	if CFG['TABLE_GROWS_UPWARD'] then
 		origin_y = origin_y - rowHeight
