@@ -14,6 +14,10 @@
 			"VALUE": true,
 			"TEXT": "Combine buddies with their hunters"
 		},
+		"CONDITION_LIKE_DAMAGE": {
+			"VALUE": false,
+			"TEXT": "Ailment buildup counts as damage"
+		},
 		"DRAW_BAR_RELATIVE_TO_PARTY": {
 			"VALUE": false,
 			"TEXT": "Damage bars will represent share of overall party DPS"
@@ -64,6 +68,7 @@
 			9,
 			1,
 			1,
+			1,
 			1
 		],
 		"TABLE_COLS_WIDTH": [
@@ -76,7 +81,8 @@
 			53,
 			37,
 			50,
-			39
+			39,
+			58
 		],
 		"DRAW_BAR_TEXT_YOU": {
 			"VALUE": false,

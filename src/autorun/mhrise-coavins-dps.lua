@@ -17,6 +17,7 @@ TABLE_COLUMNS[7] = 'Best%'
 TABLE_COLUMNS[8] = 'Hits'
 TABLE_COLUMNS[9] = 'MaxHit'
 TABLE_COLUMNS[10] = 'qDPS'
+TABLE_COLUMNS[11] = 'Ailment'
 
 -- list of columns sorted for the combo box
 local TABLE_COLUMNS_OPTIONS_ID = {}
@@ -26,10 +27,11 @@ TABLE_COLUMNS_OPTIONS_ID[3] = 3
 TABLE_COLUMNS_OPTIONS_ID[4] = 10
 TABLE_COLUMNS_OPTIONS_ID[5] = 4
 TABLE_COLUMNS_OPTIONS_ID[6] = 5
-TABLE_COLUMNS_OPTIONS_ID[7] = 6
-TABLE_COLUMNS_OPTIONS_ID[8] = 7
-TABLE_COLUMNS_OPTIONS_ID[9] = 8
-TABLE_COLUMNS_OPTIONS_ID[10] = 9
+TABLE_COLUMNS_OPTIONS_ID[7] = 11
+TABLE_COLUMNS_OPTIONS_ID[8] = 6
+TABLE_COLUMNS_OPTIONS_ID[9] = 7
+TABLE_COLUMNS_OPTIONS_ID[10] = 8
+TABLE_COLUMNS_OPTIONS_ID[11] = 9
 
 local TABLE_COLUMNS_OPTIONS_READABLE = {}
 for i,col in ipairs(TABLE_COLUMNS_OPTIONS_ID) do
@@ -782,7 +784,7 @@ local function initializeDamageCounterWithDummyData()
 end
 
 local function getTotalDamageForDamageCounter(c)
-	return c.physical + c.elemental + c.condition
+	return c.physical + c.elemental
 end
 
 local function mergeDamageCounters(a, b)
@@ -1085,6 +1087,12 @@ local function sumDamageCountersList(counters, attackerTypeFilter)
 			if type == 'otomo' then
 				-- sum together otomo's different types of damage and store it as its own type of damage instead
 				local counterTotal = getTotalDamageForDamageCounter(counter)
+
+				-- count otomo's condition damage here if necessary
+				if CFG('CONDITION_LIKE_DAMAGE') then
+					counterTotal = counterTotal + counter.condition
+				end
+
 				sum.otomo = sum.otomo + counterTotal
 
 				sum.total = sum.total + counterTotal
@@ -1255,11 +1263,16 @@ local function mergeBossIntoReport(report, boss)
 	for _,item in ipairs(report.items) do
 		-- calculate the item's own total damage
 		local sum = sumDamageCountersList(item.counters, _FILTERS.ATTACKER_TYPES)
-		item.total = sum.total
 		item.totalPhysical  = sum.physical
 		item.totalElemental = sum.elemental
 		item.totalCondition = sum.condition
 		item.totalOtomo     = sum.otomo
+
+		if CFG('CONDITION_LIKE_DAMAGE') then
+			item.total = sum.total + sum.condition
+		else
+			item.total = sum.total
+		end
 
 		-- calculate dps
 		if report.time > 0 then
@@ -1331,32 +1344,42 @@ local function drawRichDamageBar(item, x, y, maxWidth, h, colorPhysical, colorEl
 		colorOther = colorPhysical
 	end
 
+	local remainder = item.total
+		- item.totalPhysical
+		- item.totalElemental
+		- item.totalOtomo
+
+	if CFG('CONDITION_LIKE_DAMAGE') then
+		remainder = remainder - item.totalCondition
+	end
+
 	-- draw physical damage
-	--debug_line(string.format('damagePhysical: %d', source.damagePhysical))
 	w = (item.totalPhysical / item.total) * maxWidth
 	d2d.fill_rect(x, y, w, h, colorPhysical)
 	x = x + w
+
 	-- draw elemental damage
-	--debug_line(string.format('damageElemental: %d', source.damageElemental))
 	w = (item.totalElemental / item.total) * maxWidth
 	d2d.fill_rect(x, y, w, h, colorElemental)
 	x = x + w
-	-- draw ailment damage
-	--debug_line(string.format('damageAilment: %f', source.damageAilment))
-	w = (item.totalCondition / item.total) * maxWidth
-	d2d.fill_rect(x, y, w, h, colorAilment)
-	x = x + w
+
+	if CFG('CONDITION_LIKE_DAMAGE') then
+		-- draw ailment damage
+		w = (item.totalCondition / item.total) * maxWidth
+		d2d.fill_rect(x, y, w, h, colorAilment)
+		x = x + w
+	end
+
 	-- draw otomo damage
-	--debug_line(string.format('damageOtomo: %d', source.damageOtomo))
 	w = (item.totalOtomo / item.total) * maxWidth
 	d2d.fill_rect(x, y, w, h, colorOtomo)
 	x = x + w
-	-- draw whatever's left, just in case
-	local remainder = item.total - item.totalPhysical - item.totalElemental - item.totalCondition - item.totalOtomo
-	--debug_line(string.format('remainder: %d', remainder))
-	w = (remainder / item.total) * maxWidth
-	d2d.fill_rect(x, y, w, h, colorOther)
-	--debug_line(string.format('total: %d', source.damageTotal))
+
+	if remainder > 0 then
+		-- draw whatever's left, just in case
+		w = (remainder / item.total) * maxWidth
+		d2d.fill_rect(x, y, w, h, colorOther)
+	end
 end
 
 local function drawReportHeaderColumn(col, x, y)
@@ -1409,6 +1432,8 @@ local function drawReportItemColumn(item, col, x, y)
 		text = string.format('%.0f', item.maxHit)
 	elseif col == 10 then -- qDPS
 		text = string.format('%.1f', item.dps.quest)
+	elseif col == 11 then -- Ailment
+		text = string.format('%.0f', item.totalCondition)
 	end
 
 	d2d.text(FONT, text, x, y, COLOR('WHITE'))
@@ -1947,6 +1972,7 @@ local function DrawWindowSettings()
 
 	--showSliderForFloatSetting('UPDATE_RATE')
 	showCheckboxForSetting('COMBINE_OTOMO_WITH_HUNTER')
+	showCheckboxForSetting('CONDITION_LIKE_DAMAGE')
 	showCheckboxForSetting('DRAW_BAR_RELATIVE_TO_PARTY')
 
 	imgui.new_line()
