@@ -1,6 +1,6 @@
 # coavins dps meter for Monster Hunter Rise (PC)
 
-![screenshot-table-6](https://user-images.githubusercontent.com/91746207/151455752-8d84c769-f8d8-4aa6-9d11-4e98510fb1af.png)
+![screenshot-table-7](https://user-images.githubusercontent.com/91746207/151688477-c84e63a2-4862-4392-8116-3a063643ece6.png)
 
 This mod records all damage dealt to large monsters and can display a wide selection of information in a highly customizable overlay.
 
@@ -11,10 +11,11 @@ This mod is NOT intended to reveal any hidden information about monsters or give
 ## Prerequisites
 
 * [REFramework](https://github.com/praydog/REFramework)
+* [REFramework Direct2D](https://github.com/cursey/reframework-d2d)
 
 ## Install
 
-1. Copy the `.lua` file into the autorun folder provided by REFramework.
+1. Extract the archive into the `reframework` directory under your game install folder
 2. Click `Reset scripts` in the REFramework window if the game was already running
 
 ## Configuration
@@ -26,8 +27,6 @@ There are some menus located in the REFramework window.
 ![Settings button](https://i.imgur.com/hYgwYE3.png)
 
 ![Settings menu](https://i.imgur.com/7i02AqR.png)
-
-There are a few more settings available at the top of the `.lua` file. Saving and loading is not yet implemented, so if you want to change the default values, you will have to edit the lua file directly.
 
 ## Usage
 
@@ -45,10 +44,13 @@ The following additional information can be printed inside the bars for each pla
 
 ![Small screenshot 2](https://i.imgur.com/G5Fx7eQ.png)
 
-1. Your damage
-2. Your share of the party's total damage
-3. How much damage you're doing compared to the party's top damage dealer
-4. How many total hits you have dealt
-5. Your highest damage dealt in a single blow
+1. Player HR
+2. Player name
+3. DPS
+4. Total damage
+5. Percent of party damage
+6. Percent of best damage
+7. How many total hits you have dealt
+8. Your highest damage dealt in a single blow
 
 You can also configure the table to show buddies, monsters, and NPCs as separate rows in the table.
