@@ -2,7 +2,7 @@
     "CFG": {
         "COMBINE_OTOMO_WITH_HUNTER": {
             "TEXT": "Combine buddies with their hunters",
-            "VALUE": false
+            "VALUE": true
         },
         "DRAW_BAR_COLORBLOCK": {
             "TEXT": "Show color block",
@@ -161,39 +161,39 @@
     },
     "COLORS": {
         "BAR_BG": 1140850688.0,
-        "BAR_DMG_AILMENT": 2940090275.0,
-        "BAR_DMG_ELEMENT": 2945554820.0,
+        "BAR_DMG_AILMENT": 2946709310.0,
+        "BAR_DMG_ELEMENT": 2944702865.0,
         "BAR_DMG_ELEMENT_UNIQUE": [
-            2937855116.0,
             2945195036.0,
-            2937883788.0,
+            2937855116.0,
+            2945223708.0,
             2937883676.0
         ],
-        "BAR_DMG_OTHER": 2942395992.0,
-        "BAR_DMG_OTOMO": 2951789312.0,
-        "BAR_DMG_PHYSICAL": 2942395992.0,
+        "BAR_DMG_OTHER": 2941804902.0,
+        "BAR_DMG_OTOMO": 2936060912.0,
+        "BAR_DMG_PHYSICAL": 2941804902.0,
         "BAR_DMG_PHYSICAL_UNIQUE": [
-            2938644684.0,
             2949392424.0,
-            2938686668.0,
+            2938644684.0,
+            2949434408.0,
             2938686504.0
         ],
         "BAR_OUTLINE": 1140850688.0,
         "BLACK": 4278190080.0,
-        "BLUE": 2952737330.0,
+        "BLUE": 2939302655.0,
         "GRAY": 4289703855.0,
         "GREEN": 2939354930.0,
-        "OTOMO": 2952581170.0,
+        "OTOMO": 2939343100.0,
         "PLAYER": [
-            2939302655.0,
             2952737330.0,
-            2939355135.0,
+            2939302655.0,
+            2952789810.0,
             2939354930.0
         ],
-        "RED": 2939302655.0,
+        "RED": 2952737330.0,
         "TITLE_BG": 2281701376.0,
         "TITLE_FG": 4292532954.0,
         "WHITE": 4294967295.0,
-        "YELLOW": 2939355135.0
+        "YELLOW": 2952789810.0
     }
 }
