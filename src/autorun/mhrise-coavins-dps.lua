@@ -1,6 +1,11 @@
 -- dps meter for monster hunter rise
 -- written by github.com/coavins
 
+if _G._UNIT_TESTING then
+	-- luacheck: globals json
+	json = require 'tests/mock_json'
+end
+
 	--[[
 	-- colors
 	-- 0x 12345678
@@ -54,6 +59,7 @@
 
 --#region Presets
 
+--[[
 local PRESET_STANDARD = {}
 PRESET_STANDARD['COMBINE_OTOMO_WITH_HUNTER'] = true
 PRESET_STANDARD['DRAW_TABLE_BACKGROUND'] = true
@@ -140,7 +146,7 @@ PRESET_MHROVERLAY['TABLE_ROW_PADDING'] = 19
 PRESET_MHROVERLAY['TABLE_ROW_TEXT_OFFSET_X'] = 5
 PRESET_MHROVERLAY['TABLE_ROW_TEXT_OFFSET_Y'] = -16
 PRESET_MHROVERLAY['COLOR_BAR_DMG_PHYSICAL'] = 0xAFE069AE
-
+]]
 --#endregion Presets
 
 --#region enums
@@ -384,7 +390,7 @@ local QUEST_DURATION = 0.0
 local _CFG = {}
 local CFG_DIR = 'mhrise-coavins-dps/'
 local _COLORS = {}
-local _HOTKEYS = {} -- todo
+--local _HOTKEYS = {} -- todo
 
 local _PRESETS = {}
 local PRESET_OPTIONS = {}
@@ -581,9 +587,11 @@ local function COLOR(name)
 	return _COLORS[name]
 end
 
+--[[
 local function SetColor(name, value)
 	_COLORS[name] = value
 end
+]]
 
 -- returns file json
 local function readDataFile(filename)
@@ -2511,13 +2519,14 @@ log_info('init complete')
 
 -- export locals for testing
 if _G._UNIT_TESTING then
-	_G.CFG = CFG
+	_G._CFG = _CFG
 	_G.ATTACKER_TYPES  = ATTACKER_TYPES
 	_G.REPORT_ATTACKER_TYPES  = REPORT_ATTACKER_TYPES
 	_G.LARGE_MONSTERS  = LARGE_MONSTERS
 	_G.DAMAGE_REPORTS  = DAMAGE_REPORTS
 	_G.REPORT_MONSTERS = REPORT_MONSTERS
 	_G.MANAGER = MANAGER
+	_G.SetCFG = SetCFG
 	_G.SetQuestDuration = SetQuestDuration
 	_G.cleanUpData      = cleanUpData
 	_G.SetReportOtomo   = SetReportOtomo

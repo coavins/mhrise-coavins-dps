@@ -2,7 +2,7 @@
 _G._UNIT_TESTING = true
 
 require 'tests/mock'
-require 'src/mhrise-coavins-dps'
+require 'src/autorun/mhrise-coavins-dps'
 
 local function initializeMockBossMonster()
 	-- automatically puts boss into cache
@@ -254,7 +254,7 @@ describe("mhrise-coavins-dps", function()
 
 		it("is accurate when pets are merged", function()
 			-- set config
-			CFG['OTOMO_DMG_IS_PLAYER_DMG'] = true
+			SetCFG('COMBINE_OTOMO_WITH_HUNTER', true)
 
 			local boss = initializeMockBossMonster()
 
@@ -273,7 +273,7 @@ describe("mhrise-coavins-dps", function()
 
 		it("includes otomo when they are unmerged", function()
 			-- set config
-			CFG['OTOMO_DMG_IS_PLAYER_DMG'] = false
+			SetCFG('COMBINE_OTOMO_WITH_HUNTER', false)
 			SetReportOtomo(true)
 
 			local boss = initializeMockBossMonster()
@@ -293,7 +293,7 @@ describe("mhrise-coavins-dps", function()
 
 		it("excludes otomo when they are unmerged", function()
 			-- set config
-			CFG['OTOMO_DMG_IS_PLAYER_DMG'] = false
+			SetCFG('COMBINE_OTOMO_WITH_HUNTER', false)
 			SetReportOtomo(false)
 
 			local boss = initializeMockBossMonster()
@@ -314,7 +314,7 @@ describe("mhrise-coavins-dps", function()
 		it("generates a full party correctly (merged pets)", function()
 			local boss = initializeMockBossMonster()
 
-			CFG['OTOMO_DMG_IS_PLAYER_DMG'] = true
+			SetCFG('COMBINE_OTOMO_WITH_HUNTER', true)
 
 			local damagesPhysical = {}
 			table.insert(damagesPhysical, 100)
@@ -374,7 +374,7 @@ describe("mhrise-coavins-dps", function()
 	it("generates a full party correctly (unmerged pets)", function()
 		local boss = initializeMockBossMonster()
 
-		CFG['OTOMO_DMG_IS_PLAYER_DMG'] = false
+		SetCFG('COMBINE_OTOMO_WITH_HUNTER', false)
 		SetReportOtomo(true)
 
 		local damagesPhysical = {}
@@ -433,7 +433,7 @@ describe("mhrise-coavins-dps", function()
 	it("counts random data correctly", function()
 		local boss = initializeMockBossMonster()
 
-		CFG['OTOMO_DMG_IS_PLAYER_DMG'] = false
+		SetCFG('COMBINE_OTOMO_WITH_HUNTER', false)
 		SetReportOtomo(true)
 
 		local damagesPhysical = {}
