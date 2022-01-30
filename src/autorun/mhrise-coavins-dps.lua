@@ -258,7 +258,7 @@ local DRAW_OVERLAY = true
 local DRAW_WINDOW_SETTINGS = false
 local DRAW_WINDOW_REPORT = false
 local DRAW_WINDOW_HOTKEYS = false
-local WINDOW_FLAGS = 0x10120
+local WINDOW_FLAGS = 0x20
 local IS_ONLINE = false
 local QUEST_DURATION = 0.0
 local IS_IN_QUEST = false
@@ -1858,35 +1858,39 @@ local function showSliderForIntSetting(setting)
 end
 
 local function showInputsForTableColumns()
-	-- draw combo and slider for each column
-	imgui.text('Column order')
-	for i,currentCol in ipairs(_CFG['TABLE_COLS']) do
-		local selected = 1
-		-- find option id for selected column
-		for idxId,key in ipairs(TABLE_COLUMNS_OPTIONS_ID) do
-			if key == currentCol then
-				selected = idxId
+	if imgui.tree_node('Column settings') then
+		-- draw combo and slider for each column
+		for i,currentCol in ipairs(_CFG['TABLE_COLS']) do
+			local selected = 1
+			-- find option id for selected column
+			for idxId,key in ipairs(TABLE_COLUMNS_OPTIONS_ID) do
+				if key == currentCol then
+					selected = idxId
+				end
+			end
+			-- show combo for choice
+			local changedCol, newCol = imgui.combo('Column ' .. i, selected, TABLE_COLUMNS_OPTIONS_READABLE)
+			if changedCol then
+				_CFG['TABLE_COLS'][i] = TABLE_COLUMNS_OPTIONS_ID[newCol]
 			end
 		end
-		-- show combo for choice
-		local changedCol, newCol = imgui.combo('Column ' .. i, selected, TABLE_COLUMNS_OPTIONS_READABLE)
-		if changedCol then
-			_CFG['TABLE_COLS'][i] = TABLE_COLUMNS_OPTIONS_ID[newCol]
-		end
+		imgui.new_line()
+		imgui.tree_pop()
 	end
-	imgui.new_line()
-	imgui.text('Column width')
-	for i,currentWidth in ipairs(_CFG['TABLE_COLS_WIDTH']) do
-		-- skip 'None'
-		if i > 1 then
-			-- show slider for width
-			local changedWidth, newWidth = imgui.slider_int('Width: ' .. TABLE_COLUMNS[i], currentWidth, 0, 250)
-			if changedWidth then
-				_CFG['TABLE_COLS_WIDTH'][i] = newWidth
+	if imgui.tree_node('Column width') then
+		for i,currentWidth in ipairs(_CFG['TABLE_COLS_WIDTH']) do
+			-- skip 'None'
+			if i > 1 then
+				-- show slider for width
+				local changedWidth, newWidth = imgui.slider_int(TABLE_COLUMNS[i], currentWidth, 0, 250)
+				if changedWidth then
+					_CFG['TABLE_COLS_WIDTH'][i] = newWidth
+				end
 			end
 		end
+		imgui.new_line()
+		imgui.tree_pop()
 	end
-	imgui.new_line()
 end
 
 local function DrawWindowSettings()
@@ -1905,6 +1909,18 @@ local function DrawWindowSettings()
 	changed, wantsIt = imgui.checkbox('Enabled', DPS_ENABLED)
 	if changed then
 		DPS_ENABLED = wantsIt
+	end
+
+	imgui.same_line()
+	-- Show test data
+	changed, wantsIt = imgui.checkbox('Show test data while menu is open', CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'))
+	if changed then
+		SetCFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN', wantsIt)
+		if wantsIt then
+			initializeTestData()
+		else
+			clearTestData()
+		end
 	end
 
 
@@ -1930,15 +1946,16 @@ local function DrawWindowSettings()
 		end
 	end
 
-	-- Show test data
-	changed, wantsIt = imgui.checkbox('Show test data while menu is open', CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'))
-	if changed then
-		SetCFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN', wantsIt)
-		if wantsIt then
+	imgui.same_line()
+	if imgui.button('Clear combat data') then
+		if isInTestMode() then
+			-- reinitialize test data
 			initializeTestData()
 		else
-			clearTestData()
+			cleanUpData()
 		end
+
+		dpsUpdate()
 	end
 
 	-- Presets
@@ -1958,18 +1975,6 @@ local function DrawWindowSettings()
 	imgui.new_line()
 	imgui.text('Settings')
 
-	imgui.same_line()
-	if imgui.button('Clear data') then
-		if isInTestMode() then
-			-- reinitialize test data
-			initializeTestData()
-		else
-			cleanUpData()
-		end
-
-		dpsUpdate()
-	end
-
 	--showSliderForFloatSetting('UPDATE_RATE')
 	showCheckboxForSetting('COMBINE_OTOMO_WITH_HUNTER')
 	showCheckboxForSetting('CONDITION_LIKE_DAMAGE')
@@ -1977,49 +1982,51 @@ local function DrawWindowSettings()
 
 	imgui.new_line()
 
-	showCheckboxForSetting('DRAW_TITLE_TEXT')
-	showCheckboxForSetting('DRAW_TITLE_MONSTER')
-	showCheckboxForSetting('DRAW_HEADER')
-	showCheckboxForSetting('DRAW_TITLE_BACKGROUND')
-	showCheckboxForSetting('DRAW_TABLE_BACKGROUND')
-	showCheckboxForSetting('DRAW_BAR_OUTLINES')
-	showCheckboxForSetting('DRAW_BAR_COLORBLOCK')
-	showCheckboxForSetting('DRAW_BAR_USE_PLAYER_COLORS')
-	showCheckboxForSetting('DRAW_BAR_USE_UNIQUE_COLORS')
-
-	imgui.new_line()
-
-	showCheckboxForSetting('DRAW_BAR_TEXT_YOU')
-	showCheckboxForSetting('DRAW_BAR_TEXT_NAME_USE_REAL_NAMES')
-	showCheckboxForSetting('DRAW_BAR_REVEAL_HR')
-
-	imgui.new_line()
-
 	showInputsForTableColumns()
 
 	imgui.new_line()
 
-	showCheckboxForSetting('USE_MINIMAL_BARS')
-	showCheckboxForSetting('TABLE_GROWS_UPWARD')
-	showCheckboxForSetting('TABLE_SORT_ASC')
-	showCheckboxForSetting('TABLE_SORT_IN_ORDER')
+	if imgui.tree_node('Appearance') then
+		showCheckboxForSetting('DRAW_TITLE_TEXT')
+		showCheckboxForSetting('DRAW_TITLE_MONSTER')
+		showCheckboxForSetting('DRAW_HEADER')
+		showCheckboxForSetting('DRAW_TITLE_BACKGROUND')
+		showCheckboxForSetting('DRAW_TABLE_BACKGROUND')
+		showCheckboxForSetting('DRAW_BAR_OUTLINES')
+		showCheckboxForSetting('DRAW_BAR_COLORBLOCK')
+		showCheckboxForSetting('DRAW_BAR_USE_PLAYER_COLORS')
+		showCheckboxForSetting('DRAW_BAR_USE_UNIQUE_COLORS')
 
-	imgui.new_line()
+		imgui.new_line()
 
-	showSliderForFloatSetting('TABLE_X')
-	showSliderForFloatSetting('TABLE_Y')
+		showCheckboxForSetting('DRAW_BAR_TEXT_YOU')
+		showCheckboxForSetting('DRAW_BAR_TEXT_NAME_USE_REAL_NAMES')
+		showCheckboxForSetting('DRAW_BAR_REVEAL_HR')
 
-	imgui.text('Save and reset scripts to apply scaling to text')
-	showSliderForFloatSetting('TABLE_SCALE')
-	showSliderForIntSetting('TABLE_HEADER_TEXT_OFFSET_X')
-	showSliderForIntSetting('TABLE_WIDTH')
+		imgui.new_line()
 
-	imgui.new_line()
+		showCheckboxForSetting('USE_MINIMAL_BARS')
+		showCheckboxForSetting('TABLE_GROWS_UPWARD')
+		showCheckboxForSetting('TABLE_SORT_ASC')
+		showCheckboxForSetting('TABLE_SORT_IN_ORDER')
 
-	showSliderForIntSetting('TABLE_ROWH')
-	showSliderForIntSetting('TABLE_ROW_PADDING')
-	showSliderForIntSetting('TABLE_ROW_TEXT_OFFSET_X')
-	showSliderForIntSetting('TABLE_ROW_TEXT_OFFSET_Y')
+		imgui.new_line()
+
+		showSliderForFloatSetting('TABLE_X')
+		showSliderForFloatSetting('TABLE_Y')
+
+		imgui.text('Save and reset scripts to apply scaling to text')
+		showSliderForFloatSetting('TABLE_SCALE')
+		showSliderForIntSetting('TABLE_HEADER_TEXT_OFFSET_X')
+		showSliderForIntSetting('TABLE_WIDTH')
+
+		imgui.new_line()
+
+		showSliderForIntSetting('TABLE_ROWH')
+		showSliderForIntSetting('TABLE_ROW_PADDING')
+		showSliderForIntSetting('TABLE_ROW_TEXT_OFFSET_X')
+		showSliderForIntSetting('TABLE_ROW_TEXT_OFFSET_Y')
+	end
 
 	imgui.new_line()
 
