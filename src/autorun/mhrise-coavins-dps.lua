@@ -1978,7 +1978,6 @@ local function DrawWindowSettings()
 	--showSliderForFloatSetting('UPDATE_RATE')
 	showCheckboxForSetting('COMBINE_OTOMO_WITH_HUNTER')
 	showCheckboxForSetting('CONDITION_LIKE_DAMAGE')
-	showCheckboxForSetting('DRAW_BAR_RELATIVE_TO_PARTY')
 
 	imgui.new_line()
 
@@ -2005,6 +2004,7 @@ local function DrawWindowSettings()
 
 		imgui.new_line()
 
+		showCheckboxForSetting('DRAW_BAR_RELATIVE_TO_PARTY')
 		showCheckboxForSetting('USE_MINIMAL_BARS')
 		showCheckboxForSetting('TABLE_GROWS_UPWARD')
 		showCheckboxForSetting('TABLE_SORT_ASC')
