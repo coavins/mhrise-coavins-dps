@@ -6,98 +6,6 @@ if _G._UNIT_TESTING then
 	json = require 'tests/mock_json'
 end
 
---#region Presets
-
---[[
-local PRESET_STANDARD = {}
-PRESET_STANDARD['COMBINE_OTOMO_WITH_HUNTER'] = true
-PRESET_STANDARD['DRAW_TABLE_BACKGROUND'] = true
-PRESET_STANDARD['DRAW_BAR_OUTLINES'] = false
-PRESET_STANDARD['DRAW_BAR_TEXT_NAME'] = true
-PRESET_STANDARD['DRAW_BAR_TEXT_YOU'] = true
-PRESET_STANDARD['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = false
-PRESET_STANDARD['DRAW_BAR_TEXT_TOTAL_DAMAGE'] = false
-PRESET_STANDARD['DRAW_BAR_TEXT_PERCENT_OF_PARTY'] = true
-PRESET_STANDARD['DRAW_BAR_TEXT_PERCENT_OF_BEST'] = false
-PRESET_STANDARD['DRAW_BAR_TEXT_HIT_COUNT'] = false
-PRESET_STANDARD['DRAW_BAR_TEXT_BIGGEST_HIT'] = false
-PRESET_STANDARD['USE_MINIMAL_BARS'] = false
-PRESET_STANDARD['TABLE_WIDTH'] = 350
-PRESET_STANDARD['TABLE_ROWH'] = 18
-
-local PRESET_DETAILED = {}
-PRESET_DETAILED['COMBINE_OTOMO_WITH_HUNTER'] = true
-PRESET_DETAILED['DRAW_TABLE_BACKGROUND'] = true
-PRESET_DETAILED['DRAW_BAR_OUTLINES'] = false
-PRESET_DETAILED['DRAW_BAR_TEXT_NAME'] = true
-PRESET_DETAILED['DRAW_BAR_TEXT_YOU'] = true
-PRESET_DETAILED['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = false
-PRESET_DETAILED['DRAW_BAR_TEXT_TOTAL_DAMAGE'] = true
-PRESET_DETAILED['DRAW_BAR_TEXT_PERCENT_OF_PARTY'] = true
-PRESET_DETAILED['DRAW_BAR_TEXT_PERCENT_OF_BEST'] = true
-PRESET_DETAILED['DRAW_BAR_TEXT_HIT_COUNT'] = true
-PRESET_DETAILED['DRAW_BAR_TEXT_BIGGEST_HIT'] = true
-PRESET_DETAILED['USE_MINIMAL_BARS'] = false
-PRESET_DETAILED['TABLE_SORT_ASC'] = false
-PRESET_DETAILED['TABLE_WIDTH'] = 350
-PRESET_DETAILED['TABLE_ROWH'] = 18
-
-local PRESET_FYLEX = {}
-PRESET_FYLEX['COMBINE_OTOMO_WITH_HUNTER'] = false
-PRESET_FYLEX['DRAW_TITLE_TEXT'] = false
-PRESET_FYLEX['DRAW_TITLE_BACKGROUND'] = false
-PRESET_FYLEX['DRAW_HEADER'] = false
-PRESET_FYLEX['DRAW_BAR_TEXT_YOU'] = false
-PRESET_FYLEX['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = true
-PRESET_FYLEX['TABLE_COLS'] = {}
-PRESET_FYLEX['TABLE_COLS'][1] = 3
-PRESET_FYLEX['TABLE_COLS'][2] = 5
-PRESET_FYLEX['TABLE_COLS'][3] = 6
-PRESET_FYLEX['TABLE_COLS'][4] = 1
-PRESET_FYLEX['TABLE_COLS'][5] = 1
-PRESET_FYLEX['TABLE_COLS'][6] = 1
-PRESET_FYLEX['TABLE_COLS'][7] = 1
-PRESET_FYLEX['TABLE_COLS'][8] = 1
-PRESET_FYLEX['TABLE_COLS'][9] = 1
-PRESET_FYLEX['USE_MINIMAL_BARS'] = true
-PRESET_FYLEX['TABLE_SORT_IN_ORDER'] = false
-PRESET_FYLEX['TABLE_X'] = 0.72
-PRESET_FYLEX['TABLE_Y'] = 0.01
-
-local PRESET_MHROVERLAY = {}
-PRESET_MHROVERLAY['DRAW_TITLE_TEXT'] = false
-PRESET_MHROVERLAY['DRAW_TITLE_BACKGROUND'] = false
-PRESET_MHROVERLAY['DRAW_TABLE_BACKGROUND'] = true
-PRESET_MHROVERLAY['DRAW_BAR_COLORBLOCK'] = false
-PRESET_MHROVERLAY['DRAW_BAR_TEXT_PADDING'] = 26
-PRESET_MHROVERLAY['DRAW_BAR_TEXT_PADDING_FIXED'] = true
-PRESET_MHROVERLAY['DRAW_BAR_USE_PLAYER_COLORS'] = false
-PRESET_MHROVERLAY['DRAW_BAR_USE_UNIQUE_COLORS'] = false
-PRESET_MHROVERLAY['DRAW_BAR_TEXT_NAME'] = true
-PRESET_MHROVERLAY['DRAW_BAR_TEXT_YOU'] = false
-PRESET_MHROVERLAY['DRAW_BAR_TEXT_NAME_USE_REAL_NAMES'] = true
-PRESET_MHROVERLAY['DRAW_BAR_TEXT_TOTAL_DAMAGE'] = true
-PRESET_MHROVERLAY['DRAW_BAR_TEXT_PERCENT_OF_PARTY'] = true
-PRESET_MHROVERLAY['DRAW_BAR_TEXT_PERCENT_OF_BEST'] = false
-PRESET_MHROVERLAY['DRAW_BAR_TEXT_HIT_COUNT'] = false
-PRESET_MHROVERLAY['DRAW_BAR_TEXT_BIGGEST_HIT'] = false
-PRESET_MHROVERLAY['USE_MINIMAL_BARS'] = false
-PRESET_MHROVERLAY['TABLE_GROWS_UPWARD'] = false
-PRESET_MHROVERLAY['TABLE_SORT_ASC'] = false
-PRESET_MHROVERLAY['TABLE_SORT_IN_ORDER'] = true
-PRESET_MHROVERLAY['TABLE_SORT_ASC'] = false
-PRESET_MHROVERLAY['TABLE_X'] = 0.23
-PRESET_MHROVERLAY['TABLE_Y'] = 0.79
-PRESET_MHROVERLAY['TABLE_SCALE'] = 1
-PRESET_MHROVERLAY['TABLE_WIDTH'] = 316
-PRESET_MHROVERLAY['TABLE_ROWH'] = 6
-PRESET_MHROVERLAY['TABLE_ROW_PADDING'] = 19
-PRESET_MHROVERLAY['TABLE_ROW_TEXT_OFFSET_X'] = 5
-PRESET_MHROVERLAY['TABLE_ROW_TEXT_OFFSET_Y'] = -16
-PRESET_MHROVERLAY['COLOR_BAR_DMG_PHYSICAL'] = 0xAFE069AE
-]]
---#endregion Presets
-
 --#region enums
 
 -- list of available columns for the table
@@ -337,7 +245,7 @@ local IS_ONLINE = false
 local QUEST_DURATION = 0.0
 
 local _CFG = {}
-local CFG_DIR = 'mhrise-coavins-dps/'
+local DATADIR = 'mhrise-coavins-dps/'
 local _COLORS = {}
 --local _HOTKEYS = {} -- todo
 
@@ -544,7 +452,7 @@ end
 
 -- returns file json
 local function readDataFile(filename)
-	filename = CFG_DIR .. filename
+	filename = DATADIR .. filename
 	return json.load_file(filename)
 end
 
@@ -601,7 +509,7 @@ local function saveCurrentConfig()
 	file['COLORS'] = _COLORS
 
 	-- save current config to disk, replacing any existing file
-	local success = json.dump_file(CFG_DIR .. 'saves/save.json', file)
+	local success = json.dump_file(DATADIR .. 'saves/save.json', file)
 	if success then
 		log_info('saved configuration to saves/save.json')
 	else
@@ -611,11 +519,11 @@ end
 
 -- load presets
 local function loadPresets()
-	-- hardcode the names until we have the privilege of iterating the presets folder
-	local namesOnDisk = {}
-	--table.insert(namesOnDisk, 'Simple')
+	local paths = fs.glob([[mhrise-coavins-dps\\presets\\.*json]])
 
-	for _,name in ipairs(namesOnDisk) do
+	for _,path in ipairs(paths) do
+		local name = string.match(path, '\\(%a+).json')
+		log_info(name)
 		local file = readDataFile('presets/' .. name .. '.json')
 		if file then
 			_PRESETS[name] = file
@@ -634,11 +542,12 @@ end
 local function applySelectedPreset()
 	local name = PRESET_OPTIONS[PRESET_OPTIONS_SELECTED]
 	local preset = _PRESETS[name]
-	if preset and preset.CFG then
-		local loadedAny = mergeCfgIntoLeft(CFG, preset.CFG)
-		if loadedAny then
-			log_info('applied preset ' .. name)
-		end
+	if preset then
+		-- load save file on top of current config
+		mergeCfgIntoLeft(_CFG, preset.CFG)
+		mergeColorsIntoLeft(_COLORS, preset.COLORS)
+
+		log_info(string.format('loaded preset %s', name))
 	end
 end
 

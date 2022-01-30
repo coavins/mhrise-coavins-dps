@@ -6,7 +6,8 @@ files['src/'] = {
 		'imgui',
 		'draw',
 		'log',
-		'json'
+		'json',
+		'fs'
 	}
 }
 
@@ -16,7 +17,9 @@ files['tests/'] = {
 		're',
 		'imgui',
 		'draw',
-		'log'
+		'log',
+		'json',
+		'fs'
 	},
 	std = '+busted',
 	ignore = {'111','112','113','212'}

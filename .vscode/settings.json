@@ -5,6 +5,7 @@
 		"draw",
 		"log",
 		"re",
-		"json"
+		"json",
+		"fs"
 	]
 }
