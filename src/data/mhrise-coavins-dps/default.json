@@ -195,5 +195,34 @@
 		"BAR_DMG_AILMENT": 2946709310,
 		"BAR_DMG_OTOMO": 2936060912,
 		"BAR_DMG_OTHER": 2941804902
+	},
+	"FILTERS": {
+		"ATTACKER_TYPES": {
+			"weapon": true,
+			"barrelbombl": true,
+			"makimushi": true,
+			"nitro": true,
+			"onibimine": true,
+			"ballistahate": true,
+			"capturesmokebomb": true,
+			"capturebullet": true,
+			"barrelbombs": true,
+			"kunai": true,
+			"waterbeetle": true,
+			"detonationgrenade": true,
+			"hmballista": true,
+			"hmcannon": true,
+			"hmgatling": true,
+			"hmtrap": true,
+			"hmnpc": true,
+			"hmflamethrower": true,
+			"hmdragonator": true,
+			"otomo": true,
+			"fg005": true,
+			"ecbatexplode": true,
+			"monster": true
+		},
+		"INCLUDE_OTOMO": true,
+		"INCLUDE_OTHER": false
 	}
 }

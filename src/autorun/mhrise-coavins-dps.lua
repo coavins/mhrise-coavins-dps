@@ -269,9 +269,7 @@ local TEST_MONSTERS = nil -- like LARGE_MONSTERS, but holds dummy/test data
 local DAMAGE_REPORTS = {}
 
 local REPORT_MONSTERS = {} -- a subset of LARGE_MONSTERS or TEST_MONSTERS that will appear in reports
-local REPORT_ATTACKER_TYPES = {} -- a subset of ATTACKER_TYPES that will appear in reports
-local REPORT_OTOMO = false -- show otomo in the report
-local REPORT_OTHER = false -- show monsters, etc in the report
+local _FILTERS = {}
 
 local MY_PLAYER_ID = nil
 local PLAYER_NAMES = {}
@@ -477,6 +475,20 @@ local function mergeColorsIntoLeft(colors1, colors2)
 	end
 end
 
+local function mergeFiltersIntoLeft(filters1, filters2)
+	if filters2 then
+		for name,setting in pairs(filters2) do
+			if name == 'ATTACKER_TYPES' then
+				for k,v in pairs(filters2[name]) do
+					filters1[name][k] = v
+				end
+			else
+				filters1[name] = setting
+			end
+		end
+	end
+end
+
 -- returns true on success
 local function loadDefaultConfig()
 	local file = readDataFile('default.json')
@@ -487,6 +499,7 @@ local function loadDefaultConfig()
 
 	_CFG = file['CFG']
 	_COLORS = file['COLORS']
+	_FILTERS = file['FILTERS']
 
 	return true
 end
@@ -497,6 +510,7 @@ local function loadSavedConfigIfExist()
 		-- load save file on top of current config
 		mergeCfgIntoLeft(_CFG, file.CFG)
 		mergeColorsIntoLeft(_COLORS, file.COLORS)
+		mergeFiltersIntoLeft(_FILTERS, file.FILTERS)
 
 		log_info('loaded configuration from saves/save.json')
 	end
@@ -506,6 +520,7 @@ local function saveCurrentConfig()
 	local file = {}
 	file['CFG'] = _CFG
 	file['COLORS'] = _COLORS
+	file['FILTERS'] = _FILTERS
 
 	-- save current config to disk, replacing any existing file
 	local success = json.dump_file(DATADIR .. 'saves/save.json', file)
@@ -565,35 +580,33 @@ end
 
 local function AddMonsterToReport(enemyToAdd, bossInfo)
 	REPORT_MONSTERS[enemyToAdd] = bossInfo
-	log_info(string.format('%s added to report', bossInfo.name))
 end
 
 local function RemoveMonsterFromReport(enemyToRemove)
-	for enemy,boss in pairs(REPORT_MONSTERS) do
+	for enemy,_ in pairs(REPORT_MONSTERS) do
 		if enemy == enemyToRemove then
 			REPORT_MONSTERS[enemy] = nil
-			log_info(string.format('%s removed from report', boss.name))
 			return
 		end
 	end
 end
 
 local function AddAttackerTypeToReport(typeToAdd)
-	REPORT_ATTACKER_TYPES[typeToAdd] = true
+	_FILTERS.ATTACKER_TYPES[typeToAdd] = true
 	log_info(string.format('damage type %s added to report', typeToAdd))
 end
 
 local function RemoveAttackerTypeFromReport(typeToRemove)
-	REPORT_ATTACKER_TYPES[typeToRemove] = nil
+	_FILTERS.ATTACKER_TYPES[typeToRemove] = false
 	log_info(string.format('damage type %s removed from report', typeToRemove))
 end
 
 local function SetReportOtomo(value)
-	REPORT_OTOMO = value
+	_FILTERS.INCLUDE_OTOMO = value
 end
 
 local function SetReportOther(value)
-	REPORT_OTHER = value
+	_FILTERS.INCLUDE_OTHER = value
 end
 
 local function attackerIdIsPlayer(attackerId)
@@ -1173,8 +1186,8 @@ local function mergeBossIntoReport(report, boss)
 
 		-- if we aren't excluding this type of source
 		if attackerIdIsPlayer(effSourceId)
-		or (attackerIdIsOtomo(effSourceId) and REPORT_OTOMO)
-		or (not attackerIdIsOtomo(effSourceId) and REPORT_OTHER)
+		or (attackerIdIsOtomo(effSourceId) and _FILTERS.INCLUDE_OTOMO)
+		or (not attackerIdIsOtomo(effSourceId) and _FILTERS.INCLUDE_OTHER)
 		then
 			-- get report item, creating it if necessary
 			local item = getReportItem(report, effSourceId)
@@ -1194,7 +1207,7 @@ local function mergeBossIntoReport(report, boss)
 	-- now loop all report items and update the totals after adding this boss
 	for _,item in ipairs(report.items) do
 		-- calculate the item's own total damage
-		local sum = sumDamageCountersList(item.counters, REPORT_ATTACKER_TYPES)
+		local sum = sumDamageCountersList(item.counters, _FILTERS.ATTACKER_TYPES)
 		item.total = sum.total
 		item.totalPhysical  = sum.physical
 		item.totalElemental = sum.elemental
@@ -1927,7 +1940,7 @@ local function DrawWindowSettings()
 end
 
 local function showCheckboxForAttackerType(type)
-	local typeIsInReport = REPORT_ATTACKER_TYPES[type]
+	local typeIsInReport = _FILTERS.ATTACKER_TYPES[type]
 	local changed, wantsIt = imgui.checkbox(ATTACKER_TYPE_TEXT[type], typeIsInReport)
 	if changed then
 		if wantsIt then
@@ -1947,15 +1960,15 @@ local function DrawWindowReport()
 		DRAW_WINDOW_REPORT = false
 	end
 
-	changed, wantsIt = imgui.checkbox('Include buddies', REPORT_OTOMO)
+	changed, wantsIt = imgui.checkbox('Include buddies', _FILTERS.INCLUDE_OTOMO)
 	if changed then
-		REPORT_OTOMO = wantsIt
+		_FILTERS.INCLUDE_OTOMO = wantsIt
 		generateReport(REPORT_MONSTERS)
 	end
 
-	changed, wantsIt = imgui.checkbox('Include monsters, etc', REPORT_OTHER)
+	changed, wantsIt = imgui.checkbox('Include monsters, etc', _FILTERS.INCLUDE_OTHER)
 	if changed then
-		REPORT_OTHER = wantsIt
+		_FILTERS.INCLUDE_OTHER = wantsIt
 		generateReport(REPORT_MONSTERS)
 	end
 
@@ -2386,11 +2399,6 @@ loadPresets()
 -- perform sanity checks
 sanityCheck()
 
--- all attacker types enabled by default
-for _,type in pairs(ATTACKER_TYPES) do
-	AddAttackerTypeToReport(type)
-end
-
 -- make sure this table has all modifiers in it
 for key,_ in pairs(ENUM_KEYBOARD_MODIFIERS) do
 	CURRENTLY_HELD_MODIFIERS[key] = false
@@ -2407,7 +2415,7 @@ log_info('init complete')
 if _G._UNIT_TESTING then
 	_G._CFG = _CFG
 	_G.ATTACKER_TYPES  = ATTACKER_TYPES
-	_G.REPORT_ATTACKER_TYPES  = REPORT_ATTACKER_TYPES
+	_G.REPORT_ATTACKER_TYPES  = _FILTERS.ATTACKER_TYPES
 	_G.LARGE_MONSTERS  = LARGE_MONSTERS
 	_G.DAMAGE_REPORTS  = DAMAGE_REPORTS
 	_G.REPORT_MONSTERS = REPORT_MONSTERS
