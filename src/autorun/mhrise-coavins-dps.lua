@@ -243,11 +243,15 @@ local DRAW_WINDOW_HOTKEYS = false
 local WINDOW_FLAGS = 0x10120
 local IS_ONLINE = false
 local QUEST_DURATION = 0.0
+local IS_IN_QUEST = false
+local IS_IN_TRAININGHALL = false
 
 local _CFG = {}
 local DATADIR = 'mhrise-coavins-dps/'
 local _COLORS = {}
 --local _HOTKEYS = {} -- todo
+
+local FONT = nil
 
 local _PRESETS = {}
 local PRESET_OPTIONS = {}
@@ -1271,35 +1275,35 @@ local function drawRichDamageBar(item, x, y, maxWidth, h, colorPhysical, colorEl
 	-- draw physical damage
 	--debug_line(string.format('damagePhysical: %d', source.damagePhysical))
 	w = (item.totalPhysical / item.total) * maxWidth
-	draw.filled_rect(x, y, w, h, colorPhysical)
+	d2d.fill_rect(x, y, w, h, colorPhysical)
 	x = x + w
 	-- draw elemental damage
 	--debug_line(string.format('damageElemental: %d', source.damageElemental))
 	w = (item.totalElemental / item.total) * maxWidth
-	draw.filled_rect(x, y, w, h, colorElemental)
+	d2d.fill_rect(x, y, w, h, colorElemental)
 	x = x + w
 	-- draw ailment damage
 	--debug_line(string.format('damageAilment: %f', source.damageAilment))
 	w = (item.totalCondition / item.total) * maxWidth
-	draw.filled_rect(x, y, w, h, colorAilment)
+	d2d.fill_rect(x, y, w, h, colorAilment)
 	x = x + w
 	-- draw otomo damage
 	--debug_line(string.format('damageOtomo: %d', source.damageOtomo))
 	w = (item.totalOtomo / item.total) * maxWidth
-	draw.filled_rect(x, y, w, h, colorOtomo)
+	d2d.fill_rect(x, y, w, h, colorOtomo)
 	x = x + w
 	-- draw whatever's left, just in case
 	local remainder = item.total - item.totalPhysical - item.totalElemental - item.totalCondition - item.totalOtomo
 	--debug_line(string.format('remainder: %d', remainder))
 	w = (remainder / item.total) * maxWidth
-	draw.filled_rect(x, y, w, h, colorOther)
+	d2d.fill_rect(x, y, w, h, colorOther)
 	--debug_line(string.format('total: %d', source.damageTotal))
 end
 
 local function drawReportHeaderColumn(col, x, y)
 	local text = TABLE_COLUMNS[col]
 
-	draw.text(text, x, y, COLOR('GRAY'))
+	d2d.text(FONT, text, x, y, COLOR('GRAY'))
 end
 
 local function drawReportItemColumn(item, col, x, y)
@@ -1346,7 +1350,7 @@ local function drawReportItemColumn(item, col, x, y)
 		text = string.format('%.0f', item.maxHit)
 	end
 
-	draw.text(text, x, y, COLOR('WHITE'))
+	d2d.text(FONT, text, x, y, COLOR('WHITE'))
 end
 
 local function drawReportItem(item, x, y, width, height)
@@ -1391,30 +1395,30 @@ local function drawReportItem(item, x, y, width, height)
 	if CFG('USE_MINIMAL_BARS') then
 		-- bar is overlaid on top of the color block
 		-- color block
-		draw.filled_rect(x, y, colorBlockWidth, height, elementalColor)
+		d2d.fill_rect(x, y, colorBlockWidth, height, elementalColor)
 
 		-- damage bar
 		local damageBarWidth = colorBlockWidth * damageBarWidthMultiplier
-		draw.filled_rect(x, y, damageBarWidth, height, combatantColor)
+		d2d.fill_rect(x, y, damageBarWidth, height, combatantColor)
 
 		-- hr
 		if item.playerNumber and item.rank and CFG('DRAW_BAR_REVEAL_HR') then
-			draw.text(string.format('%s',item.rank), x + (3 * CFG('TABLE_SCALE')), y, COLOR('WHITE'))
+			d2d.text(FONT, string.format('%s',item.rank), x + (3 * CFG('TABLE_SCALE')), y, COLOR('WHITE'))
 		end
 	else
 		-- bar takes up the entire width of the table
 		if CFG('DRAW_TABLE_BACKGROUND') then
 			-- draw background
-			draw.filled_rect(x, y, width, height, COLOR('BAR_BG'))
+			d2d.fill_rect(x, y, width, height, COLOR('BAR_BG'))
 		end
 
 		if CFG('DRAW_BAR_COLORBLOCK') then
 			-- color block
-			draw.filled_rect(x, y, colorBlockWidth, height, combatantColor)
+			d2d.fill_rect(x, y, colorBlockWidth, height, combatantColor)
 
 			-- hr
 			if item.playerNumber and item.rank and CFG('DRAW_BAR_REVEAL_HR') then
-				draw.text(string.format('%s',item.rank), x + (3 * CFG('TABLE_SCALE')), y, COLOR('WHITE'))
+				d2d.text(FONT, string.format('%s',item.rank), x + (3 * CFG('TABLE_SCALE')), y, COLOR('WHITE'))
 			end
 		end
 
@@ -1441,7 +1445,7 @@ local function drawReportItem(item, x, y, width, height)
 
 	if CFG('DRAW_BAR_OUTLINES') then
 		-- draw outline
-		draw.outline_rect(x, y, width, height, COLOR('BAR_OUTLINE'))
+		d2d.outline_rect(x, y, width, height, 2, COLOR('BAR_OUTLINE'))
 	end
 end
 
@@ -1464,7 +1468,7 @@ local function drawReport(index)
 	-- title bar
 	if CFG('DRAW_TITLE_BACKGROUND') then
 		-- title background
-		draw.filled_rect(origin_x, origin_y, tableWidth, rowHeight, COLOR('TITLE_BG'))
+		d2d.fill_rect(origin_x, origin_y, tableWidth, rowHeight, COLOR('TITLE_BG'))
 	end
 
 	if CFG('DRAW_TITLE_TEXT') then
@@ -1505,7 +1509,7 @@ local function drawReport(index)
 
 		local titleText = timeText .. monsterText
 		local offsetX = CFG('TABLE_HEADER_TEXT_OFFSET_X')
-		draw.text(titleText, origin_x + offsetX, origin_y, COLOR('TITLE_FG'))
+		d2d.text(FONT, titleText, origin_x + offsetX, origin_y, COLOR('TITLE_FG'))
 	end
 
 	if CFG('DRAW_HEADER') then
@@ -1521,11 +1525,11 @@ local function drawReport(index)
 
 		if CFG('DRAW_TITLE_BACKGROUND') then
 			-- background
-			draw.filled_rect(origin_x, y, tableWidth, rowHeight, COLOR('TITLE_BG'))
+			d2d.fill_rect(origin_x, y, tableWidth, rowHeight, COLOR('TITLE_BG'))
 		end
 
 		if CFG('DRAW_BAR_COLORBLOCK') and CFG('DRAW_BAR_REVEAL_HR') then
-			draw.text('HR', x, y, COLOR('GRAY'))
+			d2d.text(FONT, 'HR', x, y, COLOR('GRAY'))
 		end
 
 		local colorBlockWidth = 30 * CFG('TABLE_SCALE')
@@ -1562,7 +1566,7 @@ local function drawReport(index)
 			y = y + growDistance
 		end
 
-		draw.text('No data', x, y, COLOR('GRAY'))
+		d2d.text(FONT, 'No data', x, y, COLOR('GRAY'))
 	end
 
 	-- draw report items
@@ -1666,13 +1670,16 @@ end
 
 -- main draw function
 local function dpsDraw()
-	DEBUG_Y = 0
+	if DRAW_WINDOW_SETTINGS -- always draw overlay if settings window is open
+	or (DRAW_OVERLAY and -- draw in one of the following circumstances if overlay is enabled
+	   (isInTestMode() or IS_IN_QUEST or IS_IN_TRAININGHALL)) then
+		-- draw the first report
+		drawReport(1)
 
-	-- draw the first report
-	drawReport(1)
-
-	if DPS_DEBUG then
-		drawDebugStats()
+		if DPS_DEBUG then
+			DEBUG_Y = 0
+			drawDebugStats()
+		end
 	end
 end
 
@@ -2268,9 +2275,9 @@ local function dpsFrame()
 
 	local villageArea = 0
 	local questStatus = MANAGER.QUEST:get_field("_QuestStatus")
-	local isInQuest = (questStatus >= 2)
+	IS_IN_QUEST = (questStatus >= 2)
 
-	if isInQuest then
+	if IS_IN_QUEST then
 		SetQuestDuration(MANAGER.QUEST:call("getQuestElapsedTimeSec"))
 	else
 		-- VillageAreaManager is unreliable, not always there, stale references
@@ -2281,8 +2288,8 @@ local function dpsFrame()
 		end
 	end
 
-	local isInTrainingHall = (villageArea == 5)
-	if isInTrainingHall then
+	IS_IN_TRAININGHALL = (villageArea == 5)
+	if IS_IN_TRAININGHALL then
 		SetQuestDuration(MANAGER.AREA:call("get_TrainingHallStayTime"))
 	end
 
@@ -2296,23 +2303,16 @@ local function dpsFrame()
 		-- update every frame
 		dpsUpdate()
 	-- when a quest is active
-	elseif isInQuest then
+	elseif IS_IN_QUEST then
 		dpsUpdateOccasionally(QUEST_DURATION)
 	-- when you are in the training area
-	elseif isInTrainingHall then
+	elseif IS_IN_TRAININGHALL then
 		dpsUpdateOccasionally(QUEST_DURATION)
 	else
 		-- clean up some things in between quests
 		if LAST_UPDATE_TIME ~= 0 then
 			cleanUpData()
 		end
-	end
-
-	if DRAW_WINDOW_SETTINGS -- always draw overlay if settings window is open
-	or (DRAW_OVERLAY and -- draw in one of the following circumstances if overlay is enabled
-	   (isInTestMode() or isInQuest or isInTrainingHall)) then
-		-- draw on every frame
-		dpsDraw()
 	end
 end
 
@@ -2400,6 +2400,11 @@ end
 for key,_ in pairs(ENUM_KEYBOARD_MODIFIERS) do
 	CURRENTLY_HELD_MODIFIERS[key] = false
 end
+
+-- register with d2d plugin
+d2d.register(function()
+	FONT = d2d.create_font("Tahoma", 14 * CFG('TABLE_SCALE'))
+end, dpsDraw)
 
 log_info('init complete')
 
