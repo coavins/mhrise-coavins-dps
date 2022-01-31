@@ -1981,6 +1981,12 @@ local function DrawWindowSettings()
 
 	imgui.new_line()
 
+	imgui.text('Scale Overlay')
+	showSliderForFloatSetting('TABLE_SCALE')
+	imgui.text('Save changes and RESET SCRIPTS to apply scaling to text')
+
+	imgui.new_line()
+
 	showInputsForTableColumns()
 
 	imgui.new_line()
@@ -2014,9 +2020,6 @@ local function DrawWindowSettings()
 
 		showSliderForFloatSetting('TABLE_X')
 		showSliderForFloatSetting('TABLE_Y')
-
-		imgui.text('Save and reset scripts to apply scaling to text')
-		showSliderForFloatSetting('TABLE_SCALE')
 		showSliderForIntSetting('TABLE_HEADER_TEXT_OFFSET_X')
 		showSliderForIntSetting('TABLE_WIDTH')
 
