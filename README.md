@@ -20,37 +20,39 @@ This mod is NOT intended to reveal any hidden information about monsters or give
 
 ## Configuration
 
-There are some menus located in the REFramework window.
-1. Expand `Script Generated UI`
-2. Click on the coavins dps meter settings button
+You can configure settings from the UI inside the REFramework window.
 
-![Settings button](https://i.imgur.com/hYgwYE3.png)
-
-![Settings menu](https://i.imgur.com/7i02AqR.png)
+1. Open the REFramework menu (default key: `Insert`)
+2. Expand `Script Generated UI`
+3. Click on the coavins dps meter `settings` button
 
 ## Usage
 
-![Small screenshot 1](https://i.imgur.com/8hTPG8H.png)
-
-The overlay will display each party member using the same color-coding that is shown with the player names on the left side of the screen.
-Some additional colors are used to indicate other types of damage.
+The overlay will display each party member using the same color-coding that is shown with the player names on the left side of the screen. Some additional colors are used to indicate different types of damage.
 
 By default:
-* Primary colors are physical (light) and elemental damage (dark)
-* Pale red is ailment damage
+* Light player color is physical damage
+* Dark player color is elemental damage
+* Pale red is status buildup
+* Pink is poison damage
+* Orange is blast damage
 * Light blue is damage dealt by your palico or palamute
 
-The following additional information can be printed inside the bars for each player:
+The following columns can be chosen to appear on the table for each player:
 
-![Small screenshot 2](https://i.imgur.com/G5Fx7eQ.png)
+* Player HR
+* Player name
+* qDPS (based on elapsed quest duration)
+* mDPS (based on time selected monsters have spent in combat)
+* Total damage
+* Poison damage (poison ticking damage)
+* Blast damage (blast explosion)
+* Status buildup (paralysis, sleep, poison, blast, stun, etc.)
+* Party % (percent of total party damage)
+* Best % (percent of best damage dealer's output)
+* Hits (number of hits)
+* MaxHit (biggest single hit)
 
-1. Player HR
-2. Player name
-3. DPS
-4. Total damage
-5. Percent of party damage
-6. Percent of best damage
-7. How many total hits you have dealt
-8. Your highest damage dealt in a single blow
+Note: Poison and blast damage will be credited proportionately to players based on how much status buildup you contributed.
 
-You can also configure the table to show buddies, monsters, and NPCs as separate rows in the table.
+You can also configure the filters to show all damage dealers, not just players: buddies, monsters, and villager NPCs can appear as separate rows in the table.
