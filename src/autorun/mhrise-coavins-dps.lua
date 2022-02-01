@@ -346,9 +346,6 @@ local QUEST_MANAGER_METHOD_ONCHANGEDGAMESTATUS = nil
 local SNOW_ENEMY_ENEMYCHARACTERBASE = nil
 local SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE = nil
 local SNOW_ENEMY_ENEMYCHARACTERBASE_UPDATE = nil
-local SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE = nil
-local SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE_ACTIVATE = nil
-local SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE_UPDATE = nil
 
 local STAGE_MANAGER_TYPE = nil
 local STAGE_MANAGER_METHOD_ENDTRAININGROOM = nil
@@ -911,6 +908,29 @@ local function initializeBossMonster(bossEnemy)
 	boss.ailment.share[4] = {}
 	boss.ailment.share[5] = {}
 
+	boss.ailment.count = {}
+	boss.ailment.count[4] = 0
+	boss.ailment.count[5] = 0
+
+	-- get counts for poison and blast
+	local damageParam = bossEnemy:get_field("<DamageParam>k__BackingField")
+	if damageParam then
+		local blastParam = damageParam:get_field("_BlastParam")
+		if blastParam then
+			local activateCnt = blastParam:call("get_ActivateCount"):get_element(0):get_field("mValue")
+			if activateCnt > boss.ailment.count[5] then
+				boss.ailment.count[5] = activateCnt
+			end
+		end
+		local poisonParam = damageParam:get_field("_PoisonParam")
+		if poisonParam then
+			local activateCnt = poisonParam:call("get_ActivateCount"):get_element(0):get_field("mValue")
+			if activateCnt > boss.ailment.count[4] then
+				boss.ailment.count[4] = activateCnt
+			end
+		end
+	end
+
 	boss.hp = {}
 	boss.hp.current = 0.0
 	boss.hp.max     = 0.0
@@ -1062,6 +1082,8 @@ local function addAilmentDamageToBoss(boss, ailmentType, ailmentDamage)
 	end
 
 	local damage = ailmentDamage or 0.0
+
+	--log.info(string.format("ailment dmg %.0f, %.0f", ailmentType, ailmentDamage))
 
 	-- split up damage according to ratio of buildup on boss for this type
 	local shares = boss.ailment.share[ailmentType]
@@ -2320,6 +2342,26 @@ local function read_onChangedGameStatus(args)
 	end
 end
 
+-- take accumulated ailment buildup and calculate ratios for each attacker
+local function calculateAilmentContrib(boss, type)
+	local b = boss.ailment.buildup[type]
+	local s = boss.ailment.share[type]
+
+	-- get total
+	local total = 0.0
+	for _,value in pairs(b) do
+		total = total + value
+	end
+
+	for key, value in pairs(b) do
+		-- update ratio for this attacker
+		s[key] = value / total
+		-- clear accumulated buildup for this attacker
+		-- they have to start over to earn a share of next ailment trigger
+		b[key] = 0.0
+	end
+end
+
 -- keep track of some things on monsters
 local function updateBossEnemy(args)
 	local enemy = sdk.to_managed_object(args[2])
@@ -2361,6 +2403,40 @@ local function updateBossEnemy(args)
 			log_info(string.format('%s exited combat at %.4f', boss.name, QUEST_DURATION))
 		end
 	end
+
+	-- get poison and blast damage
+	local damageParam = enemy:get_field("<DamageParam>k__BackingField")
+	if damageParam then
+		local blastParam = damageParam:get_field("_BlastParam")
+		if blastParam then
+			-- if applied, then calculate share for blast and apply damage
+			local activateCnt = blastParam:call("get_ActivateCount"):get_element(0):get_field("mValue")
+			if activateCnt > boss.ailment.count[5] then
+				boss.ailment.count[5] = activateCnt
+				calculateAilmentContrib(boss, 5)
+
+				local blastDamage = blastParam:call("get_BlastDamage")
+				addAilmentDamageToBoss(boss, 5, blastDamage)
+			end
+		end
+
+		local poisonParam = damageParam:get_field("_PoisonParam")
+		if poisonParam then
+			-- if applied, then calculate share for poison
+			local activateCnt = poisonParam:call("get_ActivateCount"):get_element(0):get_field("mValue")
+			if activateCnt > boss.ailment.count[4] then
+				boss.ailment.count[4] = activateCnt
+				calculateAilmentContrib(boss, 4)
+			end
+
+			-- if poison tick, apply damage
+			local poisonDamage = poisonParam:get_field("<Damage>k__BackingField")
+			local isDamage = poisonParam:call("get_IsDamage")
+			if isDamage then
+				addAilmentDamageToBoss(boss, 4, poisonDamage)
+			end
+		end
+	end
 end
 
 -- track damage taken by monsters
@@ -2394,96 +2470,6 @@ local function read_AfterCalcInfo_DamageSide(args)
 
 	addDamageToBoss(boss, attackerId, attackerTypeId
 	, physicalDamage, elementDamage, conditionDamage, conditionType)
-end
-
--- take accumulated ailment buildup and calculate ratios for each attacker
-local function calculateAilmentContrib(boss, type)
-	local b = boss.ailment.buildup[type]
-	local s = boss.ailment.share[type]
-
-	-- get total
-	local total = 0.0
-	for _,value in pairs(b) do
-		total = total + value
-	end
-
-	for key, value in pairs(b) do
-		-- update ratio for this attacker
-		s[key] = value / total
-		-- clear accumulated buildup for this attacker
-		-- they have to start over to earn a share of next ailment trigger
-		b[key] = 0.0
-	end
-end
-
-local function read_activate(args)
-	local base = sdk.to_managed_object(args[2])
-	if not base then
-		return
-	end
-
-	local type = base:call("get_Type")
-	-- only look at blast and poison
-	if type ~= 4 and type ~= 5 then
-		return
-	end
-
-	local enemy = base:get_field("<Em>k__BackingField")
-	if not enemy then
-		return
-	end
-
-	if enemy:call('getHpVital') == 0 then
-		return
-	end
-
-	local boss = LARGE_MONSTERS[enemy]
-	if not boss then
-		return
-	end
-
-	calculateAilmentContrib(boss, type)
-
-	-- apply damage now if it was blast, poison will be applied later
-	local dmgBlast = base:call("get_BlastDamage")
-	if type == 5 and dmgBlast then
-		addAilmentDamageToBoss(boss, type, dmgBlast)
-	end
-end
-
-local function read_updateCondition(args)
-	local base = sdk.to_managed_object(args[2])
-	if not base then
-		return
-	end
-
-	-- only if this frame is an instance of damage
-	if base:call('get_IsDamage') then
-		local type = base:call("get_Type")
-		-- only look at poison
-		if type ~= 4 then
-			return
-		end
-
-		local enemy = base:get_field("<Em>k__BackingField")
-		if not enemy then
-			return
-		end
-
-		if enemy:call('getHpVital') == 0 then
-			return
-		end
-
-		local boss = LARGE_MONSTERS[enemy]
-		if not boss then
-			return
-		end
-
-		local damage = base:call('get_Damage')
-		if damage then
-			addAilmentDamageToBoss(boss, type, damage)
-		end
-	end
 end
 
 local function tryLoadTypeDefinitions()
@@ -2533,26 +2519,6 @@ local function tryLoadTypeDefinitions()
 			log_error('Failed to find snow.enemy.EnemyCharacterBase')
 		end
 	end
-
-	--[[
-	if not SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE then
-		SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE = sdk.find_type_definition("snow.enemy.EnemyConditionDamageParamBase")
-		if SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE then
-			SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE_ACTIVATE = SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE:get_method("activate")
-			-- register function hook
-			sdk.hook(SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE_ACTIVATE,
-				function(args) read_activate(args) end,
-				function(retval) return retval end)
-			log_info('Hooked snow.enemy.EnemyConditionDamageParamBase:activate()')
-
-			SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE_UPDATE = SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE:get_method("update")
-
-			sdk.hook(SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE_UPDATE,
-				function(args) read_updateCondition(args) end,
-				function(retval) return retval end)
-		end
-	end
-	]]
 
 	if not STAGE_MANAGER_TYPE then
 		STAGE_MANAGER_TYPE = sdk.find_type_definition("snow.stage.StageManager")
