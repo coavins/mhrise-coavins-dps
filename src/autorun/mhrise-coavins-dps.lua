@@ -251,6 +251,7 @@ ATTACKER_TYPE_TEXT['fg005']             = 'fg005'
 ATTACKER_TYPE_TEXT['ecbatexplode']      = 'ecbatexplode'
 ATTACKER_TYPE_TEXT['monster']           = 'Monster'
 
+--[[
 local CONDITION_TYPES = {}
 CONDITION_TYPES[0]  = 'Paralyze'
 CONDITION_TYPES[1]  = 'Sleep'
@@ -269,6 +270,7 @@ CONDITION_TYPES[13] = 'ShockTrap'
 CONDITION_TYPES[14] = 'Capture'
 CONDITION_TYPES[15] = 'Koyashi'
 CONDITION_TYPES[16] = 'SteelFang'
+]]
 
 --#endregion
 
@@ -343,7 +345,6 @@ local QUEST_MANAGER_TYPE = nil
 local QUEST_MANAGER_METHOD_ONCHANGEDGAMESTATUS = nil
 local SNOW_ENEMY_ENEMYCHARACTERBASE = nil
 local SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE = nil
-local SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERPROCBYATTACKERTYPE = nil
 local SNOW_ENEMY_ENEMYCHARACTERBASE_UPDATE = nil
 local SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE = nil
 local SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE_ACTIVATE = nil
@@ -986,7 +987,8 @@ local function initializeBossMonsterWithDummyData(bossKey, fakeName)
 	AddMonsterToReport(bossKey, boss)
 end
 
-local function addDamageToBoss(boss, attackerId, attackerTypeId, amtPhysical, amtElemental, amtCondition, typeCondition, amtAilment, typeAilment)
+local function addDamageToBoss(boss, attackerId, attackerTypeId
+	, amtPhysical, amtElemental, amtCondition, typeCondition, amtAilment, typeAilment)
 	amtPhysical = amtPhysical or 0
 	amtElemental = amtElemental or 0
 	amtCondition = amtCondition or 0
@@ -1000,7 +1002,8 @@ local function addDamageToBoss(boss, attackerId, attackerTypeId, amtPhysical, am
 		amt.ailment[typeAilment] = amtAilment
 	end
 
-	--log.info(string.format('%.0f/%.0f %.0f:%.0f:%.0f:%.0f', attackerId, attackerTypeId, amtPhysical, amtElemental, amtCondition, amtAilment))
+	--log.info(string.format('%.0f/%.0f %.0f:%.0f:%.0f:%.0f'
+	--, attackerId, attackerTypeId, amtPhysical, amtElemental, amtCondition, amtAilment))
 
 	local sources = boss.damageSources
 	local buildup = boss.ailment.buildup
@@ -1008,7 +1011,6 @@ local function addDamageToBoss(boss, attackerId, attackerTypeId, amtPhysical, am
 
 	local isOtomo   = (attackerTypeId == 19)
 
-	--log_info(string.format('damage instance from attacker %d of type %s', attackerId, attackerType))
 	if isOtomo then
 		-- separate otomo from their master
 		attackerId = getFakeAttackerIdForOtomoId(attackerId)
@@ -2387,7 +2389,8 @@ local function read_AfterCalcInfo_DamageSide(args)
 	local conditionDamage = tonumber(info:call("get_ConditionDamage"))
 	local conditionType   = tonumber(info:call("get_ConditionDamageType")) -- snow.enemy.EnemyDef.ConditionDamageType
 
-	--log.info(string.format('%.0f:%.0f = %.0f:%.0f:%.0f:%.0f', attackerId, attackerTypeId, physicalDamage, elementDamage, conditionDamage, conditionType))
+	--log.info(string.format('%.0f:%.0f = %.0f:%.0f:%.0f:%.0f'
+	--, attackerId, attackerTypeId, physicalDamage, elementDamage, conditionDamage, conditionType))
 
 	addDamageToBoss(boss, attackerId, attackerTypeId
 	, physicalDamage, elementDamage, conditionDamage, conditionType)
@@ -2400,7 +2403,7 @@ local function calculateAilmentContrib(boss, type)
 
 	-- get total
 	local total = 0.0
-	for key, value in pairs(b) do
+	for _,value in pairs(b) do
 		total = total + value
 	end
 
