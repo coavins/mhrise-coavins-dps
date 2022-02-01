@@ -69,18 +69,20 @@
             10.0,
             4.0,
             5.0,
+            12.0,
+            13.0,
             11.0,
             6.0,
-            7.0,
             8.0,
             9.0,
+            1.0,
             1.0,
             1.0
         ],
         "TABLE_COLS_WIDTH": [
             0.0,
             30.0,
-            106.0,
+            126.0,
             39.0,
             58.0,
             53.0,
@@ -88,7 +90,9 @@
             37.0,
             50.0,
             39.0,
-            58.0
+            47.0,
+            47.0,
+            40.0
         ],
         "TABLE_GROWS_UPWARD": {
             "TEXT": "Table grows upward instead of down",
@@ -142,13 +146,13 @@
             "MAX": 2000.0,
             "MIN": 30.0,
             "TEXT": "Table width",
-            "VALUE": 524.0
+            "VALUE": 567.0
         },
         "TABLE_X": {
             "MAX": 1.0,
             "MIN": 0.0,
             "TEXT": "Horizontal position",
-            "VALUE": 0.5799999833106995
+            "VALUE": 0.5699999928474426
         },
         "TABLE_Y": {
             "MAX": 1.0,
@@ -170,6 +174,7 @@
     "COLORS": {
         "BAR_BG": 1140850688.0,
         "BAR_DMG_AILMENT": 2946709310.0,
+        "BAR_DMG_BLAST": 2950726402.0,
         "BAR_DMG_ELEMENT": 2944702865.0,
         "BAR_DMG_ELEMENT_UNIQUE": [
             2945195036.0,
@@ -186,6 +191,7 @@
             2949434408.0,
             2938686504.0
         ],
+        "BAR_DMG_POISON": 2949461981.0,
         "BAR_OUTLINE": 1140850688.0,
         "BLACK": 4278190080.0,
         "BLUE": 2939302655.0,
@@ -223,7 +229,7 @@
             "hmtrap": true,
             "kunai": true,
             "makimushi": true,
-            "monster": true,
+            "monster": false,
             "nitro": true,
             "onibimine": true,
             "otomo": true,

@@ -42,7 +42,7 @@
         },
         "DRAW_HEADER": {
             "TEXT": "Show header",
-            "VALUE": true
+            "VALUE": false
         },
         "DRAW_TABLE_BACKGROUND": {
             "TEXT": "Show table background",
@@ -50,15 +50,15 @@
         },
         "DRAW_TITLE_BACKGROUND": {
             "TEXT": "Show title background",
-            "VALUE": true
+            "VALUE": false
         },
         "DRAW_TITLE_MONSTER": {
             "TEXT": "Show selected monsters in title",
-            "VALUE": true
+            "VALUE": false
         },
         "DRAW_TITLE_TEXT": {
             "TEXT": "Show title text",
-            "VALUE": true
+            "VALUE": false
         },
         "SHOW_TEST_DATA_WHILE_MENU_IS_OPEN": {
             "TEXT": "Show test data while menu is open",
@@ -66,8 +66,10 @@
         },
         "TABLE_COLS": [
             3.0,
-            4.0,
+            10.0,
             6.0,
+            1.0,
+            1.0,
             1.0,
             1.0,
             1.0,
@@ -88,6 +90,8 @@
             37.0,
             50.0,
             39.0,
+            58.0,
+            58.0,
             58.0
         ],
         "TABLE_GROWS_UPWARD": {
@@ -104,13 +108,13 @@
             "MAX": 100.0,
             "MIN": 0.0,
             "TEXT": "Row height",
-            "VALUE": 18.0
+            "VALUE": 21.0
         },
         "TABLE_ROW_PADDING": {
             "MAX": 150.0,
             "MIN": 0.0,
             "TEXT": "Row padding",
-            "VALUE": 0.0
+            "VALUE": 4.0
         },
         "TABLE_ROW_TEXT_OFFSET_X": {
             "MAX": 100.0,
@@ -142,7 +146,7 @@
             "MAX": 2000.0,
             "MIN": 30.0,
             "TEXT": "Table width",
-            "VALUE": 277.0
+            "VALUE": 264.0
         },
         "TABLE_X": {
             "MAX": 1.0,
@@ -170,6 +174,7 @@
     "COLORS": {
         "BAR_BG": 1140850688.0,
         "BAR_DMG_AILMENT": 2946709310.0,
+        "BAR_DMG_BLAST": 2950726402.0,
         "BAR_DMG_ELEMENT": 2944702865.0,
         "BAR_DMG_ELEMENT_UNIQUE": [
             2945195036.0,
@@ -186,6 +191,7 @@
             2949434408.0,
             2938686504.0
         ],
+        "BAR_DMG_POISON": 2949461981.0,
         "BAR_OUTLINE": 1140850688.0,
         "BLACK": 4278190080.0,
         "BLUE": 2939302655.0,

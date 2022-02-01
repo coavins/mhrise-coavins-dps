@@ -60,10 +60,10 @@
 		},
 		"TABLE_COLS": [
 			3,
-			4,
+			10,
 			5,
 			6,
-			7,
+			1,
 			8,
 			9,
 			1,
@@ -76,7 +76,7 @@
 		"TABLE_COLS_WIDTH": [
 			0,
 			30,
-			106,
+			110,
 			39,
 			58,
 			53,
@@ -141,7 +141,7 @@
 			"MAX": 100
 		},
 		"TABLE_WIDTH": {
-			"VALUE": 434,
+			"VALUE": 380,
 			"TEXT": "Table width",
 			"MIN": 30,
 			"MAX": 2000
@@ -234,7 +234,7 @@
 			"otomo": true,
 			"fg005": true,
 			"ecbatexplode": true,
-			"monster": true
+			"monster": false
 		},
 		"INCLUDE_OTOMO": true,
 		"INCLUDE_OTHER": false
