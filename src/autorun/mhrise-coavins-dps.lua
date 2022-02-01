@@ -1145,6 +1145,8 @@ local function initializeReportItem(id)
 	item.totalPhysical = 0.0
 	item.totalElemental = 0.0
 	item.totalCondition = 0.0
+	item.totalPoison    = 0.0
+	item.totalBlast     = 0.0
 	item.totalOtomo = 0.0
 
 	item.seconds = {}
@@ -1172,6 +1174,8 @@ local function sumDamageCountersList(counters, attackerTypeFilter)
 	sum.physical = 0.0
 	sum.elemental = 0.0
 	sum.condition = 0.0
+	sum.poison = 0.0
+	sum.blast = 0.0
 	sum.otomo = 0.0
 
 	-- get totals from counters
@@ -1193,6 +1197,8 @@ local function sumDamageCountersList(counters, attackerTypeFilter)
 				sum.physical  = sum.physical  + counter.physical
 				sum.elemental = sum.elemental + counter.elemental
 				sum.condition = sum.condition + counter.condition
+				sum.poison    = sum.poison    + counter.ailment[4]
+				sum.blast     = sum.blast     + counter.ailment[5]
 
 				sum.total = sum.total + getTotalDamageForDamageCounter(counter)
 			end
@@ -1208,6 +1214,8 @@ local function sumDamageSourcesList(sources)
 	sum.physical = 0.0
 	sum.elemental = 0.0
 	sum.condition = 0.0
+	sum.poison = 0.0
+	sum.blast = 0.0
 	sum.otomo = 0.0
 
 	for _,source in pairs(sources) do
@@ -1216,6 +1224,8 @@ local function sumDamageSourcesList(sources)
 		sum.physical  = sum.physical  + this.physical
 		sum.elemental = sum.elemental + this.elemental
 		sum.condition = sum.condition + this.condition
+		sum.poison    = sum.poison    + this.poison
+		sum.blast     = sum.blast     + this.blast
 		sum.otomo     = sum.otomo     + this.otomo
 	end
 
@@ -1359,6 +1369,8 @@ local function mergeBossIntoReport(report, boss)
 		item.totalPhysical  = sum.physical
 		item.totalElemental = sum.elemental
 		item.totalCondition = sum.condition
+		item.totalPoison    = sum.poison
+		item.totalBlast     = sum.blast
 		item.totalOtomo     = sum.otomo
 
 		if CFG('CONDITION_LIKE_DAMAGE') then
@@ -1426,20 +1438,26 @@ end
 
 local function drawRichDamageBar(item, x, y, maxWidth, h, colorPhysical, colorElemental)
 	local w
-	local colorAilment = COLOR('BAR_DMG_AILMENT')
-	local colorOtomo = COLOR('BAR_DMG_OTOMO')
-	local colorOther = COLOR('BAR_DMG_OTHER')
+	local colorCondition = COLOR('BAR_DMG_AILMENT')
+	local colorOtomo     = COLOR('BAR_DMG_OTOMO')
+	local colorPoison    = COLOR('BAR_DMG_POISON')
+	local colorBlast     = COLOR('BAR_DMG_BLAST')
+	local colorOther     = COLOR('BAR_DMG_OTHER')
 
 	if not CFG('DRAW_BAR_USE_UNIQUE_COLORS') then
 		colorElemental = colorPhysical
-		colorAilment = colorPhysical
-		colorOtomo = colorPhysical
-		colorOther = colorPhysical
+		colorCondition = colorPhysical
+		colorOtomo     = colorPhysical
+		colorPoison    = colorPhysical
+		colorBlast     = colorPhysical
+		colorOther     = colorPhysical
 	end
 
 	local remainder = item.total
 		- item.totalPhysical
 		- item.totalElemental
+		- item.totalPoison
+		- item.totalBlast
 		- item.totalOtomo
 
 	if CFG('CONDITION_LIKE_DAMAGE') then
@@ -1459,9 +1477,19 @@ local function drawRichDamageBar(item, x, y, maxWidth, h, colorPhysical, colorEl
 	if CFG('CONDITION_LIKE_DAMAGE') then
 		-- draw ailment damage
 		w = (item.totalCondition / item.total) * maxWidth
-		d2d.fill_rect(x, y, w, h, colorAilment)
+		d2d.fill_rect(x, y, w, h, colorCondition)
 		x = x + w
 	end
+
+	-- draw poison damage
+	w = (item.totalPoison / item.total) * maxWidth
+	d2d.fill_rect(x, y, w, h, colorPoison)
+	x = x + w
+
+	-- draw blast damage
+	w = (item.totalBlast / item.total) * maxWidth
+	d2d.fill_rect(x, y, w, h, colorBlast)
+	x = x + w
 
 	-- draw otomo damage
 	w = (item.totalOtomo / item.total) * maxWidth
