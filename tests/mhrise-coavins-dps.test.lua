@@ -88,6 +88,92 @@ describe("mhrise-coavins-dps", function()
 
 	end)
 
+	describe("buildup", function()
+
+		it("gets set on boss", function()
+			local boss = initializeMockBossMonster()
+
+			addDamageToBoss(boss, 1, 0, 100, 0, 50, 5)
+
+			local expected = 50
+			local actual = boss.ailment.buildup[5][1]
+
+			assert.is_equal(expected, actual)
+		end)
+
+		it("accumulates on boss", function()
+			local boss = initializeMockBossMonster()
+
+			addDamageToBoss(boss, 1, 0, 100, 0, 1, 5)
+			addDamageToBoss(boss, 1, 0, 100, 0, 2, 5)
+			addDamageToBoss(boss, 1, 0, 100, 0, 4, 5)
+
+			local expected = 7
+			local actual = boss.ailment.buildup[5][1]
+
+			assert.is_equal(expected, actual)
+		end)
+
+		it("accumulates on boss for multiple attackers", function()
+			local boss = initializeMockBossMonster()
+
+			addDamageToBoss(boss, 1, 0, 100, 0, 1, 5)
+			addDamageToBoss(boss, 2, 0, 100, 0, 2, 5)
+			addDamageToBoss(boss, 654, 0, 100, 0, 4, 5)
+
+			assert.is_equal(1, boss.ailment.buildup[5][1])
+			assert.is_equal(2, boss.ailment.buildup[5][2])
+			assert.is_equal(4, boss.ailment.buildup[5][654])
+		end)
+
+	end)
+
+	describe("ailment damage", function()
+
+		it("is distributed fairly", function()
+			local boss = initializeMockBossMonster()
+
+			addDamageToBoss(boss, 1, 0, 100, 0, 100, 5)
+			addDamageToBoss(boss, 2, 0, 100, 0, 100, 5)
+
+			calculateAilmentContrib(boss, 5)
+
+			assert.is_equal(0.5, boss.ailment.share[5][1])
+			assert.is_equal(0.5, boss.ailment.share[5][2])
+		end)
+
+		it("is distributed fairly", function()
+			local boss = initializeMockBossMonster()
+
+			addDamageToBoss(boss, 1, 0, 100, 0, 100, 5)
+			addDamageToBoss(boss, 2, 0, 100, 0, 100, 5)
+			addDamageToBoss(boss, 3, 0, 100, 0, 200, 5)
+
+			calculateAilmentContrib(boss, 5)
+
+			assert.is_equal(0.25, boss.ailment.share[5][1])
+			assert.is_equal(0.25, boss.ailment.share[5][2])
+			assert.is_equal(0.5, boss.ailment.share[5][3])
+		end)
+
+		it("is distributed fairly", function()
+			local boss = initializeMockBossMonster()
+
+			addDamageToBoss(boss, 1, 0, 100, 0, 100, 5)
+			addDamageToBoss(boss, 2, 0, 100, 0, 100, 5)
+			addDamageToBoss(boss, 3, 0, 100, 0, 200, 5)
+			addDamageToBoss(boss, 4, 0, 100, 0, 400, 5)
+
+			calculateAilmentContrib(boss, 5)
+
+			assert.is_equal(0.125, boss.ailment.share[5][1])
+			assert.is_equal(0.125, boss.ailment.share[5][2])
+			assert.is_equal(0.25, boss.ailment.share[5][3])
+			assert.is_equal(0.5, boss.ailment.share[5][4])
+		end)
+
+	end)
+
 	describe("damage counter", function()
 
 		it("is empty when initialized", function()

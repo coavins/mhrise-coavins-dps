@@ -247,6 +247,25 @@ ATTACKER_TYPE_TEXT['fg005']             = 'fg005'
 ATTACKER_TYPE_TEXT['ecbatexplode']      = 'ecbatexplode'
 ATTACKER_TYPE_TEXT['monster']           = 'Monster'
 
+local CONDITION_TYPES = {}
+CONDITION_TYPES[0]  = 'Paralyze'
+CONDITION_TYPES[1]  = 'Sleep'
+CONDITION_TYPES[2]  = 'Stun'
+CONDITION_TYPES[3]  = 'Flash'
+CONDITION_TYPES[4]  = 'Poison'
+CONDITION_TYPES[5]  = 'Blast'
+CONDITION_TYPES[6]  = 'Stamina'
+CONDITION_TYPES[7]  = 'MarionetteStart'
+CONDITION_TYPES[8]  = 'Water'
+CONDITION_TYPES[9]  = 'Fire'
+CONDITION_TYPES[10] = 'Ice'
+CONDITION_TYPES[11] = 'Thunder'
+CONDITION_TYPES[12] = 'FallTrap'
+CONDITION_TYPES[13] = 'ShockTrap'
+CONDITION_TYPES[14] = 'Capture'
+CONDITION_TYPES[15] = 'Koyashi'
+CONDITION_TYPES[16] = 'SteelFang'
+
 --#endregion
 
 --#region globals
@@ -320,7 +339,11 @@ local QUEST_MANAGER_TYPE = nil
 local QUEST_MANAGER_METHOD_ONCHANGEDGAMESTATUS = nil
 local SNOW_ENEMY_ENEMYCHARACTERBASE = nil
 local SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE = nil
+local SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERPROCBYATTACKERTYPE = nil
 local SNOW_ENEMY_ENEMYCHARACTERBASE_UPDATE = nil
+local SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE = nil
+local SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE_ACTIVATE = nil
+local SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE_UPDATE = nil
 
 local STAGE_MANAGER_TYPE = nil
 local STAGE_MANAGER_METHOD_ENDTRAININGROOM = nil
@@ -769,22 +792,30 @@ end
 -- damage counter
 local function initializeDamageCounter()
 	local c = {}
-	c['physical']  = 0.0
-	c['elemental'] = 0.0
-	c['condition'] = 0.0
+	c.physical  = 0.0
+	c.elemental = 0.0
+	c.condition = 0.0 -- ailment buildup
+	c.ailment = {} -- ailment damage
+	c.ailment[4] = 0.0 -- poison
+	c.ailment[5] = 0.0 -- blast
 	return c
 end
 
 local function initializeDamageCounterWithDummyData()
 	local c = initializeDamageCounter()
-	c['physical']  = math.random(1,1000)
-	c['elemental'] = math.random(1,600)
-	c['condition'] = math.random(1,100)
+	c.physical  = math.random(1,1000)
+	c.elemental = math.random(1,600)
+	c.condition = math.random(1,100)
+	c.ailment[4] = math.random(1,200)
+	c.ailment[5] = math.random(1,500)
 	return c
 end
 
 local function getTotalDamageForDamageCounter(c)
-	return c.physical + c.elemental
+	return c.physical
+		+ c.elemental
+		+ c.ailment[4]
+		+ c.ailment[5]
 end
 
 local function mergeDamageCounters(a, b)
@@ -794,6 +825,8 @@ local function mergeDamageCounters(a, b)
 	c.physical  = a.physical  + b.physical
 	c.elemental = a.elemental + b.elemental
 	c.condition = a.condition + b.condition
+	c.ailment[4] = a.ailment[4] + b.ailment[4]
+	c.ailment[5] = a.ailment[5] + b.ailment[5]
 	return c
 end
 
@@ -849,6 +882,7 @@ local function initializeDamageSourceWithDummyMonsterData(attackerId)
 end
 
 -- boss
+-- this entire city must be purged
 local function initializeBossMonster(bossEnemy)
 	local boss = {}
 
@@ -862,6 +896,15 @@ local function initializeBossMonster(bossEnemy)
 	boss.name = MANAGER.MESSAGE:call("getEnemyNameMessage", enemyType)
 
 	boss.damageSources = {}
+
+	boss.ailment = {}
+	boss.ailment.buildup = {}
+	boss.ailment.buildup[4] = {}
+	boss.ailment.buildup[5] = {}
+
+	boss.ailment.share = {}
+	boss.ailment.share[4] = {}
+	boss.ailment.share[5] = {}
 
 	boss.hp = {}
 	boss.hp.current = 0.0
@@ -914,6 +957,15 @@ local function initializeBossMonsterWithDummyData(bossKey, fakeName)
 
 	boss.damageSources = s
 
+	boss.ailment = {}
+	boss.ailment.buildup = {}
+	boss.ailment.buildup[4] = {}
+	boss.ailment.buildup[5] = {}
+
+	boss.ailment.share = {}
+	boss.ailment.share[4] = {}
+	boss.ailment.share[5] = {}
+
 	boss.hp = {}
 	boss.hp.current = 0.0
 	boss.hp.max     = 0.0
@@ -930,13 +982,24 @@ local function initializeBossMonsterWithDummyData(bossKey, fakeName)
 	AddMonsterToReport(bossKey, boss)
 end
 
-local function addDamageToBoss(boss, attackerId, attackerTypeId, amtPhysical, amtElemental, amtCondition)
+local function addDamageToBoss(boss, attackerId, attackerTypeId, amtPhysical, amtElemental, amtCondition, typeCondition, amtAilment, typeAilment)
+	amtPhysical = amtPhysical or 0
+	amtElemental = amtElemental or 0
+	amtCondition = amtCondition or 0
+	amtAilment = amtAilment or 0
+
 	local amt = initializeDamageCounter()
-	amt.physical  = amtPhysical  or 0
-	amt.elemental = amtElemental or 0
-	amt.condition = amtCondition or 0
+	amt.physical  = amtPhysical
+	amt.elemental = amtElemental
+	amt.condition = amtCondition
+	if typeAilment then
+		amt.ailment[typeAilment] = amtAilment
+	end
+
+	--log.info(string.format('%.0f/%.0f %.0f:%.0f:%.0f:%.0f', attackerId, attackerTypeId, amtPhysical, amtElemental, amtCondition, amtAilment))
 
 	local sources = boss.damageSources
+	local buildup = boss.ailment.buildup
 	local attackerType = ATTACKER_TYPES[attackerTypeId]
 
 	local isOtomo   = (attackerTypeId == 19)
@@ -962,13 +1025,43 @@ local function addDamageToBoss(boss, attackerId, attackerTypeId, amtPhysical, am
 	-- add damage facts to counter
 	s.counters[attackerType] = mergeDamageCounters(c, amt)
 
-	-- hit count
-	s.numHit = s.numHit + 1
+	-- accumulate buildup for certain ailment types
+	if typeCondition == 4 or typeCondition == 5 then
+		-- get the buildup accumulator for this type
+		if not buildup[typeCondition] then
+			buildup[typeCondition] = {}
+		end
+		local b = buildup[typeCondition]
+		-- accumulate this buildup for this attacker
+		b[attackerId] = (b[attackerId] or 0.0) + amtCondition
+	end
 
-	-- biggest hit
-	local totalDamage = getTotalDamageForDamageCounter(amt)
-	if totalDamage > s.maxHit then
-		s.maxHit = totalDamage
+	-- don't track this for ailment damage
+	if not typeAilment or typeAilment == 0 then
+		-- hit count
+		s.numHit = s.numHit + 1
+
+		-- biggest hit
+		local totalDamage = getTotalDamageForDamageCounter(amt)
+		if totalDamage > s.maxHit then
+			s.maxHit = totalDamage
+		end
+	end
+end
+
+local function addAilmentDamageToBoss(boss, ailmentType, ailmentDamage)
+	-- we only track poison and blast for now
+	if not ailmentType or (ailmentType ~= 4 and ailmentType ~= 5) then
+		return
+	end
+
+	local damage = ailmentDamage or 0.0
+
+	-- split up damage according to ratio of buildup on boss for this type
+	local shares = boss.ailment.share[ailmentType]
+	for attackerId, pct in pairs(shares) do
+		local portion = damage * pct
+		addDamageToBoss(boss, attackerId, 0, 0, 0, 0, 0, portion, ailmentType)
 	end
 end
 
@@ -2256,9 +2349,102 @@ local function read_AfterCalcInfo_DamageSide(args)
 	local physicalDamage  = tonumber(info:call("get_PhysicalDamage"))
 	local elementDamage   = tonumber(info:call("get_ElementDamage"))
 	local conditionDamage = tonumber(info:call("get_ConditionDamage"))
+	local conditionType   = tonumber(info:call("get_ConditionDamageType")) -- snow.enemy.EnemyDef.ConditionDamageType
+
+	--log.info(string.format('%.0f:%.0f = %.0f:%.0f:%.0f:%.0f', attackerId, attackerTypeId, physicalDamage, elementDamage, conditionDamage, conditionType))
 
 	addDamageToBoss(boss, attackerId, attackerTypeId
-	, physicalDamage, elementDamage, conditionDamage)
+	, physicalDamage, elementDamage, conditionDamage, conditionType)
+end
+
+-- take accumulated ailment buildup and calculate ratios for each attacker
+local function calculateAilmentContrib(boss, type)
+	local b = boss.ailment.buildup[type]
+	local s = boss.ailment.share[type]
+
+	-- get total
+	local total = 0.0
+	for key, value in pairs(b) do
+		total = total + value
+	end
+
+	for key, value in pairs(b) do
+		-- update ratio for this attacker
+		s[key] = value / total
+		-- clear accumulated buildup for this attacker
+		-- they have to start over to earn a share of next ailment trigger
+		b[key] = 0.0
+	end
+end
+
+local function read_activate(args)
+	local base = sdk.to_managed_object(args[2])
+	if not base then
+		return
+	end
+
+	local type = base:call("get_Type")
+	-- only look at blast and poison
+	if type ~= 4 and type ~= 5 then
+		return
+	end
+
+	local enemy = base:get_field("<Em>k__BackingField")
+	if not enemy then
+		return
+	end
+
+	if enemy:call('getHpVital') == 0 then
+		return
+	end
+
+	local boss = LARGE_MONSTERS[enemy]
+	if not boss then
+		return
+	end
+
+	calculateAilmentContrib(boss, type)
+
+	-- apply damage now if it was blast, poison will be applied later
+	local dmgBlast = base:call("get_BlastDamage")
+	if type == 5 and dmgBlast then
+		addAilmentDamageToBoss(boss, type, dmgBlast)
+	end
+end
+
+local function read_updateCondition(args)
+	local base = sdk.to_managed_object(args[2])
+	if not base then
+		return
+	end
+
+	-- only if this frame is an instance of damage
+	if base:call('get_IsDamage') then
+		local type = base:call("get_Type")
+		-- only look at poison
+		if type ~= 4 then
+			return
+		end
+
+		local enemy = base:get_field("<Em>k__BackingField")
+		if not enemy then
+			return
+		end
+
+		if enemy:call('getHpVital') == 0 then
+			return
+		end
+
+		local boss = LARGE_MONSTERS[enemy]
+		if not boss then
+			return
+		end
+
+		local damage = base:call('get_Damage')
+		if damage then
+			addAilmentDamageToBoss(boss, type, damage)
+		end
+	end
 end
 
 local function tryLoadTypeDefinitions()
@@ -2303,9 +2489,27 @@ local function tryLoadTypeDefinitions()
 			sdk.hook(SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE,
 				function(args) read_AfterCalcInfo_DamageSide(args) end,
 				function(retval) return retval end)
-				log_info('Hooked snow.enemy.EnemyCharacterBase:afterCalcDamage_DamageSide()')
+			log_info('Hooked snow.enemy.EnemyCharacterBase:afterCalcDamage_DamageSide()')
 		else
 			log_error('Failed to find snow.enemy.EnemyCharacterBase')
+		end
+	end
+
+	if not SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE then
+		SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE = sdk.find_type_definition("snow.enemy.EnemyConditionDamageParamBase")
+		if SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE then
+			SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE_ACTIVATE = SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE:get_method("activate")
+			-- register function hook
+			sdk.hook(SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE_ACTIVATE,
+				function(args) read_activate(args) end,
+				function(retval) return retval end)
+			log_info('Hooked snow.enemy.EnemyConditionDamageParamBase:activate()')
+
+			SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE_UPDATE = SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE:get_method("update")
+
+			sdk.hook(SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE_UPDATE,
+				function(args) read_updateCondition(args) end,
+				function(retval) return retval end)
 		end
 	end
 
@@ -2534,4 +2738,5 @@ if _G._UNIT_TESTING then
 	_G.mergeBossIntoReport     = mergeBossIntoReport
 	_G.sumDamageSourcesList    = sumDamageSourcesList
 	_G.generateReport          = generateReport
+	_G.calculateAilmentContrib = calculateAilmentContrib
 end
