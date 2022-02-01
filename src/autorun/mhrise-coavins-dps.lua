@@ -2775,4 +2775,5 @@ if _G._UNIT_TESTING then
 	_G.sumDamageSourcesList    = sumDamageSourcesList
 	_G.generateReport          = generateReport
 	_G.calculateAilmentContrib = calculateAilmentContrib
+	_G.addAilmentDamageToBoss = addAilmentDamageToBoss
 end

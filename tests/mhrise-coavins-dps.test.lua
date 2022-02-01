@@ -159,17 +159,41 @@ describe("mhrise-coavins-dps", function()
 		it("is distributed fairly", function()
 			local boss = initializeMockBossMonster()
 
+			SetCFG('TABLE_SORT_IN_ORDER', true)
+
+			addDamageToBoss(boss, 0, 0, 100, 0, 100, 5)
 			addDamageToBoss(boss, 1, 0, 100, 0, 100, 5)
-			addDamageToBoss(boss, 2, 0, 100, 0, 100, 5)
-			addDamageToBoss(boss, 3, 0, 100, 0, 200, 5)
-			addDamageToBoss(boss, 4, 0, 100, 0, 400, 5)
+			addDamageToBoss(boss, 2, 0, 100, 0, 200, 5)
+			addDamageToBoss(boss, 3, 0, 100, 0, 400, 5)
 
 			calculateAilmentContrib(boss, 5)
 
+			assert.is_equal(0.125, boss.ailment.share[5][0])
 			assert.is_equal(0.125, boss.ailment.share[5][1])
-			assert.is_equal(0.125, boss.ailment.share[5][2])
-			assert.is_equal(0.25, boss.ailment.share[5][3])
-			assert.is_equal(0.5, boss.ailment.share[5][4])
+			assert.is_equal(0.25, boss.ailment.share[5][2])
+			assert.is_equal(0.5, boss.ailment.share[5][3])
+
+			addAilmentDamageToBoss(boss, 5, 1000)
+
+			generateReport(REPORT_MONSTERS)
+
+			local r = DAMAGE_REPORTS[1]
+
+			assert.is_equal(125, r.items[1].totalBlast)
+			assert.is_equal(125, r.items[2].totalBlast)
+			assert.is_equal(250, r.items[3].totalBlast)
+			assert.is_equal(500, r.items[4].totalBlast)
+
+			addAilmentDamageToBoss(boss, 5, 1500)
+
+			generateReport(REPORT_MONSTERS)
+
+			r = DAMAGE_REPORTS[1]
+
+			assert.is_equal(2500 * 0.125, r.items[1].totalBlast)
+			assert.is_equal(2500 * 0.125, r.items[2].totalBlast)
+			assert.is_equal(2500 * 0.25, r.items[3].totalBlast)
+			assert.is_equal(2500 * 0.5, r.items[4].totalBlast)
 		end)
 
 	end)
