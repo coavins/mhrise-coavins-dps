@@ -17,7 +17,9 @@ TABLE_COLUMNS[7] = 'Best%'
 TABLE_COLUMNS[8] = 'Hits'
 TABLE_COLUMNS[9] = 'MaxHit'
 TABLE_COLUMNS[10] = 'qDPS'
-TABLE_COLUMNS[11] = 'Ailment'
+TABLE_COLUMNS[11] = 'Status'
+TABLE_COLUMNS[12] = 'Poison'
+TABLE_COLUMNS[13] = 'Blast'
 
 -- list of columns sorted for the combo box
 local TABLE_COLUMNS_OPTIONS_ID = {}
@@ -27,11 +29,13 @@ TABLE_COLUMNS_OPTIONS_ID[3] = 3
 TABLE_COLUMNS_OPTIONS_ID[4] = 10
 TABLE_COLUMNS_OPTIONS_ID[5] = 4
 TABLE_COLUMNS_OPTIONS_ID[6] = 5
-TABLE_COLUMNS_OPTIONS_ID[7] = 11
-TABLE_COLUMNS_OPTIONS_ID[8] = 6
-TABLE_COLUMNS_OPTIONS_ID[9] = 7
-TABLE_COLUMNS_OPTIONS_ID[10] = 8
-TABLE_COLUMNS_OPTIONS_ID[11] = 9
+TABLE_COLUMNS_OPTIONS_ID[7] = 12
+TABLE_COLUMNS_OPTIONS_ID[8] = 13
+TABLE_COLUMNS_OPTIONS_ID[9] = 11
+TABLE_COLUMNS_OPTIONS_ID[10] = 6
+TABLE_COLUMNS_OPTIONS_ID[11] = 7
+TABLE_COLUMNS_OPTIONS_ID[12] = 8
+TABLE_COLUMNS_OPTIONS_ID[13] = 9
 
 local TABLE_COLUMNS_OPTIONS_READABLE = {}
 for i,col in ipairs(TABLE_COLUMNS_OPTIONS_ID) do
@@ -1553,8 +1557,12 @@ local function drawReportItemColumn(item, col, x, y)
 		text = string.format('%.0f', item.maxHit)
 	elseif col == 10 then -- qDPS
 		text = string.format('%.1f', item.dps.quest)
-	elseif col == 11 then -- Ailment
+	elseif col == 11 then -- Buildup
 		text = string.format('%.0f', item.totalCondition)
+	elseif col == 12 then -- Poison
+		text = string.format('%.0f', item.totalPoison)
+	elseif col == 13 then -- Blast
+		text = string.format('%.0f', item.totalBlast)
 	end
 
 	d2d.text(FONT, text, x, y, COLOR('WHITE'))
