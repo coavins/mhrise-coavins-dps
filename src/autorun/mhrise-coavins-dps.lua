@@ -2534,6 +2534,7 @@ local function tryLoadTypeDefinitions()
 		end
 	end
 
+	--[[
 	if not SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE then
 		SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE = sdk.find_type_definition("snow.enemy.EnemyConditionDamageParamBase")
 		if SNOW_ENEMY_ENEMYCONDITIONDAMAGEPARAMBASE then
@@ -2551,6 +2552,7 @@ local function tryLoadTypeDefinitions()
 				function(retval) return retval end)
 		end
 	end
+	]]
 
 	if not STAGE_MANAGER_TYPE then
 		STAGE_MANAGER_TYPE = sdk.find_type_definition("snow.stage.StageManager")
