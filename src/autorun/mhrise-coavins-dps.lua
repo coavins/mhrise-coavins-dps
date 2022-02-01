@@ -545,7 +545,7 @@ end
 local function loadDefaultConfig()
 	local file = readDataFile('default.json')
 	if not file then
-		log_error('failed to load default.json')
+		log_error('failed to load default.json (did you install the data files?)')
 		return false
 	end
 
