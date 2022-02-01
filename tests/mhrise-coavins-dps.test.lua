@@ -145,6 +145,18 @@ describe("mhrise-coavins-dps", function()
 		it("is distributed fairly", function()
 			local boss = initializeMockBossMonster()
 
+			addDamageToBoss(boss, 1, 0, 100, 0, 100, 4)
+			addDamageToBoss(boss, 2, 0, 100, 0, 100, 4)
+
+			calculateAilmentContrib(boss, 4)
+
+			assert.is_equal(0.5, boss.ailment.share[4][1])
+			assert.is_equal(0.5, boss.ailment.share[4][2])
+		end)
+
+		it("is distributed fairly", function()
+			local boss = initializeMockBossMonster()
+
 			addDamageToBoss(boss, 1, 0, 100, 0, 100, 5)
 			addDamageToBoss(boss, 2, 0, 100, 0, 100, 5)
 			addDamageToBoss(boss, 3, 0, 100, 0, 200, 5)
@@ -156,7 +168,7 @@ describe("mhrise-coavins-dps", function()
 			assert.is_equal(0.5, boss.ailment.share[5][3])
 		end)
 
-		it("is distributed fairly", function()
+		it("is distributed fairly (blast)", function()
 			local boss = initializeMockBossMonster()
 
 			SetCFG('TABLE_SORT_IN_ORDER', true)
@@ -194,6 +206,39 @@ describe("mhrise-coavins-dps", function()
 			assert.is_equal(2500 * 0.125, r.items[2].totalBlast)
 			assert.is_equal(2500 * 0.25, r.items[3].totalBlast)
 			assert.is_equal(2500 * 0.5, r.items[4].totalBlast)
+		end)
+
+		it("is distributed fairly (poison)", function()
+			local boss = initializeMockBossMonster()
+
+			SetCFG('TABLE_SORT_IN_ORDER', true)
+
+			addDamageToBoss(boss, 0, 0, 100, 0, 100, 4)
+			addDamageToBoss(boss, 1, 0, 100, 0, 100, 4)
+			addDamageToBoss(boss, 2, 0, 100, 0, 200, 4)
+			addDamageToBoss(boss, 3, 0, 100, 0, 400, 4)
+
+			calculateAilmentContrib(boss, 4)
+
+			assert.is_equal(0.125, boss.ailment.share[4][0])
+			assert.is_equal(0.125, boss.ailment.share[4][1])
+			assert.is_equal(0.25, boss.ailment.share[4][2])
+			assert.is_equal(0.5, boss.ailment.share[4][3])
+
+			addAilmentDamageToBoss(boss, 4, 20)
+			addAilmentDamageToBoss(boss, 4, 20)
+			addAilmentDamageToBoss(boss, 4, 20)
+			addAilmentDamageToBoss(boss, 4, 20)
+			addAilmentDamageToBoss(boss, 4, 20)
+
+			generateReport(REPORT_MONSTERS)
+
+			local r = DAMAGE_REPORTS[1]
+
+			assert.is_equal(12.5, r.items[1].totalPoison)
+			assert.is_equal(12.5, r.items[2].totalPoison)
+			assert.is_equal(25, r.items[3].totalPoison)
+			assert.is_equal(50, r.items[4].totalPoison)
 		end)
 
 	end)
