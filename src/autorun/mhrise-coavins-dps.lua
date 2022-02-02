@@ -20,6 +20,8 @@ TABLE_COLUMNS[10] = 'qDPS'
 TABLE_COLUMNS[11] = 'Status'
 TABLE_COLUMNS[12] = 'Poison'
 TABLE_COLUMNS[13] = 'Blast'
+TABLE_COLUMNS[14] = 'Crit%'
+TABLE_COLUMNS[15] = 'Weak%'
 
 -- list of columns sorted for the combo box
 local TABLE_COLUMNS_OPTIONS_ID = {}
@@ -34,8 +36,10 @@ TABLE_COLUMNS_OPTIONS_ID[8] = 13
 TABLE_COLUMNS_OPTIONS_ID[9] = 11
 TABLE_COLUMNS_OPTIONS_ID[10] = 6
 TABLE_COLUMNS_OPTIONS_ID[11] = 7
-TABLE_COLUMNS_OPTIONS_ID[12] = 8
-TABLE_COLUMNS_OPTIONS_ID[13] = 9
+TABLE_COLUMNS_OPTIONS_ID[12] = 14
+TABLE_COLUMNS_OPTIONS_ID[13] = 15
+TABLE_COLUMNS_OPTIONS_ID[14] = 8
+TABLE_COLUMNS_OPTIONS_ID[15] = 9
 
 local TABLE_COLUMNS_OPTIONS_READABLE = {}
 for i,col in ipairs(TABLE_COLUMNS_OPTIONS_ID) do
@@ -797,9 +801,16 @@ local function initializeDamageCounter()
 	c.physical  = 0.0
 	c.elemental = 0.0
 	c.condition = 0.0 -- ailment buildup
+
 	c.ailment = {} -- ailment damage
 	c.ailment[4] = 0.0 -- poison
 	c.ailment[5] = 0.0 -- blast
+
+	c.numHit = 0 -- how many hits
+	c.maxHit = 0 -- biggest hit
+	c.numUpCrit = 0 -- how many crits
+	c.numDnCrit = 0 -- how many negative crits
+
 	return c
 end
 
@@ -810,6 +821,10 @@ local function initializeDamageCounterWithDummyData()
 	c.condition = math.random(1,100)
 	c.ailment[4] = math.random(1,200)
 	c.ailment[5] = math.random(1,500)
+	c.numHit = math.random(1,200)
+	c.maxHit = math.random(1,500)
+	c.numUpCrit = math.random(1,50)
+	c.numDnCrit = math.random(1,10)
 	return c
 end
 
@@ -829,6 +844,10 @@ local function mergeDamageCounters(a, b)
 	c.condition = a.condition + b.condition
 	c.ailment[4] = a.ailment[4] + b.ailment[4]
 	c.ailment[5] = a.ailment[5] + b.ailment[5]
+	c.numHit = a.numHit + b.numHit
+	c.maxHit = math.max(a.maxHit, b.maxHit)
+	c.numUpCrit = a.numUpCrit + b.numUpCrit
+	c.numDnCrit = a.numDnCrit + b.numDnCrit
 	return c
 end
 
@@ -842,9 +861,6 @@ local function initializeDamageSource(attackerId)
 		s.counters[type] = initializeDamageCounter()
 	end
 
-	s.numHit = 0 -- how many hits
-	s.maxHit = 0 -- biggest hit
-
 	return s
 end
 
@@ -852,9 +868,6 @@ local function initializeDamageSourceWithDummyPlayerData(attackerId)
 	local s = initializeDamageSource(attackerId)
 
 	s.counters['weapon'] = initializeDamageCounterWithDummyData()
-
-	s.numHit = math.random(1,380)
-	s.maxHit = math.random(1,1000)
 
 	return s
 end
@@ -865,9 +878,6 @@ local function initializeDamageSourceWithDummyOtomoData(attackerId)
 	s.counters['otomo'] = initializeDamageCounter()
 	s.counters['otomo'].physical = math.random(0,400)
 
-	s.numHit = math.random(1,500)
-	s.maxHit = math.random(1,100)
-
 	return s
 end
 
@@ -876,9 +886,6 @@ local function initializeDamageSourceWithDummyMonsterData(attackerId)
 
 	s.counters['monster'] = initializeDamageCounter()
 	s.counters['monster'].physical = math.random(0,150)
-
-	s.numHit = math.random(1,10)
-	s.maxHit = math.random(1,50)
 
 	return s
 end
@@ -1008,11 +1015,12 @@ local function initializeBossMonsterWithDummyData(bossKey, fakeName)
 end
 
 local function addDamageToBoss(boss, attackerId, attackerTypeId
-	, amtPhysical, amtElemental, amtCondition, typeCondition, amtAilment, typeAilment)
+	, amtPhysical, amtElemental, amtCondition, typeCondition, amtAilment, typeAilment, criticalType)
 	amtPhysical = amtPhysical or 0
 	amtElemental = amtElemental or 0
 	amtCondition = amtCondition or 0
 	amtAilment = amtAilment or 0
+	criticalType = criticalType or 0
 
 	local amt = initializeDamageCounter()
 	amt.physical  = amtPhysical
@@ -1020,6 +1028,16 @@ local function addDamageToBoss(boss, attackerId, attackerTypeId
 	amt.condition = amtCondition
 	if typeAilment then
 		amt.ailment[typeAilment] = amtAilment
+	end
+	if criticalType == 1 then
+		amt.numUpCrit = 1
+	elseif criticalType == 2 then
+		amt.numDnCrit = 1
+	end
+	-- don't track this for ailment damage
+	if not typeAilment or typeAilment == 0 then
+		amt.numHit = 1
+		amt.maxHit = getTotalDamageForDamageCounter(amt)
 	end
 
 	--log.info(string.format('%.0f/%.0f %.0f:%.0f:%.0f:%.0f'
@@ -1060,18 +1078,6 @@ local function addDamageToBoss(boss, attackerId, attackerTypeId
 		local b = buildup[typeCondition]
 		-- accumulate this buildup for this attacker
 		b[attackerId] = (b[attackerId] or 0.0) + amtCondition
-	end
-
-	-- don't track this for ailment damage
-	if not typeAilment or typeAilment == 0 then
-		-- hit count
-		s.numHit = s.numHit + 1
-
-		-- biggest hit
-		local totalDamage = getTotalDamageForDamageCounter(amt)
-		if totalDamage > s.maxHit then
-			s.maxHit = totalDamage
-		end
 	end
 end
 
@@ -1192,6 +1198,8 @@ local function initializeReportItem(id)
 
 	item.numHit = 0
 	item.maxHit = 0
+	item.numUpCrit = 0
+	item.numDnCrit = 0
 
 	return item
 end
@@ -1206,18 +1214,23 @@ local function sumDamageCountersList(counters, attackerTypeFilter)
 	sum.blast = 0.0
 	sum.otomo = 0.0
 
+	sum.numHit = 0
+	sum.maxHit = 0
+	sum.numUpCrit = 0
+	sum.numDnCrit = 0
+
 	-- get totals from counters
 	for type,counter in pairs(counters) do
 		if not attackerTypeFilter or attackerTypeFilter[type] then
-			if type == 'otomo' then
-				-- sum together otomo's different types of damage and store it as its own type of damage instead
-				local counterTotal = getTotalDamageForDamageCounter(counter)
+			local counterTotal = getTotalDamageForDamageCounter(counter)
 
+			if type == 'otomo' then
 				-- count otomo's condition damage here if necessary
 				if CFG('CONDITION_LIKE_DAMAGE') then
 					counterTotal = counterTotal + counter.condition
 				end
 
+				-- sum together otomo's different types of damage and store it as its own type of damage instead
 				sum.otomo = sum.otomo + counterTotal
 
 				sum.total = sum.total + counterTotal
@@ -1228,8 +1241,13 @@ local function sumDamageCountersList(counters, attackerTypeFilter)
 				sum.poison    = sum.poison    + counter.ailment[4]
 				sum.blast     = sum.blast     + counter.ailment[5]
 
-				sum.total = sum.total + getTotalDamageForDamageCounter(counter)
+				sum.total = sum.total + counterTotal
 			end
+
+			sum.numHit    = sum.numHit + counter.numHit
+			sum.maxHit     = math.max(sum.maxHit, counter.maxHit)
+			sum.numUpCrit = sum.numUpCrit + counter.numUpCrit
+			sum.numDnCrit = sum.numDnCrit + counter.numDnCrit
 		end
 	end
 
@@ -1246,6 +1264,11 @@ local function sumDamageSourcesList(sources)
 	sum.blast = 0.0
 	sum.otomo = 0.0
 
+	sum.numHit = 0
+	sum.maxHit = 0
+	sum.numUpCrit = 0
+	sum.numDnCrit = 0
+
 	for _,source in pairs(sources) do
 		local this = sumDamageCountersList(source.counters)
 		sum.total = sum.total + this.total
@@ -1255,6 +1278,11 @@ local function sumDamageSourcesList(sources)
 		sum.poison    = sum.poison    + this.poison
 		sum.blast     = sum.blast     + this.blast
 		sum.otomo     = sum.otomo     + this.otomo
+
+		sum.numHit    = sum.numHit + this.numHit
+		sum.maxHit     = math.max(sum.maxHit, this.maxHit)
+		sum.numUpCrit = sum.numUpCrit + this.numUpCrit
+		sum.numDnCrit = sum.numDnCrit + this.numDnCrit
 	end
 
 	return sum
@@ -1279,9 +1307,6 @@ local function mergeDamageSourceIntoReportItem(item, source)
 	end
 
 	item.counters = mergeReportItemCounters(item.counters, source.counters)
-
-	item.numHit = item.numHit + source.numHit
-	item.maxHit = math.max(item.maxHit, source.maxHit)
 end
 
 local function sortReportItems_DESC(a, b)
@@ -1400,6 +1425,21 @@ local function mergeBossIntoReport(report, boss)
 		item.totalPoison    = sum.poison
 		item.totalBlast     = sum.blast
 		item.totalOtomo     = sum.otomo
+
+		item.numHit = sum.numHit
+		item.maxHit = sum.maxHit
+		item.numUpCrit = sum.numUpCrit
+		item.numDnCrit = sum.numDnCrit
+
+		print('made item with numHit: ' .. item.numHit)
+
+		if item.numHit > 0 then
+			item.pctUpCrit = item.numUpCrit / item.numHit
+			item.pctDnCrit = item.numDnCrit / item.numHit
+		else
+			item.pctUpCrit = 0
+			item.pctDnCrit = 0
+		end
 
 		if CFG('CONDITION_LIKE_DAMAGE') then
 			item.total = sum.total + sum.condition
@@ -1587,6 +1627,10 @@ local function drawReportItemColumn(item, col, x, y)
 		text = string.format('%.0f', item.totalPoison)
 	elseif col == 13 then -- Blast
 		text = string.format('%.0f', item.totalBlast)
+	elseif col == 14 then -- Crit%
+		text = string.format('%.0f%%', item.pctUpCrit * 100.0)
+	elseif col == 15 then -- Weak%
+		text = string.format('%.0f%%', item.pctDnCrit * 100.0)
 	end
 
 	d2d.text(FONT, text, x, y, COLOR('WHITE'))
@@ -2465,11 +2509,13 @@ local function read_AfterCalcInfo_DamageSide(args)
 	local conditionDamage = tonumber(info:call("get_ConditionDamage"))
 	local conditionType   = tonumber(info:call("get_ConditionDamageType")) -- snow.enemy.EnemyDef.ConditionDamageType
 
+	local criticalType = tonumber(info:call("get_CriticalResult")) -- snow.hit.CriticalType (0: not, 1: crit, 2: bad crit)
+
 	--log.info(string.format('%.0f:%.0f = %.0f:%.0f:%.0f:%.0f'
 	--, attackerId, attackerTypeId, physicalDamage, elementDamage, conditionDamage, conditionType))
 
 	addDamageToBoss(boss, attackerId, attackerTypeId
-	, physicalDamage, elementDamage, conditionDamage, conditionType)
+	, physicalDamage, elementDamage, conditionDamage, conditionType, 0, 0, criticalType)
 end
 
 local function tryLoadTypeDefinitions()
