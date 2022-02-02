@@ -907,14 +907,18 @@ local function initializeBossMonster(bossEnemy)
 	boss.damageSources = {}
 
 	boss.ailment = {}
+
+	-- amount that each player has contributed to each ailment
 	boss.ailment.buildup = {}
 	boss.ailment.buildup[4] = {}
 	boss.ailment.buildup[5] = {}
 
+	-- percentage that each player contributed to each ailment
 	boss.ailment.share = {}
 	boss.ailment.share[4] = {}
 	boss.ailment.share[5] = {}
 
+	-- number of times ailment triggered
 	boss.ailment.count = {}
 	boss.ailment.count[4] = 0
 	boss.ailment.count[5] = 0
