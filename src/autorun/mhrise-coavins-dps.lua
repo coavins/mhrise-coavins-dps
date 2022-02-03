@@ -721,10 +721,11 @@ local function updatePlayers()
 		end
 	end
 
-	for key, value in pairs(PLAYER_NAMES) do
+	for key, value in ipairs(PLAYER_NAMES) do
 		-- update enter time for this player when the name changes
 		if oldNames[key] ~= value then
-			PLAYER_TIMES[key] = 0.0
+			log_info(string.format('updated quest time for player %d to %.0f', key, QUEST_DURATION))
+			PLAYER_TIMES[key] = QUEST_DURATION
 		end
 	end
 
@@ -1470,7 +1471,12 @@ local function mergeBossIntoReport(report, boss)
 
 		if report.questTime > 0 then
 			item.dps.quest = item.total / report.questTime
-			item.dps.personal = item.total / (report.questTime - (PLAYER_TIMES[item.playerNumber] or 0.0))
+			local playerTime = PLAYER_TIMES[item.playerNumber]
+			if playerTime then
+				item.dps.personal = item.total / (report.questTime - playerTime)
+			else
+				item.dps.personal = 0.0
+			end
 		end
 
 		-- remember which combatant has the most damage
