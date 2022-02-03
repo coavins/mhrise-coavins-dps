@@ -2500,7 +2500,7 @@ local function read_AfterCalcInfo_DamageSide(args)
 		return
 	end
 
-	if enemy:call('getHpVital') == 0 then
+	if boss.hp.current == 0 then
 		return
 	end
 
