@@ -339,7 +339,7 @@ local STAGE_MANAGER_METHOD_ENDTRAININGROOM = nil
 
 local function debug_line(text)
 	DEBUG_Y = DEBUG_Y + 20
-	draw.text(text, 0, DEBUG_Y, 0xFFFFFFFF)
+	d2d.text(FONT, text, 0, DEBUG_Y, 0xCFAFAFAF)
 end
 
 local function makeTableEmpty(table)
@@ -1913,6 +1913,10 @@ local function drawDebugStats()
 			text = text .. ' captured'
 		end
 
+		local isConditionDamageActive = bossEnemy:call("isConditionDamageActive", 4)
+		if isConditionDamageActive then text = text .. ' conditioned'
+		end
+
 		debug_line(text)
 
 	end
@@ -1926,8 +1930,9 @@ local function drawDebugStats()
 		for _,item in ipairs(report.items) do
 			debug_line(item.name or 'no name')
 			for type,counter in pairs(item.counters) do
-				if counter.total > 0 then
-					debug_line(string.format('%s\t\t%f',type, counter.total))
+				local total = getTotalDamageForDamageCounter(counter)
+				if total > 0 then
+					debug_line(string.format('%s\t\t%f',type, total))
 				end
 			end
 		end
