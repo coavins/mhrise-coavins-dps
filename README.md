@@ -52,6 +52,8 @@ The following columns can be chosen to appear on the table for each player:
 * Best % (percent of best damage dealer's output)
 * Hits (number of hits)
 * MaxHit (biggest single hit)
+* Crit % (percent of hits that were critical)
+* Weak % (percent of hits that were weak due to negative affinity)
 
 Note: Poison and blast damage will be credited proportionately to players based on how much status buildup you contributed.
 
