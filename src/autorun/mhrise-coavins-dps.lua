@@ -1435,8 +1435,6 @@ local function mergeBossIntoReport(report, boss)
 		item.numUpCrit = sum.numUpCrit
 		item.numDnCrit = sum.numDnCrit
 
-		print('made item with numHit: ' .. item.numHit)
-
 		if item.numHit > 0 then
 			item.pctUpCrit = item.numUpCrit / item.numHit
 			item.pctDnCrit = item.numDnCrit / item.numHit
