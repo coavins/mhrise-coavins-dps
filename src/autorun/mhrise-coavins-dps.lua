@@ -255,27 +255,6 @@ ATTACKER_TYPE_TEXT['fg005']             = 'fg005'
 ATTACKER_TYPE_TEXT['ecbatexplode']      = 'ecbatexplode'
 ATTACKER_TYPE_TEXT['monster']           = 'Monster'
 
---[[
-local CONDITION_TYPES = {}
-CONDITION_TYPES[0]  = 'Paralyze'
-CONDITION_TYPES[1]  = 'Sleep'
-CONDITION_TYPES[2]  = 'Stun'
-CONDITION_TYPES[3]  = 'Flash'
-CONDITION_TYPES[4]  = 'Poison'
-CONDITION_TYPES[5]  = 'Blast'
-CONDITION_TYPES[6]  = 'Stamina'
-CONDITION_TYPES[7]  = 'MarionetteStart'
-CONDITION_TYPES[8]  = 'Water'
-CONDITION_TYPES[9]  = 'Fire'
-CONDITION_TYPES[10] = 'Ice'
-CONDITION_TYPES[11] = 'Thunder'
-CONDITION_TYPES[12] = 'FallTrap'
-CONDITION_TYPES[13] = 'ShockTrap'
-CONDITION_TYPES[14] = 'Capture'
-CONDITION_TYPES[15] = 'Koyashi'
-CONDITION_TYPES[16] = 'SteelFang'
-]]
-
 --#endregion
 
 --#region globals
@@ -805,6 +784,25 @@ local function initializeDamageCounter()
 	c.ailment = {} -- ailment damage
 	c.ailment[4] = 0.0 -- poison
 	c.ailment[5] = 0.0 -- blast
+	--[[ snow.enemy.EnemyDef.ConditionDamageType
+		0 Paralyze
+		1 Sleep
+		2 Stun
+		3 Flash
+		4 Poison
+		5 Blast
+		6 Stamina
+		7 MarionetteStart
+		8 Water
+		9 Fire
+		10 Ice
+		11 Thunder
+		12 FallTrap
+		13 ShockTrap
+		14 Capture
+		15 Koyashi
+		16 SteelFang
+	]]
 
 	c.numHit = 0 -- how many hits
 	c.maxHit = 0 -- biggest hit
