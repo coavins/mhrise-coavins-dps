@@ -44,7 +44,7 @@ The following columns can be chosen to appear on the table for each player:
 * Player name
 * qDPS (based on elapsed quest duration)
 * mDPS (based on time selected monsters have spent in combat)
-* pDPS (based on time each player has individually spent in the quest)
+* pDPS (based on time each player has been in the quest with you)
 * Total damage
 * Poison damage (poison ticking damage)
 * Blast damage (blast explosion)
