@@ -73,6 +73,7 @@
 			1,
 			1,
 			1,
+			1,
 			1
 		],
 		"TABLE_COLS_WIDTH": [
@@ -90,7 +91,8 @@
 			58,
 			58,
 			53,
-			53
+			53,
+			39
 		],
 		"DRAW_BAR_TEXT_YOU": {
 			"VALUE": false,

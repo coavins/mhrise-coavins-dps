@@ -22,6 +22,7 @@ TABLE_COLUMNS[12] = 'Poison'
 TABLE_COLUMNS[13] = 'Blast'
 TABLE_COLUMNS[14] = 'Crit%'
 TABLE_COLUMNS[15] = 'Weak%'
+TABLE_COLUMNS[16] = 'pDPS'
 
 -- list of columns sorted for the combo box
 local TABLE_COLUMNS_OPTIONS_ID = {}
@@ -30,16 +31,17 @@ TABLE_COLUMNS_OPTIONS_ID[2] = 2
 TABLE_COLUMNS_OPTIONS_ID[3] = 3
 TABLE_COLUMNS_OPTIONS_ID[4] = 10
 TABLE_COLUMNS_OPTIONS_ID[5] = 4
-TABLE_COLUMNS_OPTIONS_ID[6] = 5
-TABLE_COLUMNS_OPTIONS_ID[7] = 12
-TABLE_COLUMNS_OPTIONS_ID[8] = 13
-TABLE_COLUMNS_OPTIONS_ID[9] = 11
-TABLE_COLUMNS_OPTIONS_ID[10] = 6
-TABLE_COLUMNS_OPTIONS_ID[11] = 7
-TABLE_COLUMNS_OPTIONS_ID[12] = 14
-TABLE_COLUMNS_OPTIONS_ID[13] = 15
-TABLE_COLUMNS_OPTIONS_ID[14] = 8
-TABLE_COLUMNS_OPTIONS_ID[15] = 9
+TABLE_COLUMNS_OPTIONS_ID[6] = 16
+TABLE_COLUMNS_OPTIONS_ID[7] = 5
+TABLE_COLUMNS_OPTIONS_ID[8] = 12
+TABLE_COLUMNS_OPTIONS_ID[9] = 13
+TABLE_COLUMNS_OPTIONS_ID[10] = 11
+TABLE_COLUMNS_OPTIONS_ID[11] = 6
+TABLE_COLUMNS_OPTIONS_ID[12] = 7
+TABLE_COLUMNS_OPTIONS_ID[13] = 14
+TABLE_COLUMNS_OPTIONS_ID[14] = 15
+TABLE_COLUMNS_OPTIONS_ID[15] = 8
+TABLE_COLUMNS_OPTIONS_ID[16] = 9
 
 local TABLE_COLUMNS_OPTIONS_READABLE = {}
 for i,col in ipairs(TABLE_COLUMNS_OPTIONS_ID) do
@@ -306,6 +308,7 @@ local MY_PLAYER_ID = nil
 local PLAYER_NAMES = {}
 local OTOMO_NAMES = {}
 local PLAYER_RANKS = {}
+local PLAYER_TIMES = {} -- the time when they entered the quest
 
 -- initialized later when they become available
 local MANAGER = {}
@@ -671,6 +674,12 @@ local function getOtomoIdFromFakeAttackerId(fakeAttackerId)
 end
 
 local function updatePlayers()
+	local oldNames = {}
+	oldNames[1] = PLAYER_NAMES[1]
+	oldNames[2] = PLAYER_NAMES[2]
+	oldNames[3] = PLAYER_NAMES[3]
+	oldNames[4] = PLAYER_NAMES[4]
+
 	-- clear existing info
 	makeTableEmpty(PLAYER_NAMES)
 	makeTableEmpty(PLAYER_RANKS)
@@ -709,6 +718,13 @@ local function updatePlayers()
 					end
 				end
 			end
+		end
+	end
+
+	for key, value in pairs(PLAYER_NAMES) do
+		-- update enter time for this player when the name changes
+		if oldNames[key] ~= value then
+			PLAYER_TIMES[key] = 0.0
 		end
 	end
 
@@ -1454,6 +1470,7 @@ local function mergeBossIntoReport(report, boss)
 
 		if report.questTime > 0 then
 			item.dps.quest = item.total / report.questTime
+			item.dps.personal = item.total / (report.questTime - (PLAYER_TIMES[item.playerNumber] or 0.0))
 		end
 
 		-- remember which combatant has the most damage
@@ -1631,6 +1648,8 @@ local function drawReportItemColumn(item, col, x, y)
 		text = string.format('%.0f%%', item.pctUpCrit * 100.0)
 	elseif col == 15 then -- Weak%
 		text = string.format('%.0f%%', item.pctDnCrit * 100.0)
+	elseif col == 16 then -- pDPS
+		text = string.format('%.1f', item.dps.personal)
 	end
 
 	d2d.text(FONT, text, x, y, COLOR('WHITE'))
