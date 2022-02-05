@@ -2258,6 +2258,11 @@ local function DrawWindowSettings()
 	imgui.new_line()
 
 	if imgui.tree_node('Appearance') then
+		showSliderForFloatSetting('TABLE_X')
+		showSliderForFloatSetting('TABLE_Y')
+
+		imgui.new_line()
+
 		showCheckboxForSetting('DRAW_TITLE')
 		showCheckboxForSetting('DRAW_TITLE_TEXT')
 		showCheckboxForSetting('DRAW_TITLE_MONSTER')
@@ -2288,8 +2293,6 @@ local function DrawWindowSettings()
 
 		imgui.new_line()
 
-		showSliderForFloatSetting('TABLE_X')
-		showSliderForFloatSetting('TABLE_Y')
 		showSliderForIntSetting('TABLE_WIDTH')
 
 		imgui.new_line()
