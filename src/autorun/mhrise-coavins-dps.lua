@@ -1527,6 +1527,16 @@ end
 
 --#region Drawing
 
+local function drawRichText(text, x, y, colorText, colorShadow)
+	if CFG('TEXT_DRAW_SHADOWS') and colorShadow then
+		local scale = CFG('TABLE_SCALE')
+		local offsetX = CFG('TEXT_SHADOW_OFFSET_X') * scale
+		local offsetY = CFG('TEXT_SHADOW_OFFSET_Y') * scale
+		d2d.text(FONT, text, x + offsetX, y + offsetY, colorShadow)
+	end
+	d2d.text(FONT, text, x, y, colorText)
+end
+
 local function drawRichDamageBar(item, x, y, maxWidth, h, colorPhysical, colorElemental)
 	local w
 	local colorCondition = COLOR('BAR_DMG_AILMENT')
@@ -1597,7 +1607,7 @@ end
 local function drawReportHeaderColumn(col, x, y)
 	local text = TABLE_COLUMNS[col]
 
-	d2d.text(FONT, text, x, y, COLOR('GRAY'))
+	drawRichText(text, x, y, COLOR('GRAY'), COLOR('BLACK'))
 end
 
 local function drawReportItemColumn(item, col, x, y)
@@ -1658,7 +1668,7 @@ local function drawReportItemColumn(item, col, x, y)
 		text = string.format('%.1f', item.dps.personal)
 	end
 
-	d2d.text(FONT, text, x, y, COLOR('WHITE'))
+	drawRichText(text, x, y, COLOR('WHITE'), COLOR('BLACK'))
 end
 
 local function drawReportItem(item, x, y, width, height)
@@ -1711,7 +1721,8 @@ local function drawReportItem(item, x, y, width, height)
 
 		-- hr
 		if item.playerNumber and item.rank and CFG('DRAW_BAR_REVEAL_HR') then
-			d2d.text(FONT, string.format('%s',item.rank), x + (3 * CFG('TABLE_SCALE')), y, COLOR('WHITE'))
+			local text = string.format('%s',item.rank)
+			drawRichText(text, x + (3 * CFG('TABLE_SCALE')), y, COLOR('WHITE'), COLOR('BLACK'))
 		end
 	else
 		-- bar takes up the entire width of the table
@@ -1726,7 +1737,8 @@ local function drawReportItem(item, x, y, width, height)
 
 			-- hr
 			if item.playerNumber and item.rank and CFG('DRAW_BAR_REVEAL_HR') then
-				d2d.text(FONT, string.format('%s',item.rank), x + (3 * CFG('TABLE_SCALE')), y, COLOR('WHITE'))
+				local text = string.format('%s',item.rank)
+				drawRichText(text, x + (3 * CFG('TABLE_SCALE')), y, COLOR('WHITE'), COLOR('BLACK'))
 			end
 		end
 
@@ -1821,7 +1833,7 @@ local function drawReport(index)
 
 			local titleText = timeText .. monsterText
 			local offsetX = CFG('TABLE_HEADER_TEXT_OFFSET_X')
-			d2d.text(FONT, titleText, origin_x + offsetX, origin_y, COLOR('TITLE_FG'))
+			drawRichText(titleText, origin_x + offsetX, origin_y, COLOR('TITLE_FG'), COLOR('BLACK'))
 		end
 	end
 
@@ -1845,7 +1857,7 @@ local function drawReport(index)
 		end
 
 		if CFG('DRAW_BAR_COLORBLOCK') and CFG('DRAW_BAR_REVEAL_HR') then
-			d2d.text(FONT, 'HR', x, y, COLOR('GRAY'))
+			drawRichText('HR', x, y, COLOR('GRAY'), COLOR('BLACK'))
 		end
 
 		local colorBlockWidth = 30 * scale
@@ -2075,6 +2087,13 @@ end
 
 --#region imgui interface
 
+local function showTextboxForSetting(setting)
+	local changed, value = imgui.input_text(TXT(setting), CFG(setting))
+	if changed then
+		SetCFG(setting, value)
+	end
+end
+
 local function showCheckboxForSetting(setting)
 	local changed, value = imgui.checkbox(TXT(setting), CFG(setting))
 	if changed then
@@ -2097,7 +2116,7 @@ local function showSliderForIntSetting(setting)
 end
 
 local function showInputsForTableColumns()
-	if imgui.tree_node('Column settings') then
+	if imgui.tree_node('Select data') then
 		-- draw combo and slider for each column
 		for i,currentCol in ipairs(_CFG['TABLE_COLS']) do
 			local selected = 1
@@ -2220,6 +2239,12 @@ local function DrawWindowSettings()
 
 	imgui.new_line()
 
+	showCheckboxForSetting('DRAW_BAR_TEXT_YOU')
+	showCheckboxForSetting('DRAW_BAR_TEXT_NAME_USE_REAL_NAMES')
+	showCheckboxForSetting('DRAW_BAR_REVEAL_HR')
+
+	imgui.new_line()
+
 	imgui.text('Scale Overlay')
 	showSliderForFloatSetting('TABLE_SCALE')
 	imgui.text('Save changes and RESET SCRIPTS to apply scaling to text')
@@ -2236,7 +2261,6 @@ local function DrawWindowSettings()
 		showCheckboxForSetting('DRAW_TITLE_MONSTER')
 		showSliderForIntSetting('DRAW_TITLE_HEIGHT')
 		showCheckboxForSetting('DRAW_TITLE_BACKGROUND')
-		showSliderForIntSetting('TABLE_HEADER_TEXT_OFFSET_X')
 
 		imgui.new_line()
 
@@ -2251,12 +2275,6 @@ local function DrawWindowSettings()
 		showCheckboxForSetting('DRAW_BAR_COLORBLOCK')
 		showCheckboxForSetting('DRAW_BAR_USE_PLAYER_COLORS')
 		showCheckboxForSetting('DRAW_BAR_USE_UNIQUE_COLORS')
-
-		imgui.new_line()
-
-		showCheckboxForSetting('DRAW_BAR_TEXT_YOU')
-		showCheckboxForSetting('DRAW_BAR_TEXT_NAME_USE_REAL_NAMES')
-		showCheckboxForSetting('DRAW_BAR_REVEAL_HR')
 
 		imgui.new_line()
 
@@ -2276,8 +2294,32 @@ local function DrawWindowSettings()
 
 		showSliderForIntSetting('TABLE_ROWH')
 		showSliderForIntSetting('TABLE_ROW_PADDING')
+
+		imgui.new_line()
+
+		imgui.tree_pop()
+	end
+
+	if imgui.tree_node('Text') then
+		showTextboxForSetting('FONT_FAMILY')
+		imgui.text('Save changes and RESET SCRIPTS to apply changes to font')
+
+		imgui.new_line()
+
+		showCheckboxForSetting('TEXT_DRAW_SHADOWS')
+		showSliderForIntSetting('TEXT_SHADOW_OFFSET_X')
+		showSliderForIntSetting('TEXT_SHADOW_OFFSET_Y')
+
+		imgui.new_line()
+
+		showSliderForIntSetting('TABLE_HEADER_TEXT_OFFSET_X')
 		showSliderForIntSetting('TABLE_ROW_TEXT_OFFSET_X')
 		showSliderForIntSetting('TABLE_ROW_TEXT_OFFSET_Y')
+
+
+		imgui.new_line()
+
+		imgui.tree_pop()
 	end
 
 	imgui.new_line()
@@ -2812,7 +2854,7 @@ end
 
 -- register with d2d plugin
 d2d.register(function()
-	FONT = d2d.create_font("Tahoma", 14 * CFG('TABLE_SCALE'))
+	FONT = d2d.create_font(CFG('FONT_FAMILY'), 14 * CFG('TABLE_SCALE'))
 end, dpsDraw)
 
 log_info('init complete')

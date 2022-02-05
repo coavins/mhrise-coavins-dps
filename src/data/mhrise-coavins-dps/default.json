@@ -195,6 +195,26 @@
 			"TEXT": "Text offset Y",
 			"MIN": -100,
 			"MAX": 100
+		},
+		"TEXT_DRAW_SHADOWS": {
+			"VALUE": true,
+			"TEXT": "Draw text shadows"
+		},
+		"TEXT_SHADOW_OFFSET_X": {
+			"VALUE": 1,
+			"TEXT": "Text shadow offset X",
+			"MIN": -5,
+			"MAX": 5
+		},
+		"TEXT_SHADOW_OFFSET_Y": {
+			"VALUE": 1,
+			"TEXT": "Text shadow offset Y",
+			"MIN": -5,
+			"MAX": 5
+		},
+		"FONT_FAMILY": {
+			"VALUE": "Tahoma",
+			"TEXT": "Font family"
 		}
 	},
 	"COLORS": {
