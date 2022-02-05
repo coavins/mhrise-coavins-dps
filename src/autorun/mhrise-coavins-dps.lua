@@ -1763,84 +1763,92 @@ local function drawReport(index)
 		return
 	end
 
+	local scale = CFG('TABLE_SCALE') or 1.0
 	local origin_x = getScreenXFromX(CFG('TABLE_X'))
 	local origin_y = getScreenYFromY(CFG('TABLE_Y'))
-	local tableWidth = CFG('TABLE_WIDTH') * CFG('TABLE_SCALE')
-	local rowHeight = CFG('TABLE_ROWH') * CFG('TABLE_SCALE')
+	local tableWidth = CFG('TABLE_WIDTH') * scale
+	local titleHeight = CFG('DRAW_TITLE_HEIGHT') * scale
+	local headerHeight = CFG('DRAW_HEADER_HEIGHT') * scale
+	local rowHeight = CFG('TABLE_ROWH') * scale
 	local growDistance = rowHeight + CFG('TABLE_ROW_PADDING')
 
 	if CFG('TABLE_GROWS_UPWARD') then
 		origin_y = origin_y - rowHeight
 	end
 
-	-- title bar
-	if CFG('DRAW_TITLE_BACKGROUND') then
-		-- title background
-		d2d.fill_rect(origin_x, origin_y, tableWidth, rowHeight, COLOR('TITLE_BG'))
-	end
-
-	if CFG('DRAW_TITLE_TEXT') then
-		-- generate the title text
-
-		-- get quest duration
-		local timeMinutes = MANAGER.QUEST:call("getQuestElapsedTimeMin")
-		local timeSeconds = MANAGER.QUEST:call("getQuestElapsedTimeSec")
-		timeSeconds = timeSeconds - (timeMinutes * 60)
-
-		-- use a fake duration in test mode
-		if isInTestMode() then
-			timeMinutes = 5
-			timeSeconds = 37
+	if CFG('DRAW_TITLE') then
+		-- title bar
+		if CFG('DRAW_TITLE_BACKGROUND') then
+			-- title background
+			d2d.fill_rect(origin_x, origin_y, tableWidth, titleHeight, COLOR('TITLE_BG'))
 		end
 
-		local timeText = string.format("%d:%02.0f", timeMinutes, timeSeconds)
-		local monsterText = ''
+		if CFG('DRAW_TITLE_TEXT') then
+			-- generate the title text
 
-		if CFG('DRAW_TITLE_MONSTER') then
-			monsterText = ' - '
-			-- add monster names
-			local monsterCount = 0
-			for _,boss in pairs(REPORT_MONSTERS) do
-				if monsterCount < 3 then
-					if monsterCount > 0 then monsterText = monsterText .. ', ' end
-					monsterText = monsterText .. string.format('%s', boss.name)
+			-- get quest duration
+			local timeMinutes = MANAGER.QUEST:call("getQuestElapsedTimeMin")
+			local timeSeconds = MANAGER.QUEST:call("getQuestElapsedTimeSec")
+			timeSeconds = timeSeconds - (timeMinutes * 60)
+
+			-- use a fake duration in test mode
+			if isInTestMode() then
+				timeMinutes = 5
+				timeSeconds = 37
+			end
+
+			local timeText = string.format("%d:%02.0f", timeMinutes, timeSeconds)
+			local monsterText = ''
+
+			if CFG('DRAW_TITLE_MONSTER') then
+				monsterText = ' - '
+				-- add monster names
+				local monsterCount = 0
+				for _,boss in pairs(REPORT_MONSTERS) do
+					if monsterCount < 3 then
+						if monsterCount > 0 then monsterText = monsterText .. ', ' end
+						monsterText = monsterText .. string.format('%s', boss.name)
+					end
+					monsterCount = monsterCount + 1
 				end
-				monsterCount = monsterCount + 1
+
+				if monsterCount > 3 then
+					monsterText = monsterText .. ', etc...'
+				elseif monsterCount == 0 then
+					monsterText = monsterText .. 'No monsters selected'
+				end
 			end
 
-			if monsterCount > 3 then
-				monsterText = monsterText .. ', etc...'
-			elseif monsterCount == 0 then
-				monsterText = monsterText .. 'No monsters selected'
-			end
+			local titleText = timeText .. monsterText
+			local offsetX = CFG('TABLE_HEADER_TEXT_OFFSET_X')
+			d2d.text(FONT, titleText, origin_x + offsetX, origin_y, COLOR('TITLE_FG'))
 		end
-
-		local titleText = timeText .. monsterText
-		local offsetX = CFG('TABLE_HEADER_TEXT_OFFSET_X')
-		d2d.text(FONT, titleText, origin_x + offsetX, origin_y, COLOR('TITLE_FG'))
 	end
 
 	if CFG('DRAW_HEADER') then
 		-- find grow without row padding
-		local grow = rowHeight
-		if CFG('TABLE_GROWS_UPWARD') then
-			grow = rowHeight * -1
+		local grow = 0
+		if CFG('DRAW_TITLE') then
+			grow = titleHeight
+			if CFG('TABLE_GROWS_UPWARD') then
+				grow = grow * -1
+			end
 		end
 
 		-- draw header row
-		local x = origin_x + (4 * CFG('TABLE_SCALE'))
+		local x = origin_x + (4 * scale)
 		local y = origin_y + grow
 
-		if CFG('DRAW_TITLE_BACKGROUND') then
+		if CFG('DRAW_HEADER_BACKGROUND') then
 			-- background
-			d2d.fill_rect(origin_x, y, tableWidth, rowHeight, COLOR('TITLE_BG'))
+			d2d.fill_rect(origin_x, y, tableWidth, headerHeight, COLOR('TITLE_BG'))
 		end
 
 		if CFG('DRAW_BAR_COLORBLOCK') and CFG('DRAW_BAR_REVEAL_HR') then
 			d2d.text(FONT, 'HR', x, y, COLOR('GRAY'))
 		end
 
-		local colorBlockWidth = 30 * CFG('TABLE_SCALE')
+		local colorBlockWidth = 30 * scale
 		if not CFG('DRAW_BAR_COLORBLOCK') then
 			colorBlockWidth = 0
 		end
@@ -1850,7 +1858,7 @@ local function drawReport(index)
 			if value > 1 then
 				drawReportHeaderColumn(value, x, y)
 
-				local colWidth = _CFG['TABLE_COLS_WIDTH'][value] * CFG('TABLE_SCALE')
+				local colWidth = _CFG['TABLE_COLS_WIDTH'][value] * scale
 				x = x + colWidth
 			end
 		end
@@ -1868,10 +1876,12 @@ local function drawReport(index)
 		local text_offset_x = CFG('TABLE_ROW_TEXT_OFFSET_X')
 		local text_offset_y = CFG('TABLE_ROW_TEXT_OFFSET_Y')
 		local x = origin_x + colorBlockWidth + 2 + text_offset_x
-		local y = origin_y + growDistance + text_offset_y
+		local y = origin_y + text_offset_y
+		if CFG('DRAW_TITLE') then
+			y = y + titleHeight -- skip title row
+		end
 		if CFG('DRAW_HEADER') then
-			-- skip header row
-			y = y + growDistance
+			y = y + headerHeight -- skip header row
 		end
 
 		d2d.text(FONT, 'No data', x, y, COLOR('GRAY'))
@@ -1879,10 +1889,12 @@ local function drawReport(index)
 
 	-- draw report items
 	for i,item in ipairs(report.items) do
-		local y = origin_y + growDistance * i
+		local y = origin_y + (growDistance * (i-1))
+		if CFG('DRAW_TITLE') then
+			y = y + titleHeight -- skip title row
+		end
 		if CFG('DRAW_HEADER') then
-			-- skip header row
-			y = y + growDistance
+			y = y + headerHeight -- skip header row
 		end
 
 		drawReportItem(item, origin_x, y, tableWidth, rowHeight)
@@ -2219,10 +2231,21 @@ local function DrawWindowSettings()
 	imgui.new_line()
 
 	if imgui.tree_node('Appearance') then
+		showCheckboxForSetting('DRAW_TITLE')
 		showCheckboxForSetting('DRAW_TITLE_TEXT')
 		showCheckboxForSetting('DRAW_TITLE_MONSTER')
-		showCheckboxForSetting('DRAW_HEADER')
+		showSliderForIntSetting('DRAW_TITLE_HEIGHT')
 		showCheckboxForSetting('DRAW_TITLE_BACKGROUND')
+		showSliderForIntSetting('TABLE_HEADER_TEXT_OFFSET_X')
+
+		imgui.new_line()
+
+		showCheckboxForSetting('DRAW_HEADER')
+		showSliderForIntSetting('DRAW_HEADER_HEIGHT')
+		showCheckboxForSetting('DRAW_HEADER_BACKGROUND')
+
+		imgui.new_line()
+
 		showCheckboxForSetting('DRAW_TABLE_BACKGROUND')
 		showCheckboxForSetting('DRAW_BAR_OUTLINES')
 		showCheckboxForSetting('DRAW_BAR_COLORBLOCK')
@@ -2247,7 +2270,6 @@ local function DrawWindowSettings()
 
 		showSliderForFloatSetting('TABLE_X')
 		showSliderForFloatSetting('TABLE_Y')
-		showSliderForIntSetting('TABLE_HEADER_TEXT_OFFSET_X')
 		showSliderForIntSetting('TABLE_WIDTH')
 
 		imgui.new_line()

@@ -22,6 +22,10 @@
 			"VALUE": false,
 			"TEXT": "Damage bars will represent share of overall party DPS"
 		},
+		"DRAW_TITLE": {
+			"VALUE": true,
+			"TEXT": "Show title"
+		},
 		"DRAW_TITLE_TEXT": {
 			"VALUE": true,
 			"TEXT": "Show title text"
@@ -34,9 +38,25 @@
 			"VALUE": true,
 			"TEXT": "Show title background"
 		},
+		"DRAW_TITLE_HEIGHT": {
+			"VALUE": 18,
+			"TEXT": "Title height",
+			"MIN": 0,
+			"MAX": 100
+		},
 		"DRAW_HEADER": {
 			"VALUE": true,
 			"TEXT": "Show header"
+		},
+		"DRAW_HEADER_BACKGROUND": {
+			"VALUE": true,
+			"TEXT": "Show header background"
+		},
+		"DRAW_HEADER_HEIGHT": {
+			"VALUE": 18,
+			"TEXT": "Header height",
+			"MIN": 0,
+			"MAX": 100
 		},
 		"DRAW_TABLE_BACKGROUND": {
 			"VALUE": true,
@@ -142,7 +162,7 @@
 		},
 		"TABLE_HEADER_TEXT_OFFSET_X": {
 			"VALUE": 3,
-			"TEXT": "Table text offset X",
+			"TEXT": "Title text offset X",
 			"MIN": -100,
 			"MAX": 100
 		},
