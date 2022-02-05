@@ -1347,6 +1347,17 @@ local function sortReportItems_Player(a, b)
 	end
 end
 
+local function sortReportItems_Player_DESC(a, b)
+	if     a.playerNumber and not b.playerNumber then return false
+	elseif b.playerNumber and not a.playerNumber then return true
+	elseif a.playerNumber and     b.playerNumber then return a.playerNumber > b.playerNumber
+	elseif a.otomoNumber and not b.otomoNumber then return false
+	elseif b.otomoNumber and not a.otomoNumber then return true
+	elseif a.otomoNumber and     b.otomoNumber then return a.otomoNumber > b.otomoNumber
+	else return a.id > b.id
+	end
+end
+
 local function mergeBossTimelineIntoReport(report, boss)
 	for t,e in pairs(boss.timeline) do
 		local d
@@ -1503,7 +1514,11 @@ local function mergeBossIntoReport(report, boss)
 
 	-- sort report items
 	if CFG('TABLE_SORT_IN_ORDER') then
-		table.sort(report.items, sortReportItems_Player)
+		if CFG('TABLE_SORT_ASC') then
+			table.sort(report.items, sortReportItems_Player_DESC)
+		else
+			table.sort(report.items, sortReportItems_Player)
+		end
 	elseif CFG('TABLE_SORT_ASC') then
 		table.sort(report.items, sortReportItems_ASC)
 	else

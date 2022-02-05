@@ -136,7 +136,7 @@
 		},
 		"TABLE_SORT_ASC": {
 			"VALUE": false,
-			"TEXT": "Sort ascending"
+			"TEXT": "Reverse sort order"
 		},
 		"TABLE_SORT_IN_ORDER": {
 			"VALUE": false,
