@@ -1876,7 +1876,9 @@ local function drawReport(index)
 		end
 	end
 
+	local dir = 1
 	if CFG('TABLE_GROWS_UPWARD') then
+		dir = -1
 		growDistance = (rowHeight + CFG('TABLE_ROW_PADDING')) * -1
 	end
 
@@ -1890,10 +1892,10 @@ local function drawReport(index)
 		local x = origin_x + colorBlockWidth + 2 + text_offset_x
 		local y = origin_y + text_offset_y
 		if CFG('DRAW_TITLE') then
-			y = y + titleHeight -- skip title row
+			y = y + titleHeight * dir -- skip title row
 		end
 		if CFG('DRAW_HEADER') then
-			y = y + headerHeight -- skip header row
+			y = y + headerHeight * dir -- skip header row
 		end
 
 		d2d.text(FONT, 'No data', x, y, COLOR('GRAY'))
@@ -1903,10 +1905,10 @@ local function drawReport(index)
 	for i,item in ipairs(report.items) do
 		local y = origin_y + (growDistance * (i-1))
 		if CFG('DRAW_TITLE') then
-			y = y + titleHeight -- skip title row
+			y = y + titleHeight * dir -- skip title row
 		end
 		if CFG('DRAW_HEADER') then
-			y = y + headerHeight -- skip header row
+			y = y + headerHeight * dir -- skip header row
 		end
 
 		drawReportItem(item, origin_x, y, tableWidth, rowHeight)
