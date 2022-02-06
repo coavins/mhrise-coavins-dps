@@ -1819,9 +1819,9 @@ local function drawReport(index)
 			-- generate the title text
 
 			-- get quest duration
-			local timeMinutes = MANAGER.QUEST:call("getQuestElapsedTimeMin")
-			local timeSeconds = MANAGER.QUEST:call("getQuestElapsedTimeSec")
-			timeSeconds = timeSeconds - (timeMinutes * 60)
+			local totalSeconds = QUEST_DURATION
+			local timeMinutes = math.floor(totalSeconds / 60.0)
+			local timeSeconds = math.floor(totalSeconds % 60.0)
 
 			-- use a fake duration in test mode
 			if isInTestMode() then
