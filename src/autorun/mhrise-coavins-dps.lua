@@ -829,17 +829,19 @@ local function initializeDamageCounter()
 	return c
 end
 
-local function initializeDamageCounterWithDummyData()
+local function initializeDamageCounterWithDummyData(multiplier)
+	multiplier = multiplier or 1.0
+
 	local c = initializeDamageCounter()
-	c.physical  = math.random(1,1000)
-	c.elemental = math.random(1,600)
-	c.condition = math.random(1,100)
-	c.ailment[4] = math.random(1,200)
-	c.ailment[5] = math.random(1,500)
-	c.numHit = math.random(1,200)
-	c.maxHit = math.random(1,500)
-	c.numUpCrit = math.random(1,50)
-	c.numDnCrit = math.random(1,10)
+	c.physical  = math.random(1,1000) * multiplier
+	c.elemental = math.random(1,600) * multiplier
+	c.condition = math.random(1,100) * multiplier
+	c.ailment[4] = math.random(1,200) * multiplier
+	c.ailment[5] = math.random(1,500) * multiplier
+	c.numHit = math.floor(math.random(1,200) * multiplier)
+	c.maxHit = math.floor(math.random(1,500) * multiplier)
+	c.numUpCrit = math.floor(math.random(1,50) * multiplier)
+	c.numDnCrit = math.floor(math.random(1,10) * multiplier)
 	return c
 end
 
@@ -890,8 +892,7 @@ end
 local function initializeDamageSourceWithDummyOtomoData(attackerId)
 	local s = initializeDamageSource(attackerId)
 
-	s.counters['otomo'] = initializeDamageCounter()
-	s.counters['otomo'].physical = math.random(0,400)
+	s.counters['otomo'] = initializeDamageCounterWithDummyData(0.25)
 
 	return s
 end
@@ -899,8 +900,7 @@ end
 local function initializeDamageSourceWithDummyMonsterData(attackerId)
 	local s = initializeDamageSource(attackerId)
 
-	s.counters['monster'] = initializeDamageCounter()
-	s.counters['monster'].physical = math.random(0,150)
+	s.counters['monster'] = initializeDamageCounterWithDummyData(0.25)
 
 	return s
 end
