@@ -1243,7 +1243,7 @@ local function sumDamageCountersList(counters, attackerTypeFilter)
 		if not attackerTypeFilter or attackerTypeFilter[type] then
 			local counterTotal = getTotalDamageForDamageCounter(counter)
 
-			if type == 'otomo' then
+			if type == 'otomo' and CFG('COMBINE_OTOMO_WITH_HUNTER') then
 				-- count otomo's condition damage here if necessary
 				if CFG('CONDITION_LIKE_DAMAGE') then
 					counterTotal = counterTotal + counter.condition
@@ -1722,6 +1722,11 @@ local function drawReportItem(item, x, y, width, height)
 	local elementalColor = COLOR('BAR_DMG_ELEMENT_UNIQUE')[item.playerNumber]
 	if not elementalColor then
 		elementalColor = COLOR('BAR_DMG_ELEMENT')
+	end
+
+	if item.otomoNumber then
+		physicalColor = COLOR('OTOMO')
+		elementalColor = COLOR('OTOMO')
 	end
 
 	-- draw the actual bar
