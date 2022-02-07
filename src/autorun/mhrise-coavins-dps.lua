@@ -2077,6 +2077,9 @@ local function dpsUpdateOccasionally(realSeconds)
 	if realSeconds > LAST_UPDATE_TIME + CFG('UPDATE_RATE') then
 		dpsUpdate()
 		LAST_UPDATE_TIME = realSeconds
+	-- don't delay the update for more than one second
+	elseif realSeconds + 1 < LAST_UPDATE_TIME then
+		LAST_UPDATE_TIME = realSeconds
 	end
 end
 
@@ -2758,9 +2761,7 @@ local function dpsFrame()
 	local questStatus = MANAGER.QUEST:get_field("_QuestStatus")
 	IS_IN_QUEST = (questStatus >= 2)
 
-	if IS_IN_QUEST then
-		SetQuestDuration(MANAGER.QUEST:call("getQuestElapsedTimeSec"))
-	else
+	if not IS_IN_QUEST then
 		-- VillageAreaManager is unreliable, not always there, stale references
 		-- get a new reference
 		MANAGER.AREA = sdk.get_managed_singleton("snow.VillageAreaManager")
@@ -2770,8 +2771,13 @@ local function dpsFrame()
 	end
 
 	IS_IN_TRAININGHALL = (villageArea == 5)
-	if IS_IN_TRAININGHALL then
+
+	if IS_IN_QUEST then
+		SetQuestDuration(MANAGER.QUEST:call("getQuestElapsedTimeSec"))
+	elseif IS_IN_TRAININGHALL then
 		SetQuestDuration(MANAGER.AREA:call("get_TrainingHallStayTime"))
+	else
+		SetQuestDuration(0.0)
 	end
 
 	IS_ONLINE = (MANAGER.LOBBY and MANAGER.LOBBY:call("IsQuestOnline")) or false
