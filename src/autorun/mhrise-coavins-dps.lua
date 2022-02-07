@@ -723,8 +723,8 @@ local function updatePlayers()
 	end
 
 	for key, value in ipairs(PLAYER_NAMES) do
-		-- update enter time for this player when the name changes
-		if oldNames[key] ~= value or not PLAYER_TIMES[key] or PLAYER_TIMES[key] > QUEST_DURATION then
+		-- update start time for this player when the name changes
+		if oldNames[key] ~= value or (PLAYER_TIMES[key] and PLAYER_TIMES[key] > QUEST_DURATION) then
 			log_info(string.format('updated quest time for player %d to %.0f', key, QUEST_DURATION))
 			PLAYER_TIMES[key] = QUEST_DURATION
 			-- TODO: clear this player's data
