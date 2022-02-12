@@ -94,6 +94,10 @@ function re:on_draw_ui(fnFrame)
 	-- do nothing
 end
 
+function re:on_config_save(fnSave)
+	-- do nothing
+end
+
 --#endregion
 
 --#region log
