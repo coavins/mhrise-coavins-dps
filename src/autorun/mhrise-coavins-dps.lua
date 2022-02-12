@@ -76,8 +76,8 @@ ENUM_KEYBOARD_KEY[29] = 'NonConvert'
 ENUM_KEYBOARD_KEY[30] = 'Accept'
 ENUM_KEYBOARD_KEY[31] = 'ModeChange'
 ENUM_KEYBOARD_KEY[32] = 'Space'
-ENUM_KEYBOARD_KEY[33] = 'Prior'
-ENUM_KEYBOARD_KEY[34] = 'Next'
+ENUM_KEYBOARD_KEY[33] = 'PageUp'
+ENUM_KEYBOARD_KEY[34] = 'PageDown'
 ENUM_KEYBOARD_KEY[35] = 'End'
 ENUM_KEYBOARD_KEY[36] = 'Home'
 ENUM_KEYBOARD_KEY[37] = 'Left'
@@ -2239,42 +2239,6 @@ local function showSliderForIntSetting(setting)
 	end
 end
 
-local function showInputsForTableColumns()
-	if imgui.tree_node('Select data') then
-		-- draw combo and slider for each column
-		for i,currentCol in ipairs(_CFG['TABLE_COLS']) do
-			local selected = 1
-			-- find option id for selected column
-			for idxId,key in ipairs(TABLE_COLUMNS_OPTIONS_ID) do
-				if key == currentCol then
-					selected = idxId
-				end
-			end
-			-- show combo for choice
-			local changedCol, newCol = imgui.combo('Column ' .. i, selected, TABLE_COLUMNS_OPTIONS_READABLE)
-			if changedCol then
-				_CFG['TABLE_COLS'][i] = TABLE_COLUMNS_OPTIONS_ID[newCol]
-			end
-		end
-		imgui.new_line()
-		imgui.tree_pop()
-	end
-	if imgui.tree_node('Column width') then
-		for i,currentWidth in ipairs(_CFG['TABLE_COLS_WIDTH']) do
-			-- skip 'None'
-			if i > 1 then
-				-- show slider for width
-				local changedWidth, newWidth = imgui.slider_int(TABLE_COLUMNS[i], currentWidth, 0, 250)
-				if changedWidth then
-					_CFG['TABLE_COLS_WIDTH'][i] = newWidth
-				end
-			end
-		end
-		imgui.new_line()
-		imgui.tree_pop()
-	end
-end
-
 local function DrawWindowSettings()
 	local changed, wantsIt, value
 
@@ -2294,20 +2258,7 @@ local function DrawWindowSettings()
 		DPS_ENABLED = wantsIt
 	end
 
-	if imgui.button('Save settings') then
-		saveCurrentConfig()
-	end
 	imgui.same_line()
-	if imgui.button('Load settings') then
-		loadSavedConfigIfExist()
-		if CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN') then
-			initializeTestData()
-		else
-			clearTestData()
-			dpsUpdate()
-		end
-	end
-
 	if imgui.button('Reset to default') then
 		loadDefaultConfig()
 		if CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN') then
@@ -2330,7 +2281,26 @@ local function DrawWindowSettings()
 		dpsUpdate()
 	end
 
+	imgui.new_line()
+
+	if imgui.button('Save settings') then
+		saveCurrentConfig()
+	end
+	imgui.same_line()
+	if imgui.button('Load settings') then
+		loadSavedConfigIfExist()
+		if CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN') then
+			initializeTestData()
+		else
+			clearTestData()
+			dpsUpdate()
+		end
+	end
+
 	showCheckboxForSetting('AUTO_SAVE')
+
+	imgui.new_line()
+
 	showCheckboxForSetting('HIDE_OVERLAY_IN_VILLAGE')
 
 	-- Show test data
@@ -2343,6 +2313,12 @@ local function DrawWindowSettings()
 			clearTestData()
 			dpsUpdate()
 		end
+	end
+
+	imgui.new_line()
+	imgui.text('Hotkeys')
+	if imgui.button('open hotkeys') then
+		DRAW_WINDOW_HOTKEYS = not DRAW_WINDOW_HOTKEYS
 	end
 
 	-- Presets
@@ -2367,6 +2343,7 @@ local function DrawWindowSettings()
 	showCheckboxForSetting('CONDITION_LIKE_DAMAGE')
 
 	imgui.new_line()
+	imgui.text('Privacy')
 
 	showCheckboxForSetting('DRAW_BAR_TEXT_YOU')
 	showCheckboxForSetting('DRAW_BAR_TEXT_NAME_USE_REAL_NAMES')
@@ -2380,13 +2357,12 @@ local function DrawWindowSettings()
 
 	imgui.new_line()
 
-	showInputsForTableColumns()
-
-	imgui.new_line()
+	imgui.text('Customization')
 
 	if imgui.tree_node('Appearance') then
 		showSliderForFloatSetting('TABLE_X')
 		showSliderForFloatSetting('TABLE_Y')
+		showSliderForIntSetting('TABLE_WIDTH')
 
 		imgui.new_line()
 
@@ -2420,10 +2396,6 @@ local function DrawWindowSettings()
 
 		imgui.new_line()
 
-		showSliderForIntSetting('TABLE_WIDTH')
-
-		imgui.new_line()
-
 		showSliderForIntSetting('TABLE_ROWH')
 		showSliderForIntSetting('TABLE_ROW_PADDING')
 
@@ -2452,6 +2424,50 @@ local function DrawWindowSettings()
 		imgui.new_line()
 
 		imgui.tree_pop()
+	end
+
+	if imgui.tree_node('Select columns') then
+		-- draw combo and slider for each column
+		for i,currentCol in ipairs(_CFG['TABLE_COLS']) do
+			local selected = 1
+			-- find option id for selected column
+			for idxId,key in ipairs(TABLE_COLUMNS_OPTIONS_ID) do
+				if key == currentCol then
+					selected = idxId
+				end
+			end
+			-- show combo for choice
+			local changedCol, newCol = imgui.combo('Column ' .. i, selected, TABLE_COLUMNS_OPTIONS_READABLE)
+			if changedCol then
+				_CFG['TABLE_COLS'][i] = TABLE_COLUMNS_OPTIONS_ID[newCol]
+			end
+		end
+		imgui.new_line()
+		imgui.tree_pop()
+	end
+
+	if imgui.tree_node('Column width') then
+		for i,currentWidth in ipairs(_CFG['TABLE_COLS_WIDTH']) do
+			-- skip 'None'
+			if i > 1 then
+				-- show slider for width
+				local changedWidth, newWidth = imgui.slider_int(TABLE_COLUMNS[i], currentWidth, 0, 250)
+				if changedWidth then
+					_CFG['TABLE_COLS_WIDTH'][i] = newWidth
+				end
+			end
+		end
+
+		imgui.new_line()
+
+		imgui.tree_pop()
+	end
+
+	imgui.new_line()
+
+	imgui.text('Data filtering')
+	if imgui.button('open filters') then
+		DRAW_WINDOW_REPORT = not DRAW_WINDOW_REPORT
 	end
 
 	imgui.new_line()
@@ -2911,7 +2927,9 @@ re.on_draw_ui(function()
 	imgui.begin_group()
 	imgui.text('coavins dps meter')
 
-	if imgui.button('settings') then
+	imgui.same_line()
+
+	if imgui.button('open settings') then
 		DRAW_WINDOW_SETTINGS = not DRAW_WINDOW_SETTINGS
 
 		if DRAW_WINDOW_SETTINGS then
@@ -2924,18 +2942,6 @@ re.on_draw_ui(function()
 				dpsUpdate()
 			end
 		end
-	end
-
-	imgui.same_line()
-
-	if imgui.button('filters') then
-		DRAW_WINDOW_REPORT = not DRAW_WINDOW_REPORT
-	end
-
-	imgui.same_line()
-
-	if imgui.button('hotkeys') then
-		DRAW_WINDOW_HOTKEYS = not DRAW_WINDOW_HOTKEYS
 	end
 
 	imgui.end_group()
