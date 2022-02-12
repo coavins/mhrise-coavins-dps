@@ -1359,7 +1359,7 @@ local function sumDamageSourcesList(sources)
 		sum.maxHit     = math.max(sum.maxHit, this.maxHit)
 		sum.numUpCrit = sum.numUpCrit + this.numUpCrit
 		sum.numDnCrit = sum.numDnCrit + this.numDnCrit
-		sum.firstStrike = math.minx(sum.firstStrike, this.firstStrike)
+		sum.firstStrike = math.min(sum.firstStrike, this.firstStrike)
 	end
 
 	return sum
