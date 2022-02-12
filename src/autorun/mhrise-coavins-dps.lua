@@ -2539,7 +2539,8 @@ local function DrawWindowReport()
 
 	showCheckboxForAttackerType('weapon')
 	showCheckboxForAttackerType('otomo')
-	showCheckboxForAttackerType('monster')
+	-- don't allow enabling monster damage since it's really buggy right now
+	--showCheckboxForAttackerType('monster')
 
 	imgui.new_line()
 
