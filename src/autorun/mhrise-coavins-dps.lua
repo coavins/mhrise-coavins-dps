@@ -266,8 +266,9 @@ local DPS_DEBUG = false
 local LAST_UPDATE_TIME = 0
 local DRAW_OVERLAY = true
 local DRAW_WINDOW_SETTINGS = false
-local DRAW_WINDOW_REPORT = false
-local DRAW_WINDOW_HOTKEYS = false
+local DRAW_WINDOW_REPORT   = false
+local DRAW_WINDOW_HOTKEYS  = false
+local DRAW_WINDOW_DEBUG    = false
 local WINDOW_FLAGS = 0x20
 local IS_ONLINE = false
 local QUEST_DURATION = 0.0
@@ -1202,6 +1203,8 @@ local function initializeReport()
 
 	report.topDamage = 0.0
 	report.totalDamage = 0.0
+	report.missingHealth = 0.0 -- total amount of HP missing from all selected monsters
+	report.missingDamage = 0.0 -- total amount of damage missing from the table
 
 	report.timeline = {} -- events for timestamps
 	report.timestamps = {} -- ordered timestamps
@@ -1562,6 +1565,8 @@ local function mergeBossIntoReport(report, boss)
 
 	report.totalDamage = totalDamage
 	report.topDamage = bestDamage
+	report.missingHealth = report.missingHealth + boss.hp.missing
+	report.missingDamage = report.missingHealth - totalDamage
 
 	-- loop again to calculate percents using the totals we got before
 	for _,item in ipairs(report.items) do
@@ -1910,6 +1915,10 @@ local function drawReport(index)
 				elseif monsterCount == 0 then
 					monsterText = monsterText .. 'No monsters selected'
 				end
+			end
+
+			if CFG('DEBUG_SHOW_MISSING_DAMAGE') and report.missingDamage > 0.0 then
+				monsterText = monsterText .. string.format(' (%.0f?)', report.missingDamage)
 			end
 
 			local titleText = timeText .. monsterText
@@ -2489,6 +2498,13 @@ local function DrawWindowSettings()
 
 	imgui.new_line()
 
+	imgui.text('Debugging')
+	if imgui.button('open debug') then
+		DRAW_WINDOW_DEBUG = not DRAW_WINDOW_DEBUG
+	end
+
+	imgui.new_line()
+
 	imgui.end_window()
 end
 
@@ -2634,6 +2650,17 @@ local function DrawWindowHotkeys()
 	drawHotkeyButton('MONSTER_PREV')
 
 	imgui.end_window()
+end
+
+local function DrawWindowDebug()
+	local wantsIt
+
+	wantsIt = imgui.begin_window('coavins dps meter - debug', DRAW_WINDOW_DEBUG, WINDOW_FLAGS)
+	if DRAW_WINDOW_DEBUG and not wantsIt then
+		DRAW_WINDOW_DEBUG = false
+	end
+
+	showCheckboxForSetting('DEBUG_SHOW_MISSING_DAMAGE')
 end
 
 --#endregion
@@ -2930,6 +2957,10 @@ re.on_frame(function()
 	else
 		HOTKEY_WAITING_TO_REGISTER = nil
 		HOTKEY_WAITING_TO_REGISTER_WITH_MODIFIER = nil
+	end
+
+	if DRAW_WINDOW_DEBUG then
+		DrawWindowDebug()
 	end
 
 	registerWaitingHotkeys()

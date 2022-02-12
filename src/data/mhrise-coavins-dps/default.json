@@ -30,6 +30,10 @@
 			"VALUE": true,
 			"TEXT": "pDPS starts counting from player's first attack"
 		},
+		"DEBUG_SHOW_MISSING_DAMAGE": {
+			"VALUE": false,
+			"TEXT": "Show in the title bar any damage that is not accounted for in the table"
+		},
 		"DRAW_BAR_RELATIVE_TO_PARTY": {
 			"VALUE": false,
 			"TEXT": "Damage bars will represent share of overall party DPS"
