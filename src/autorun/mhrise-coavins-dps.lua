@@ -277,20 +277,18 @@ local IS_IN_TRAININGHALL = false
 local _CFG = {}
 local DATADIR = 'mhrise-coavins-dps/'
 local _COLORS = {}
---local _HOTKEYS = {} -- todo
+local _FILTERS = {}
+local _HOTKEYS = {}
+local HOTKEY_WAITING_TO_REGISTER = nil -- if a string, will register next key press as that hotkey
+local HOTKEY_WAITING_TO_REGISTER_WITH_MODIFIER = {} -- table of modifiers for new hotkey
+local CURRENTLY_HELD_MODIFIERS = {}
+local ASSIGNED_HOTKEY_THIS_FRAME = false
 
 local FONT = nil
 
 local _PRESETS = {}
 local PRESET_OPTIONS = {}
 local PRESET_OPTIONS_SELECTED = 1
-
-local CURRENTLY_HELD_MODIFIERS = {}
-local ASSIGNED_HOTKEY_THIS_FRAME = false
-local HOTKEY_TOGGLE_OVERLAY = 109 -- 109 is numpad minus
-local HOTKEY_TOGGLE_OVERLAY_MODIFIERS = {} -- modifiers that must be held for this hotkey
-local HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = false -- if true, will register next key press as the new hotkey
-local HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER_WITH_MODIFIER = {} -- table of modifiers for new hotkey
 
 local SCREEN_W = 0
 local SCREEN_H = 0
@@ -302,7 +300,8 @@ local TEST_MONSTERS = nil -- like LARGE_MONSTERS, but holds dummy/test data
 local DAMAGE_REPORTS = {}
 
 local REPORT_MONSTERS = {} -- a subset of LARGE_MONSTERS or TEST_MONSTERS that will appear in reports
-local _FILTERS = {}
+local ORDERED_MONSTERS = {} -- an index of LARGE_MONSTERS keys but ordered as an array, used by hotkeys
+local ORDERED_MONSTERS_SELECTED = 0 -- which index is currently selected, used by hotkeys
 
 local MY_PLAYER_ID = nil
 local PLAYER_NAMES = {}
@@ -475,6 +474,10 @@ local function SetColor(name, value)
 end
 ]]
 
+local function HOTKEY(name)
+	return _HOTKEYS[name]
+end
+
 -- returns file json
 local function readDataFile(filename)
 	filename = DATADIR .. filename
@@ -521,6 +524,17 @@ local function mergeFiltersIntoLeft(filters1, filters2)
 	end
 end
 
+local function mergeHotkeysIntoLeft(hotkeys1, hotkeys2)
+	if hotkeys2 then
+		for name,setting in pairs(hotkeys2) do
+			hotkeys1[name].KEY       = tonumber(setting.KEY)
+			for key, value in pairs(setting.MODIFIERS) do
+				hotkeys1[name].MODIFIERS[tonumber(key)] = value
+			end
+		end
+	end
+end
+
 -- returns true on success
 local function loadDefaultConfig()
 	local file = readDataFile('default.json')
@@ -532,6 +546,19 @@ local function loadDefaultConfig()
 	_CFG = file['CFG']
 	_COLORS = file['COLORS']
 	_FILTERS = file['FILTERS']
+	_HOTKEYS = file['HOTKEYS']
+
+	-- fix hotkeys
+	for _, hotkey in pairs(_HOTKEYS) do
+		-- convert key to number
+		hotkey.KEY = tonumber(hotkey.KEY)
+		local modifiers = {}
+		for key, value in pairs(hotkey.MODIFIERS) do
+			-- convert keys to numbers
+			modifiers[tonumber(key)] = value
+		end
+		hotkey.MODIFIERS = modifiers
+	end
 
 	return true
 end
@@ -543,6 +570,7 @@ local function loadSavedConfigIfExist()
 		mergeCfgIntoLeft(_CFG, file.CFG)
 		mergeColorsIntoLeft(_COLORS, file.COLORS)
 		mergeFiltersIntoLeft(_FILTERS, file.FILTERS)
+		mergeHotkeysIntoLeft(_HOTKEYS, file.HOTKEYS)
 
 		log_info('loaded configuration from saves/save.json')
 	end
@@ -553,6 +581,20 @@ local function saveCurrentConfig()
 	file['CFG'] = _CFG
 	file['COLORS'] = _COLORS
 	file['FILTERS'] = _FILTERS
+
+	-- fix hotkeys
+	for _, hotkey in pairs(_HOTKEYS) do
+		-- convert key to string
+		hotkey.KEY = tostring(hotkey.KEY)
+		local modifiers = {}
+		for key, value in pairs(hotkey.MODIFIERS) do
+			-- convert keys to numbers
+			modifiers[tostring(key)] = value
+		end
+		hotkey.MODIFIERS = modifiers
+	end
+
+	file['HOTKEYS'] = _HOTKEYS
 
 	-- save current config to disk, replacing any existing file
 	local success = json.dump_file(DATADIR .. 'saves/save.json', file)
@@ -605,6 +647,7 @@ local function cleanUpData(message)
 	LAST_UPDATE_TIME = 0
 	SetQuestDuration(0.0)
 	makeTableEmpty(LARGE_MONSTERS)
+	makeTableEmpty(ORDERED_MONSTERS)
 	makeTableEmpty(DAMAGE_REPORTS)
 	makeTableEmpty(REPORT_MONSTERS)
 	makeTableEmpty(PLAYER_NAMES)
@@ -622,6 +665,14 @@ local function RemoveMonsterFromReport(enemyToRemove)
 			REPORT_MONSTERS[enemy] = nil
 			return
 		end
+	end
+end
+
+-- include all monsters in the report
+local function resetReportMonsters()
+	makeTableEmpty(REPORT_MONSTERS)
+	for enemy, boss in pairs(LARGE_MONSTERS) do
+		AddMonsterToReport(enemy, boss)
 	end
 end
 
@@ -966,6 +1017,7 @@ local function initializeBossMonster(bossEnemy)
 
 	-- store it in the table
 	LARGE_MONSTERS[bossEnemy] = boss
+	table.insert(ORDERED_MONSTERS, bossEnemy)
 
 	-- all monsters are in the report by default
 	AddMonsterToReport(bossEnemy, boss)
@@ -1130,10 +1182,7 @@ end
 
 local function clearTestData()
 	TEST_MONSTERS = nil
-	makeTableEmpty(REPORT_MONSTERS)
-	for enemy, boss in pairs(LARGE_MONSTERS) do
-		AddMonsterToReport(enemy, boss)
-	end
+	resetReportMonsters()
 end
 
 --#endregion
@@ -2027,13 +2076,15 @@ end
 local function dpsDraw()
 	local drawIt = false
 
-	-- always draw overlay if settings window is open
-	if DRAW_WINDOW_SETTINGS then
-		drawIt = true
-	elseif not CFG('HIDE_OVERLAY_IN_VILLAGE') then
-		drawIt = true
-	elseif IS_IN_QUEST or IS_IN_TRAININGHALL then
-		drawIt = true
+	if DRAW_OVERLAY then
+		-- show it in quest, training hall, and when settings window is open
+		if (IS_IN_QUEST or IS_IN_TRAININGHALL or DRAW_WINDOW_SETTINGS) then
+			drawIt = true
+		end
+		-- show it in the village only if the player allows
+		if not CFG('HIDE_OVERLAY_IN_VILLAGE') then
+			drawIt = true
+		end
 	end
 
 	if drawIt then
@@ -2098,18 +2149,61 @@ local function updateHeldHotkeyModifiers()
 	end
 end
 
--- TODO: enhance to accept whatever hotkey as param
-local function checkHotkeyActivated()
+local function checkHotkeyActivated(name)
+	local hotkey = HOTKEY(name)
+	if not hotkey.KEY then
+		return
+	end
+
 	-- we pressed our hotkey and did not just assign it
-	if not ASSIGNED_HOTKEY_THIS_FRAME and MANAGER.KEYBOARD:call("getTrg", HOTKEY_TOGGLE_OVERLAY) then
+	if not ASSIGNED_HOTKEY_THIS_FRAME and MANAGER.KEYBOARD:call("getTrg", hotkey.KEY) then
 		-- if correct modifiers are not held, return
-		for key,needsHeld in pairs(HOTKEY_TOGGLE_OVERLAY_MODIFIERS) do
+		for key,needsHeld in pairs(hotkey.MODIFIERS) do
 			if CURRENTLY_HELD_MODIFIERS[key] ~= needsHeld then
-				return
+				if CURRENTLY_HELD_MODIFIERS[key] == true then
+					return
+				elseif CURRENTLY_HELD_MODIFIERS[key] == false then
+					return
+				elseif not CURRENTLY_HELD_MODIFIERS[key] then
+					return
+				end
 			end
 		end
+
 		-- perform hotkey action
-		DRAW_OVERLAY = not DRAW_OVERLAY
+		if name == 'TOGGLE_OVERLAY' then
+			DRAW_OVERLAY = not DRAW_OVERLAY
+		elseif name == 'MONSTER_NEXT' then
+			ORDERED_MONSTERS_SELECTED = ORDERED_MONSTERS_SELECTED + 1
+			if ORDERED_MONSTERS_SELECTED > #ORDERED_MONSTERS then
+				ORDERED_MONSTERS_SELECTED = 0
+			end
+			if ORDERED_MONSTERS_SELECTED == 0 then
+				resetReportMonsters()
+			else
+				-- put next monster in the report
+				makeTableEmpty(REPORT_MONSTERS)
+				local enemy = ORDERED_MONSTERS[ORDERED_MONSTERS_SELECTED]
+				local boss = LARGE_MONSTERS[enemy]
+				AddMonsterToReport(enemy, boss)
+			end
+			generateReport(REPORT_MONSTERS)
+		elseif name == 'MONSTER_PREV' then
+			ORDERED_MONSTERS_SELECTED = ORDERED_MONSTERS_SELECTED - 1
+			if ORDERED_MONSTERS_SELECTED < 0 then
+				ORDERED_MONSTERS_SELECTED = #ORDERED_MONSTERS
+			end
+			if ORDERED_MONSTERS_SELECTED == 0 then
+				resetReportMonsters()
+			else
+				-- put next monster in the report
+				makeTableEmpty(REPORT_MONSTERS)
+				local enemy = ORDERED_MONSTERS[ORDERED_MONSTERS_SELECTED]
+				local boss = LARGE_MONSTERS[enemy]
+				AddMonsterToReport(enemy, boss)
+			end
+			generateReport(REPORT_MONSTERS)
+		end
 	end
 end
 
@@ -2463,39 +2557,47 @@ local function DrawWindowReport()
 	imgui.end_window()
 end
 
+local function drawHotkeyButton(name)
+	local hotkey = HOTKEY(name)
+	imgui.text(hotkey.TEXT .. ':')
+
+	imgui.same_line()
+
+	-- make sure you don't have two buttons with the same text
+	local text = ENUM_KEYBOARD_KEY[hotkey.KEY]
+	if HOTKEY_WAITING_TO_REGISTER == name then
+		text = 'Press key...'
+	end
+	if imgui.button(text) then
+		if HOTKEY_WAITING_TO_REGISTER == name then
+			-- cancel registration
+			HOTKEY_WAITING_TO_REGISTER = nil
+			HOTKEY_WAITING_TO_REGISTER_WITH_MODIFIER = {}
+		else
+			-- begin registration
+			HOTKEY_WAITING_TO_REGISTER = name
+			HOTKEY_WAITING_TO_REGISTER_WITH_MODIFIER = {}
+		end
+	end
+end
+
 local function DrawWindowHotkeys()
 	local wantsIt
 
 	wantsIt = imgui.begin_window('coavins dps meter - hotkeys', DRAW_WINDOW_HOTKEYS, WINDOW_FLAGS)
 	if DRAW_WINDOW_HOTKEYS and not wantsIt then
 		DRAW_WINDOW_HOTKEYS = false
-		HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = false
-		HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER_WITH_MODIFIER = false
+		HOTKEY_WAITING_TO_REGISTER = nil
+		HOTKEY_WAITING_TO_REGISTER_WITH_MODIFIER = {}
 	end
 
 	imgui.text('Supports modifiers (Shift,Ctrl,Alt)')
 
 	imgui.new_line()
 
-	imgui.text('Toggle overlay:')
-	imgui.same_line()
-	local text = 'Set key'
-	if HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER then
-		text = 'Press key...'
-	end
-	if imgui.button(text) then
-		if HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER then
-			-- cancel registration
-			HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = false
-		else
-			-- begin registration
-			HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = true
-			HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER_WITH_MODIFIER = {}
-		end
-	end
-	imgui.same_line()
-	text = string.format('%s (%d)', ENUM_KEYBOARD_KEY[HOTKEY_TOGGLE_OVERLAY], HOTKEY_TOGGLE_OVERLAY)
-	imgui.text(text)
+	drawHotkeyButton('TOGGLE_OVERLAY')
+	drawHotkeyButton('MONSTER_NEXT')
+	drawHotkeyButton('MONSTER_PREV')
 
 	imgui.end_window()
 end
@@ -2676,34 +2778,37 @@ end
 --#region REFramework
 
 local function registerWaitingHotkeys()
-	if HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER then
+	if HOTKEY_WAITING_TO_REGISTER then
+		local name = HOTKEY_WAITING_TO_REGISTER
+
 		for key,_ in pairs(ENUM_KEYBOARD_KEY) do
 			-- key released
 			if ENUM_KEYBOARD_MODIFIERS[key] and MANAGER.KEYBOARD:call("getRelease", key) then
 				log.info(string.format('unregister modifier %d', key))
-				HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER_WITH_MODIFIER[key] = nil
+				HOTKEY_WAITING_TO_REGISTER_WITH_MODIFIER[key] = false
 			end
 			-- key pressed
 			if MANAGER.KEYBOARD:call("getTrg", key) then
 				if ENUM_KEYBOARD_MODIFIERS[key] then
 					log.info(string.format('register modifier %d', key))
-					HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER_WITH_MODIFIER[key] = true
+					HOTKEY_WAITING_TO_REGISTER_WITH_MODIFIER[key] = true
 				else
 					-- pressed a valid hotkey
 					log.info(string.format('register hotkey %d', key))
+					local hotkey = HOTKEY(name)
 					-- register it
-					HOTKEY_TOGGLE_OVERLAY = key
+					hotkey.KEY = key
 					-- register modifiers
 					-- first, require NO modifiers be held
 					for modifierKey,_ in pairs(ENUM_KEYBOARD_MODIFIERS) do
-						HOTKEY_TOGGLE_OVERLAY_MODIFIERS[modifierKey] = false
+						hotkey.MODIFIERS[modifierKey] = false
 					end
 					-- then change requirement for any modifiers the user did actually want
-					for modifierKey,needsHeld in pairs(HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER_WITH_MODIFIER) do
-						HOTKEY_TOGGLE_OVERLAY_MODIFIERS[modifierKey] = needsHeld
+					for modifierKey,needsHeld in pairs(HOTKEY_WAITING_TO_REGISTER_WITH_MODIFIER) do
+						hotkey.MODIFIERS[modifierKey] = needsHeld
 					end
 					-- clear flags
-					HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = false
+					HOTKEY_WAITING_TO_REGISTER = false
 					-- remember that we assigned this frame so we don't actually toggle the overlay
 					ASSIGNED_HOTKEY_THIS_FRAME = true
 				end
@@ -2760,7 +2865,9 @@ local function dpsFrame()
 	IS_ONLINE = (MANAGER.LOBBY and MANAGER.LOBBY:call("IsQuestOnline")) or false
 
 	updateHeldHotkeyModifiers()
-	checkHotkeyActivated()
+	for name,_ in pairs(_HOTKEYS) do
+		checkHotkeyActivated(name)
+	end
 
 	-- if the window is open
 	if DRAW_WINDOW_SETTINGS then
@@ -2787,7 +2894,8 @@ re.on_frame(function()
 	if DRAW_WINDOW_HOTKEYS then
 		DrawWindowHotkeys()
 	else
-		HOTKEY_TOGGLE_OVERLAY_WAITING_TO_REGISTER = false
+		HOTKEY_WAITING_TO_REGISTER = nil
+		HOTKEY_WAITING_TO_REGISTER_WITH_MODIFIER = nil
 	end
 
 	registerWaitingHotkeys()

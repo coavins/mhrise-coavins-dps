@@ -288,5 +288,43 @@
 		},
 		"INCLUDE_OTOMO": true,
 		"INCLUDE_OTHER": false
+	},
+	"HOTKEYS": {
+		"TOGGLE_OVERLAY": {
+			"TEXT": "Toggle overlay",
+			"KEY": "109",
+			"MODIFIERS": {
+				"160": false,
+				"161": false,
+				"162": false,
+				"163": false,
+				"164": false,
+				"165": false
+			}
+		},
+		"MONSTER_NEXT": {
+			"TEXT": "Next monster",
+			"KEY": "33",
+			"MODIFIERS": {
+				"160": false,
+				"161": false,
+				"162": false,
+				"163": false,
+				"164": false,
+				"165": false
+			}
+		},
+		"MONSTER_PREV": {
+			"TEXT": "Previous monster",
+			"KEY": "34",
+			"MODIFIERS": {
+				"160": false,
+				"161": false,
+				"162": false,
+				"163": false,
+				"164": false,
+				"165": false
+			}
+		}
 	}
 }
