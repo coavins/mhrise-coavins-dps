@@ -320,21 +320,15 @@ MANAGER.LOBBY    = nil
 MANAGER.AREA     = nil
 MANAGER.OTOMO    = nil
 MANAGER.KEYBOARD = nil
-MANAGER.STAGE    = nil
 MANAGER.SCENE    = nil
 MANAGER.PROGRESS = nil
 
 local SCENE_MANAGER_TYPE = nil
 local SCENE_MANAGER_VIEW = nil
 
-local QUEST_MANAGER_TYPE = nil
-local QUEST_MANAGER_METHOD_ONCHANGEDGAMESTATUS = nil
 local SNOW_ENEMY_ENEMYCHARACTERBASE = nil
 local SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE = nil
 local SNOW_ENEMY_ENEMYCHARACTERBASE_UPDATE = nil
-
-local STAGE_MANAGER_TYPE = nil
-local STAGE_MANAGER_METHOD_ENDTRAININGROOM = nil
 
 --#endregion
 
@@ -607,7 +601,7 @@ local function SetQuestDuration(value)
 	QUEST_DURATION = value
 end
 
-local function cleanUpData()
+local function cleanUpData(message)
 	LAST_UPDATE_TIME = 0
 	SetQuestDuration(0.0)
 	makeTableEmpty(LARGE_MONSTERS)
@@ -615,7 +609,7 @@ local function cleanUpData()
 	makeTableEmpty(REPORT_MONSTERS)
 	makeTableEmpty(PLAYER_NAMES)
 	makeTableEmpty(PLAYER_TIMES)
-	log_info('cleared captured data')
+	log_info('cleared data: ' .. message)
 end
 
 local function AddMonsterToReport(enemyToAdd, bossInfo)
@@ -2238,7 +2232,7 @@ local function DrawWindowSettings()
 			-- reinitialize test data
 			initializeTestData()
 		else
-			cleanUpData()
+			cleanUpData('user clicked reset')
 		end
 
 		dpsUpdate()
@@ -2497,20 +2491,6 @@ end
 
 --#region sdk hooks
 
--- know when we left the training room
-local function read_endTrainingRoom()
-	cleanUpData()
-end
-
--- know when we return from a quest
-local function read_onChangedGameStatus(args)
-	local status = sdk.to_int64(args[3])
-	if status == 1 then
-		-- entered the village
-		cleanUpData()
-	end
-end
-
 -- take accumulated ailment buildup and calculate ratios for each attacker
 local function calculateAilmentContrib(boss, type)
 	local b = boss.ailment.buildup[type]
@@ -2653,20 +2633,6 @@ local function tryLoadTypeDefinitions()
 		end
 	end
 
-	if not QUEST_MANAGER_TYPE then
-		QUEST_MANAGER_TYPE = sdk.find_type_definition("snow.QuestManager")
-		if QUEST_MANAGER_TYPE then
-			QUEST_MANAGER_METHOD_ONCHANGEDGAMESTATUS = QUEST_MANAGER_TYPE:get_method("onChangedGameStatus")
-			-- register function hook
-			sdk.hook(QUEST_MANAGER_METHOD_ONCHANGEDGAMESTATUS,
-				function(args) read_onChangedGameStatus(args) end,
-				function(retval) return retval end)
-			log_info('Hooked snow.QuestManager:onGameChangeStatus()')
-		else
-			log_error('Failed to find snow.QuestManager')
-		end
-	end
-
 	if not SNOW_ENEMY_ENEMYCHARACTERBASE then
 		--local QUEST_MANAGER_METHOD_ADDKPIATTACKDAMAGE = QUEST_MANAGER_TYPE:get_method("addKpiAttackDamage")
 		SNOW_ENEMY_ENEMYCHARACTERBASE = sdk.find_type_definition("snow.enemy.EnemyCharacterBase")
@@ -2688,19 +2654,6 @@ local function tryLoadTypeDefinitions()
 			log_info('Hooked snow.enemy.EnemyCharacterBase:afterCalcDamage_DamageSide()')
 		else
 			log_error('Failed to find snow.enemy.EnemyCharacterBase')
-		end
-	end
-
-	if not STAGE_MANAGER_TYPE then
-		STAGE_MANAGER_TYPE = sdk.find_type_definition("snow.stage.StageManager")
-		if STAGE_MANAGER_TYPE then
-			STAGE_MANAGER_METHOD_ENDTRAININGROOM = STAGE_MANAGER_TYPE:get_method("endTrainingRoom")
-			-- register function hook
-			sdk.hook(STAGE_MANAGER_METHOD_ENDTRAININGROOM,
-				function() read_endTrainingRoom() end,
-				function(retval) return retval end)
-		else
-			log_error('Failed to find snow.stage.StageManager')
 		end
 	end
 end
@@ -2760,6 +2713,9 @@ local function dpsFrame()
 	-- get our function hooks if we don't have them yet
 	tryLoadTypeDefinitions()
 
+	local wasInQuest = IS_IN_QUEST
+	local wasInTraininghall = IS_IN_TRAININGHALL
+
 	local villageArea = 0
 	local questStatus = MANAGER.QUEST:get_field("_QuestStatus")
 	IS_IN_QUEST = (questStatus >= 2)
@@ -2773,7 +2729,14 @@ local function dpsFrame()
 		end
 	end
 
-	IS_IN_TRAININGHALL = (villageArea == 5)
+	IS_IN_TRAININGHALL = (villageArea == 5 and not IS_IN_QUEST)
+
+	-- if we changed places, clear all data
+	if (IS_IN_TRAININGHALL and not wasInTraininghall) then
+		cleanUpData('entered training hall')
+	elseif (IS_IN_QUEST and not wasInQuest) then
+		cleanUpData('entered a quest')
+	end
 
 	if IS_IN_QUEST then
 		SetQuestDuration(MANAGER.QUEST:call("getQuestElapsedTimeSec"))
@@ -2798,11 +2761,6 @@ local function dpsFrame()
 	-- when you are in the training area
 	elseif IS_IN_TRAININGHALL then
 		dpsUpdateOccasionally(QUEST_DURATION)
-	else
-		-- clean up some things in between quests
-		if LAST_UPDATE_TIME ~= 0 then
-			cleanUpData()
-		end
 	end
 end
 

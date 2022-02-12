@@ -22,7 +22,7 @@ describe("mhrise-coavins-dps", function()
 	end)
 
 	before_each(function()
-		cleanUpData()
+		cleanUpData('test')
 
 		SetQuestDuration(0.0)
 
