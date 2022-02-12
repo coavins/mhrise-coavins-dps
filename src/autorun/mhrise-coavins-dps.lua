@@ -2742,8 +2742,6 @@ local function dpsFrame()
 		SetQuestDuration(MANAGER.QUEST:call("getQuestElapsedTimeSec"))
 	elseif IS_IN_TRAININGHALL then
 		SetQuestDuration(MANAGER.AREA:call("get_TrainingHallStayTime"))
-	else
-		SetQuestDuration(0.0)
 	end
 
 	IS_ONLINE = (MANAGER.LOBBY and MANAGER.LOBBY:call("IsQuestOnline")) or false
