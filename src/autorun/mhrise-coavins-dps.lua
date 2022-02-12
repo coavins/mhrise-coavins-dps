@@ -295,6 +295,8 @@ local SCREEN_W = 0
 local SCREEN_H = 0
 local DEBUG_Y = 0
 local FAKE_OTOMO_RANGE_START = 9990 -- it is important that attacker ids near this are never used by the game
+local FAKE_MARIONETTE_ID = 9989 -- all marionette attacks are treated as if they came from this attacker id
+local FAKE_ATTACKER_ID = 10189 -- monsters with id=0 are treated as if they had this attacker id
 local HIGH_NUMBER = 9999.0
 
 local LARGE_MONSTERS = {}
@@ -965,6 +967,7 @@ local function initializeBossMonster(bossEnemy)
 	local boss = {}
 
 	boss.enemy = bossEnemy
+	boss.id = nil
 
 	boss.species = bossEnemy:call("get_EnemySpecies")
 	boss.genus   = bossEnemy:call("get_BossEnemyGenus")
@@ -1234,7 +1237,7 @@ local function initializeReportItem(id)
 	item.id = id
 	item.playerNumber = nil
 	item.otomoNumber = nil
-	item.name = nil
+	item.name = ''
 
 	-- initialize player number and name if we can
 	if item.id >= 0 and item.id <= 3 then
@@ -1244,6 +1247,14 @@ local function initializeReportItem(id)
 	elseif attackerIdIsOtomo(item.id) then
 		item.otomoNumber = getOtomoIdFromFakeAttackerId(item.id) + 1
 		item.name = OTOMO_NAMES[item.otomoNumber]
+	elseif item.id == FAKE_MARIONETTE_ID then
+		item.name = 'Wyvern Riding'
+	else
+		for _,boss in pairs(LARGE_MONSTERS) do
+			if boss.id and boss.id == item.id then
+				item.name = boss.name
+			end
+		end
 	end
 
 	item.counters = {}
@@ -1720,7 +1731,7 @@ local function drawReportItemColumn(item, col, x, y)
 			end
 		else
 			-- just draw the name
-			text = string.format('%s', item.name or '')
+			text = string.format('%s', item.name)
 		end
 	elseif col == 4 then -- dps
 		text = string.format('%.1f', item.dps.report)
@@ -1918,7 +1929,7 @@ local function drawReport(index)
 				end
 			end
 
-			if CFG('DEBUG_SHOW_MISSING_DAMAGE') and report.missingDamage > 0.0 then
+			if CFG('DEBUG_SHOW_MISSING_DAMAGE') and report.missingDamage ~= 0.0 then
 				monsterText = monsterText .. string.format(' (%.0f?)', report.missingDamage)
 			end
 
@@ -2573,8 +2584,7 @@ local function DrawWindowReport()
 
 	showCheckboxForAttackerType('weapon')
 	showCheckboxForAttackerType('otomo')
-	-- don't allow enabling monster damage since it's really buggy right now
-	--showCheckboxForAttackerType('monster')
+	showCheckboxForAttackerType('monster')
 
 	imgui.new_line()
 
@@ -2714,6 +2724,20 @@ local function updateBossEnemy(args)
 		end
 	end
 
+	if not boss.id then
+		local setInfo = enemy:call("get_SetInfo")
+		local id = setInfo:call("get_UniqueId")
+		if id then
+			log_info('found id ' .. id .. ' for ' .. boss.name)
+			if id == 0 then
+				id = FAKE_ATTACKER_ID
+				log_info('override id to ' .. id)
+			end
+
+			boss.id = id
+		end
+	end
+
 	local isCapture = enemy:call("isCapture")
 	local isCombatMode = enemy:call("get_IsCombatMode")
 	local isInCombat = isCombatMode and boss.hp.current > 0 and not isCapture
@@ -2795,6 +2819,17 @@ local function read_AfterCalcInfo_DamageSide(args)
 
 	--log.info(string.format('%.0f:%.0f = %.0f:%.0f:%.0f:%.0f'
 	--, attackerId, attackerTypeId, physicalDamage, elementDamage, conditionDamage, conditionType))
+
+	-- override attacker id for marionette attacks
+	local isMarionetteAttack = info:call("get_IsMarionetteAttack")
+	if isMarionetteAttack then
+		attackerId = FAKE_MARIONETTE_ID
+	end
+
+	-- override attacker id for monster attacks when monster has id=0
+	if attackerId == 0 and attackerTypeId == 23 then
+		attackerId = FAKE_ATTACKER_ID
+	end
 
 	addDamageToBoss(boss, attackerId, attackerTypeId
 	, physicalDamage, elementDamage, conditionDamage, conditionType, 0, 0, criticalType)
