@@ -6,6 +6,10 @@
 			"MIN": 0.01,
 			"MAX": 10.00
 		},
+		"AUTO_SAVE": {
+			"VALUE": true,
+			"TEXT": "Automatically save all settings"
+		},
 		"SHOW_TEST_DATA_WHILE_MENU_IS_OPEN": {
 			"VALUE": true,
 			"TEXT": "Show test data while menu is open"

@@ -2330,6 +2330,9 @@ local function DrawWindowSettings()
 		dpsUpdate()
 	end
 
+	showCheckboxForSetting('AUTO_SAVE')
+	showCheckboxForSetting('HIDE_OVERLAY_IN_VILLAGE')
+
 	-- Show test data
 	changed, wantsIt = imgui.checkbox('Show test data while menu is open', CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'))
 	if changed then
@@ -2341,9 +2344,6 @@ local function DrawWindowSettings()
 			dpsUpdate()
 		end
 	end
-
-	-- Show test data
-	showCheckboxForSetting('HIDE_OVERLAY_IN_VILLAGE')
 
 	-- Presets
 	imgui.new_line()
@@ -2939,6 +2939,12 @@ re.on_draw_ui(function()
 	end
 
 	imgui.end_group()
+end)
+
+re.on_config_save(function()
+	if CFG('AUTO_SAVE') then
+		saveCurrentConfig()
+	end
 end)
 
 --#endregion
