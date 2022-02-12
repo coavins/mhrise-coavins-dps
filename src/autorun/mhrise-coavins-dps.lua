@@ -613,6 +613,7 @@ local function cleanUpData()
 	makeTableEmpty(LARGE_MONSTERS)
 	makeTableEmpty(DAMAGE_REPORTS)
 	makeTableEmpty(REPORT_MONSTERS)
+	makeTableEmpty(PLAYER_NAMES)
 	makeTableEmpty(PLAYER_TIMES)
 	log_info('cleared captured data')
 end
