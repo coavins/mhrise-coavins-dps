@@ -584,18 +584,20 @@ local function saveCurrentConfig()
 	file['FILTERS'] = _FILTERS
 
 	-- fix hotkeys
-	for _, hotkey in pairs(_HOTKEYS) do
+	local fixedHotkeys = {}
+	for name, hotkey in pairs(_HOTKEYS) do
+		fixedHotkeys[name] = {}
 		-- convert key to string
-		hotkey.KEY = tostring(hotkey.KEY)
+		fixedHotkeys[name].KEY = tostring(hotkey.KEY)
 		local modifiers = {}
 		for key, value in pairs(hotkey.MODIFIERS) do
 			-- convert keys to numbers
 			modifiers[tostring(key)] = value
 		end
-		hotkey.MODIFIERS = modifiers
+		fixedHotkeys[name].MODIFIERS = modifiers
 	end
 
-	file['HOTKEYS'] = _HOTKEYS
+	file['HOTKEYS'] = fixedHotkeys
 
 	-- save current config to disk, replacing any existing file
 	local success = json.dump_file(DATADIR .. 'saves/save.json', file)
