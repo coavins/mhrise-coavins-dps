@@ -294,6 +294,7 @@ local SCREEN_W = 0
 local SCREEN_H = 0
 local DEBUG_Y = 0
 local FAKE_OTOMO_RANGE_START = 9990 -- it is important that attacker ids near this are never used by the game
+local HIGH_NUMBER = 9999.0
 
 local LARGE_MONSTERS = {}
 local TEST_MONSTERS = nil -- like LARGE_MONSTERS, but holds dummy/test data
@@ -873,6 +874,7 @@ local function initializeDamageCounter()
 	c.maxHit = 0 -- biggest hit
 	c.numUpCrit = 0 -- how many crits
 	c.numDnCrit = 0 -- how many negative crits
+	c.firstStrike = HIGH_NUMBER -- time of first strike
 
 	return c
 end
@@ -913,6 +915,7 @@ local function mergeDamageCounters(a, b)
 	c.maxHit = math.max(a.maxHit, b.maxHit)
 	c.numUpCrit = a.numUpCrit + b.numUpCrit
 	c.numDnCrit = a.numDnCrit + b.numDnCrit
+	c.firstStrike = math.min(a.firstStrike, b.firstStrike)
 	return c
 end
 
@@ -1108,6 +1111,8 @@ local function addDamageToBoss(boss, attackerId, attackerTypeId
 		amt.maxHit = getTotalDamageForDamageCounter(amt)
 	end
 
+	amt.firstStrike = QUEST_DURATION
+
 	--log.info(string.format('%.0f/%.0f %.0f:%.0f:%.0f:%.0f'
 	--, attackerId, attackerTypeId, amtPhysical, amtElemental, amtCondition, amtAilment))
 
@@ -1265,6 +1270,8 @@ local function initializeReportItem(id)
 	item.numUpCrit = 0
 	item.numDnCrit = 0
 
+	item.firstStrike = HIGH_NUMBER
+
 	return item
 end
 
@@ -1282,6 +1289,7 @@ local function sumDamageCountersList(counters, attackerTypeFilter)
 	sum.maxHit = 0
 	sum.numUpCrit = 0
 	sum.numDnCrit = 0
+	sum.firstStrike = HIGH_NUMBER
 
 	-- get totals from counters
 	for type,counter in pairs(counters) do
@@ -1312,6 +1320,7 @@ local function sumDamageCountersList(counters, attackerTypeFilter)
 			sum.maxHit     = math.max(sum.maxHit, counter.maxHit)
 			sum.numUpCrit = sum.numUpCrit + counter.numUpCrit
 			sum.numDnCrit = sum.numDnCrit + counter.numDnCrit
+			sum.firstStrike = math.min(sum.firstStrike, counter.firstStrike)
 		end
 	end
 
@@ -1332,6 +1341,7 @@ local function sumDamageSourcesList(sources)
 	sum.maxHit = 0
 	sum.numUpCrit = 0
 	sum.numDnCrit = 0
+	sum.firstStrike = HIGH_NUMBER
 
 	for _,source in pairs(sources) do
 		local this = sumDamageCountersList(source.counters)
@@ -1347,6 +1357,7 @@ local function sumDamageSourcesList(sources)
 		sum.maxHit     = math.max(sum.maxHit, this.maxHit)
 		sum.numUpCrit = sum.numUpCrit + this.numUpCrit
 		sum.numDnCrit = sum.numDnCrit + this.numDnCrit
+		sum.firstStrike = math.minx(sum.firstStrike, this.firstStrike)
 	end
 
 	return sum
@@ -1505,6 +1516,7 @@ local function mergeBossIntoReport(report, boss)
 		item.maxHit = sum.maxHit
 		item.numUpCrit = sum.numUpCrit
 		item.numDnCrit = sum.numDnCrit
+		item.firstStrike = sum.firstStrike
 
 		if item.numHit > 0 then
 			item.pctUpCrit = item.numUpCrit / item.numHit
@@ -1528,6 +1540,9 @@ local function mergeBossIntoReport(report, boss)
 		if report.questTime > 0 then
 			item.dps.quest = item.total / report.questTime
 			local playerTime = PLAYER_TIMES[item.playerNumber]
+			if CFG('PDPS_BASED_ON_FIRST_STRIKE') and item.firstStrike < HIGH_NUMBER then
+				playerTime = item.firstStrike
+			end
 			if playerTime then
 				item.dps.personal = item.total / (report.questTime - playerTime)
 			else
@@ -2341,6 +2356,7 @@ local function DrawWindowSettings()
 	--showSliderForFloatSetting('UPDATE_RATE')
 	showCheckboxForSetting('COMBINE_OTOMO_WITH_HUNTER')
 	showCheckboxForSetting('CONDITION_LIKE_DAMAGE')
+	showCheckboxForSetting('PDPS_BASED_ON_FIRST_STRIKE')
 
 	imgui.new_line()
 	imgui.text('Privacy')

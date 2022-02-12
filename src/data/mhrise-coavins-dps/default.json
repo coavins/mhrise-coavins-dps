@@ -26,6 +26,10 @@
 			"VALUE": false,
 			"TEXT": "Ailment buildup counts as damage"
 		},
+		"PDPS_BASED_ON_FIRST_STRIKE": {
+			"VALUE": true,
+			"TEXT": "pDPS starts counting from player's first attack"
+		},
 		"DRAW_BAR_RELATIVE_TO_PARTY": {
 			"VALUE": false,
 			"TEXT": "Damage bars will represent share of overall party DPS"
