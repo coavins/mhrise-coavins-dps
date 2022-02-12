@@ -10,6 +10,10 @@
 			"VALUE": true,
 			"TEXT": "Show test data while menu is open"
 		},
+		"HIDE_OVERLAY_IN_VILLAGE": {
+			"VALUE": false,
+			"TEXT": "Hide the overlay when in the village"
+		},
 		"COMBINE_OTOMO_WITH_HUNTER": {
 			"VALUE": true,
 			"TEXT": "Combine buddies with their hunters"

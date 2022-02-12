@@ -1134,7 +1134,6 @@ local function clearTestData()
 	for enemy, boss in pairs(LARGE_MONSTERS) do
 		AddMonsterToReport(enemy, boss)
 	end
-	log_info('cleared test data')
 end
 
 --#endregion
@@ -2026,9 +2025,18 @@ end
 
 -- main draw function
 local function dpsDraw()
-	if DRAW_WINDOW_SETTINGS -- always draw overlay if settings window is open
-	or (DRAW_OVERLAY and -- draw in one of the following circumstances if overlay is enabled
-	   (isInTestMode() or IS_IN_QUEST or IS_IN_TRAININGHALL)) then
+	local drawIt = false
+
+	-- always draw overlay if settings window is open
+	if DRAW_WINDOW_SETTINGS then
+		drawIt = true
+	elseif not CFG('HIDE_OVERLAY_IN_VILLAGE') then
+		drawIt = true
+	elseif IS_IN_QUEST or IS_IN_TRAININGHALL then
+		drawIt = true
+	end
+
+	if drawIt then
 		-- draw the first report
 		drawReport(1)
 
@@ -2182,6 +2190,7 @@ local function DrawWindowSettings()
 
 		if isInTestMode() then
 			clearTestData()
+			dpsUpdate()
 		end
 	end
 
@@ -2190,19 +2199,6 @@ local function DrawWindowSettings()
 	if changed then
 		DPS_ENABLED = wantsIt
 	end
-
-	imgui.same_line()
-	-- Show test data
-	changed, wantsIt = imgui.checkbox('Show test data while menu is open', CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'))
-	if changed then
-		SetCFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN', wantsIt)
-		if wantsIt then
-			initializeTestData()
-		else
-			clearTestData()
-		end
-	end
-
 
 	if imgui.button('Save settings') then
 		saveCurrentConfig()
@@ -2214,6 +2210,7 @@ local function DrawWindowSettings()
 			initializeTestData()
 		else
 			clearTestData()
+			dpsUpdate()
 		end
 	end
 
@@ -2223,6 +2220,7 @@ local function DrawWindowSettings()
 			initializeTestData()
 		else
 			clearTestData()
+			dpsUpdate()
 		end
 	end
 
@@ -2237,6 +2235,21 @@ local function DrawWindowSettings()
 
 		dpsUpdate()
 	end
+
+	-- Show test data
+	changed, wantsIt = imgui.checkbox('Show test data while menu is open', CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'))
+	if changed then
+		SetCFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN', wantsIt)
+		if wantsIt then
+			initializeTestData()
+		else
+			clearTestData()
+			dpsUpdate()
+		end
+	end
+
+	-- Show test data
+	showCheckboxForSetting('HIDE_OVERLAY_IN_VILLAGE')
 
 	-- Presets
 	imgui.new_line()
@@ -2800,6 +2813,7 @@ re.on_draw_ui(function()
 		else
 			if isInTestMode() then
 				clearTestData()
+				dpsUpdate()
 			end
 		end
 	end
