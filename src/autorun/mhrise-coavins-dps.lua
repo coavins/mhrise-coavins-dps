@@ -1929,7 +1929,7 @@ local function drawReport(index)
 				end
 			end
 
-			if CFG('DEBUG_SHOW_MISSING_DAMAGE') and report.missingDamage ~= 0.0 then
+			if CFG('DEBUG_SHOW_MISSING_DAMAGE') then
 				monsterText = monsterText .. string.format(' (%.0f?)', report.missingDamage)
 			end
 
@@ -2672,6 +2672,12 @@ local function DrawWindowDebug()
 	end
 
 	showCheckboxForSetting('DEBUG_SHOW_MISSING_DAMAGE')
+	imgui.text('You can use this setting to see how much damage is not being captured.')
+	imgui.text('Shows the result of the following formula: (x-y)')
+	imgui.text('Where x is the amount of health that the game says the monster is missing')
+	imgui.text('and y is the amount of damage that this mod says has been done.')
+	imgui.text('If the mod is working perfectly, then these values will be the same')
+	imgui.text('For accurate results, make sure to enable all filters.')
 end
 
 --#endregion
