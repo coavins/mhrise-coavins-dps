@@ -614,7 +614,6 @@ local function loadPresets()
 
 	for _,path in ipairs(paths) do
 		local name = string.match(path, '\\([%a%s]+).json')
-		log_info(name)
 		local file = readDataFile('presets/' .. name .. '.json')
 		if file then
 			_PRESETS[name] = file
