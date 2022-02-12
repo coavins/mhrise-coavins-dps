@@ -651,6 +651,7 @@ local function cleanUpData(message)
 	SetQuestDuration(0.0)
 	makeTableEmpty(LARGE_MONSTERS)
 	makeTableEmpty(ORDERED_MONSTERS)
+	ORDERED_MONSTERS_SELECTED = 0
 	makeTableEmpty(DAMAGE_REPORTS)
 	makeTableEmpty(REPORT_MONSTERS)
 	makeTableEmpty(PLAYER_NAMES)
