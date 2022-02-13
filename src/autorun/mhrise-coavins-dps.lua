@@ -269,7 +269,9 @@ local DRAW_WINDOW_SETTINGS = false
 local DRAW_WINDOW_REPORT   = false
 local DRAW_WINDOW_HOTKEYS  = false
 local DRAW_WINDOW_DEBUG    = false
+local DRAW_WINDOW_COLORS   = false
 local WINDOW_FLAGS = 0x20
+local PICKER_FLAGS = 0x40000
 local IS_ONLINE = false
 local QUEST_DURATION = 0.0
 local IS_IN_QUEST = false
@@ -290,6 +292,9 @@ local FONT = nil
 local _PRESETS = {}
 local PRESET_OPTIONS = {}
 local PRESET_OPTIONS_SELECTED = 1
+local _COLORSCHEMES = {}
+local COLORSCHEME_OPTIONS = {}
+local COLORSCHEME_OPTIONS_SELECTED = 1
 
 local SCREEN_W = 0
 local SCREEN_H = 0
@@ -472,11 +477,9 @@ local function COLOR(name)
 	return _COLORS[name]
 end
 
---[[
 local function SetColor(name, value)
 	_COLORS[name] = value
 end
-]]
 
 local function HOTKEY(name)
 	return _HOTKEYS[name]
@@ -567,6 +570,16 @@ local function loadDefaultConfig()
 	return true
 end
 
+local function loadDefaultColors()
+	local file = readDataFile('default.json')
+	if not file then
+		log_error('failed to load default.json (did you install the data files?)')
+		return false
+	end
+
+	_COLORS = file['COLORS']
+end
+
 local function loadSavedConfigIfExist()
 	local file = readDataFile('saves/save.json') -- file might not exist
 	if file then
@@ -611,6 +624,37 @@ local function saveCurrentConfig()
 	end
 end
 
+-- load color schemes
+local function loadColorschemes()
+	local paths = fs.glob([[mhrise-coavins-dps\\colors\\.*json]])
+
+	for _,path in ipairs(paths) do
+		local name = string.match(path, '\\([%a%s]+).json')
+		local file = readDataFile('colors/' .. name .. '.json')
+		if file then
+			_COLORSCHEMES[name] = file
+			log_info('loaded color scheme ' .. name)
+		end
+	end
+
+	-- build colorscheme options list
+	for name,_ in pairs(_COLORSCHEMES) do
+		table.insert(COLORSCHEME_OPTIONS, name)
+	end
+	table.sort(COLORSCHEME_OPTIONS)
+	table.insert(COLORSCHEME_OPTIONS, 1, 'Select a color scheme')
+end
+
+local function applySelectedColorscheme()
+	local name = COLORSCHEME_OPTIONS[COLORSCHEME_OPTIONS_SELECTED]
+	local scheme = _COLORSCHEMES[name]
+	if scheme then
+		mergeColorsIntoLeft(_COLORS, scheme.COLORS)
+
+		log_info(string.format('applied color scheme %s', name))
+	end
+end
+
 -- load presets
 local function loadPresets()
 	local paths = fs.glob([[mhrise-coavins-dps\\presets\\.*json]])
@@ -640,7 +684,7 @@ local function applySelectedPreset()
 		mergeCfgIntoLeft(_CFG, preset.CFG)
 		mergeColorsIntoLeft(_COLORS, preset.COLORS)
 
-		log_info(string.format('loaded preset %s', name))
+		log_info(string.format('applied preset %s', name))
 	end
 end
 
@@ -2276,6 +2320,76 @@ local function showSliderForIntSetting(setting)
 	end
 end
 
+local function showColorPicker(text, setting)
+	if imgui.tree_node(text) then
+		local changed, value = imgui.color_picker_argb(text, COLOR(setting), PICKER_FLAGS)
+		if changed then
+			SetColor(setting, value)
+		end
+		imgui.tree_pop()
+	end
+end
+
+local function showColorPickerForUnique(text, setting, playerNumber)
+	if imgui.tree_node(text) then
+		local changed, value = imgui.color_picker_argb(text, COLOR(setting)[playerNumber], PICKER_FLAGS)
+		if changed then
+			_COLORS[setting][playerNumber] = value
+		end
+		imgui.tree_pop()
+	end
+end
+
+local function showColorSection()
+	if imgui.button('Apply color scheme') then
+		applySelectedColorscheme()
+	end
+	imgui.same_line()
+	local changed, value = imgui.combo('Color Scheme', COLORSCHEME_OPTIONS_SELECTED, COLORSCHEME_OPTIONS)
+	if changed then
+		COLORSCHEME_OPTIONS_SELECTED = value
+	end
+
+	imgui.new_line()
+
+	showColorPicker('Title background', 'TITLE_BG')
+	showColorPicker('Title foreground', 'TITLE_FG')
+	showColorPicker('Bar background', 'BAR_BG')
+	showColorPicker('Bar outline', 'BAR_OUTLINE')
+
+	imgui.new_line()
+
+	showColorPickerForUnique('Player 1', 'PLAYER', 1)
+	showColorPickerForUnique('Player 2', 'PLAYER', 2)
+	showColorPickerForUnique('Player 3', 'PLAYER', 3)
+	showColorPickerForUnique('Player 4', 'PLAYER', 4)
+	showColorPicker('Buddies', 'OTOMO')
+
+	imgui.new_line()
+
+	showColorPicker('Physical damage', 'BAR_DMG_PHYSICAL')
+	showColorPickerForUnique('P1 Physical Damage', 'BAR_DMG_PHYSICAL_UNIQUE', 1)
+	showColorPickerForUnique('P2 Physical Damage', 'BAR_DMG_PHYSICAL_UNIQUE', 2)
+	showColorPickerForUnique('P3 Physical Damage', 'BAR_DMG_PHYSICAL_UNIQUE', 3)
+	showColorPickerForUnique('P4 Physical Damage', 'BAR_DMG_PHYSICAL_UNIQUE', 4)
+
+	imgui.new_line()
+
+	showColorPicker('Element damage', 'BAR_DMG_ELEMENT')
+	showColorPickerForUnique('P1 Element Damage', 'BAR_DMG_ELEMENT_UNIQUE', 1)
+	showColorPickerForUnique('P2 Element Damage', 'BAR_DMG_ELEMENT_UNIQUE', 2)
+	showColorPickerForUnique('P3 Element Damage', 'BAR_DMG_ELEMENT_UNIQUE', 3)
+	showColorPickerForUnique('P4 Element Damage', 'BAR_DMG_ELEMENT_UNIQUE', 4)
+
+	imgui.new_line()
+
+	showColorPicker('Buddy damage', 'BAR_DMG_OTOMO')
+	showColorPicker('Poison damage', 'BAR_DMG_POISON')
+	showColorPicker('Blast damage', 'BAR_DMG_BLAST')
+	showColorPicker('Other damage', 'BAR_DMG_OTHER')
+	showColorPicker('Ailment buildup', 'BAR_DMG_AILMENT')
+end
+
 local function DrawWindowSettings()
 	local changed, wantsIt, value
 
@@ -2354,7 +2468,7 @@ local function DrawWindowSettings()
 
 	imgui.new_line()
 	imgui.text('Hotkeys')
-	if imgui.button('open hotkeys') then
+	if imgui.button('edit hotkeys') then
 		DRAW_WINDOW_HOTKEYS = not DRAW_WINDOW_HOTKEYS
 	end
 
@@ -2367,7 +2481,7 @@ local function DrawWindowSettings()
 		PRESET_OPTIONS_SELECTED = value
 	end
 	imgui.same_line()
-	if imgui.button('Apply') then
+	if imgui.button('Apply preset') then
 		applySelectedPreset()
 	end
 
@@ -2503,15 +2617,21 @@ local function DrawWindowSettings()
 
 	imgui.new_line()
 
+	if imgui.collapsing_header('Colors') then
+		showColorSection()
+	end
+
+	imgui.new_line()
+
 	imgui.text('Data filtering')
-	if imgui.button('open filters') then
+	if imgui.button('edit filters') then
 		DRAW_WINDOW_REPORT = not DRAW_WINDOW_REPORT
 	end
 
 	imgui.new_line()
 
 	imgui.text('Debugging')
-	if imgui.button('open debug') then
+	if imgui.button('open debug menu') then
 		DRAW_WINDOW_DEBUG = not DRAW_WINDOW_DEBUG
 	end
 
@@ -2678,6 +2798,8 @@ local function DrawWindowDebug()
 	imgui.text('and y is the amount of damage that this mod says has been done.')
 	imgui.text('If the mod is working perfectly, then these values will be the same')
 	imgui.text('For accurate results, make sure to enable all filters.')
+
+	imgui.end_window()
 end
 
 --#endregion
@@ -3005,6 +3127,10 @@ re.on_frame(function()
 		DrawWindowDebug()
 	end
 
+	if DRAW_WINDOW_COLORS then
+		DrawWindowColors()
+	end
+
 	registerWaitingHotkeys()
 
 	if DPS_ENABLED then
@@ -3058,6 +3184,7 @@ loadSavedConfigIfExist()
 
 -- load presets into cache
 loadPresets()
+loadColorschemes()
 
 -- perform sanity checks
 sanityCheck()
