@@ -296,7 +296,8 @@
 			"otomo": true,
 			"fg005": true,
 			"ecbatexplode": true,
-			"monster": false
+			"monster": true,
+			"marionette": true
 		},
 		"INCLUDE_OTOMO": true,
 		"INCLUDE_OTHER": false

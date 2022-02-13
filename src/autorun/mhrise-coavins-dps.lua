@@ -231,6 +231,8 @@ ATTACKER_TYPES[19] = 'otomo'
 ATTACKER_TYPES[20] = 'fg005'
 ATTACKER_TYPES[21] = 'ecbatexplode'
 ATTACKER_TYPES[23] = 'monster'
+-- defined here for convenience, but is not really in the game
+ATTACKER_TYPES[125] = 'marionette'
 
 local ATTACKER_TYPE_TEXT = {}
 ATTACKER_TYPE_TEXT['weapon']            = 'Weapon'
@@ -256,6 +258,7 @@ ATTACKER_TYPE_TEXT['otomo']             = 'Buddy'
 ATTACKER_TYPE_TEXT['fg005']             = 'fg005'
 ATTACKER_TYPE_TEXT['ecbatexplode']      = 'ecbatexplode'
 ATTACKER_TYPE_TEXT['monster']           = 'Monster'
+ATTACKER_TYPE_TEXT['marionette']        = 'Wyvern Riding'
 
 --#endregion
 
@@ -2469,11 +2472,13 @@ local function showFilterSection()
 			generateReport(REPORT_MONSTERS)
 		end
 
+		--[[
 		changed, wantsIt = imgui.checkbox('Show Wyvern Riding', _FILTERS.INCLUDE_OTHER)
 		if changed then
 			_FILTERS.INCLUDE_OTHER = wantsIt
 			generateReport(REPORT_MONSTERS)
 		end
+		]]
 
 		changed, wantsIt = imgui.checkbox('Show monsters and villagers', _FILTERS.INCLUDE_OTHER)
 		if changed then
@@ -2519,6 +2524,7 @@ local function showFilterSection()
 			showCheckboxForAttackerType('weapon')
 			showCheckboxForAttackerType('otomo')
 			showCheckboxForAttackerType('monster')
+			showCheckboxForAttackerType('marionette')
 
 			imgui.new_line()
 
@@ -2992,18 +2998,19 @@ local function read_AfterCalcInfo_DamageSide(args)
 
 	local criticalType = tonumber(info:call("get_CriticalResult")) -- snow.hit.CriticalType (0: not, 1: crit, 2: bad crit)
 
+	local isMarionetteAttack = info:call("get_IsMarionetteAttack")
+
 	--log.info(string.format('%.0f:%.0f = %.0f:%.0f:%.0f:%.0f'
 	--, attackerId, attackerTypeId, physicalDamage, elementDamage, conditionDamage, conditionType))
-
-	-- override attacker id for marionette attacks
-	local isMarionetteAttack = info:call("get_IsMarionetteAttack")
-	if isMarionetteAttack then
-		attackerId = FAKE_MARIONETTE_ID
-	end
 
 	-- override attacker id for monster attacks when monster has id=0
 	if attackerId == 0 and attackerTypeId == 23 then
 		attackerId = FAKE_ATTACKER_ID
+	end
+
+	-- override attacker type for marionette attackers
+	if isMarionetteAttack then
+		attackerTypeId = 125
 	end
 
 	addDamageToBoss(boss, attackerId, attackerTypeId
