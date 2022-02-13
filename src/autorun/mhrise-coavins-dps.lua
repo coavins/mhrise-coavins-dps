@@ -266,11 +266,9 @@ local DPS_DEBUG = false
 local LAST_UPDATE_TIME = 0
 local DRAW_OVERLAY = true
 local DRAW_WINDOW_SETTINGS = false
-local DRAW_WINDOW_REPORT   = false
 local DRAW_WINDOW_HOTKEYS  = false
 local DRAW_WINDOW_DEBUG    = false
-local DRAW_WINDOW_COLORS   = false
-local WINDOW_FLAGS = 0x20
+local WINDOW_FLAGS = 0x120
 local PICKER_FLAGS = 0x40000
 local IS_ONLINE = false
 local QUEST_DURATION = 0.0
@@ -2340,6 +2338,238 @@ local function showColorPickerForUnique(text, setting, playerNumber)
 	end
 end
 
+local function showCheckboxForAttackerType(type)
+	local typeIsInReport = _FILTERS.ATTACKER_TYPES[type]
+	local changed, wantsIt = imgui.checkbox(ATTACKER_TYPE_TEXT[type], typeIsInReport)
+	if changed then
+		if wantsIt then
+			AddAttackerTypeToReport(type)
+		else
+			RemoveAttackerTypeFromReport(type)
+		end
+		generateReport(REPORT_MONSTERS)
+	end
+end
+
+local function showAppearanceSection()
+	if imgui.collapsing_header('Size and position') then
+		imgui.text('Scale Overlay')
+		showSliderForFloatSetting('TABLE_SCALE')
+		imgui.text('Save changes and RESET SCRIPTS to apply scaling to text')
+
+		imgui.new_line()
+
+		showSliderForFloatSetting('TABLE_X')
+		showSliderForFloatSetting('TABLE_Y')
+		showSliderForIntSetting('TABLE_WIDTH')
+
+		imgui.new_line()
+
+		showCheckboxForSetting('TABLE_GROWS_UPWARD')
+
+		imgui.new_line()
+	end
+
+	if imgui.collapsing_header('Title') then
+		showCheckboxForSetting('DRAW_TITLE')
+		showCheckboxForSetting('DRAW_TITLE_TEXT')
+		showCheckboxForSetting('DRAW_TITLE_MONSTER')
+		showSliderForIntSetting('DRAW_TITLE_HEIGHT')
+		showCheckboxForSetting('DRAW_TITLE_BACKGROUND')
+
+		imgui.new_line()
+	end
+
+	if imgui.collapsing_header('Header') then
+		showCheckboxForSetting('DRAW_HEADER')
+		showSliderForIntSetting('DRAW_HEADER_HEIGHT')
+		showCheckboxForSetting('DRAW_HEADER_BACKGROUND')
+
+		showSliderForIntSetting('TABLE_HEADER_TEXT_OFFSET_X')
+
+		imgui.new_line()
+	end
+
+	if imgui.collapsing_header('Rows') then
+		showCheckboxForSetting('DRAW_TABLE_BACKGROUND')
+		showCheckboxForSetting('DRAW_BAR_OUTLINES')
+		showCheckboxForSetting('DRAW_BAR_COLORBLOCK')
+		showCheckboxForSetting('DRAW_BAR_USE_PLAYER_COLORS')
+		showCheckboxForSetting('DRAW_BAR_USE_UNIQUE_COLORS')
+
+		imgui.new_line()
+
+		showCheckboxForSetting('DRAW_BAR_RELATIVE_TO_PARTY')
+		showCheckboxForSetting('USE_MINIMAL_BARS')
+
+		imgui.new_line()
+
+		showCheckboxForSetting('TABLE_SORT_ASC')
+		showCheckboxForSetting('TABLE_SORT_IN_ORDER')
+
+		imgui.new_line()
+
+		showSliderForIntSetting('TABLE_ROWH')
+		showSliderForIntSetting('TABLE_ROW_PADDING')
+
+		showSliderForIntSetting('TABLE_ROW_TEXT_OFFSET_X')
+		showSliderForIntSetting('TABLE_ROW_TEXT_OFFSET_Y')
+
+		imgui.new_line()
+	end
+end
+
+local function showTextSection()
+	showTextboxForSetting('FONT_FAMILY')
+	imgui.text('Save changes and RESET SCRIPTS to apply changes to font')
+
+	imgui.new_line()
+
+	showCheckboxForSetting('TEXT_DRAW_SHADOWS')
+	showSliderForIntSetting('TEXT_SHADOW_OFFSET_X')
+	showSliderForIntSetting('TEXT_SHADOW_OFFSET_Y')
+end
+
+local function showSelectDataSection()
+	-- draw combo and slider for each column
+	for i,currentCol in ipairs(_CFG['TABLE_COLS']) do
+		local selected = 1
+		-- find option id for selected column
+		for idxId,key in ipairs(TABLE_COLUMNS_OPTIONS_ID) do
+			if key == currentCol then
+				selected = idxId
+			end
+		end
+		-- show combo for choice
+		local changedCol, newCol = imgui.combo('Column ' .. i, selected, TABLE_COLUMNS_OPTIONS_READABLE)
+		if changedCol then
+			_CFG['TABLE_COLS'][i] = TABLE_COLUMNS_OPTIONS_ID[newCol]
+		end
+	end
+end
+
+local function showColumnWidthSection()
+	for i,currentWidth in ipairs(_CFG['TABLE_COLS_WIDTH']) do
+		-- skip 'None'
+		if i > 1 then
+			-- show slider for width
+			local changedWidth, newWidth = imgui.slider_int(TABLE_COLUMNS[i], currentWidth, 0, 250)
+			if changedWidth then
+				_CFG['TABLE_COLS_WIDTH'][i] = newWidth
+			end
+		end
+	end
+end
+
+local function showFilterSection()
+	if imgui.tree_node('Combatants') then
+		local changed, wantsIt = imgui.checkbox('Show buddies', _FILTERS.INCLUDE_OTOMO)
+		if changed then
+			_FILTERS.INCLUDE_OTOMO = wantsIt
+			generateReport(REPORT_MONSTERS)
+		end
+
+		changed, wantsIt = imgui.checkbox('Show Wyvern Riding', _FILTERS.INCLUDE_OTHER)
+		if changed then
+			_FILTERS.INCLUDE_OTHER = wantsIt
+			generateReport(REPORT_MONSTERS)
+		end
+
+		changed, wantsIt = imgui.checkbox('Show monsters and villagers', _FILTERS.INCLUDE_OTHER)
+		if changed then
+			_FILTERS.INCLUDE_OTHER = wantsIt
+			generateReport(REPORT_MONSTERS)
+		end
+
+		imgui.new_line()
+
+		imgui.tree_pop()
+	end
+
+	-- draw buttons for each boss monster in the cache
+	if imgui.tree_node('Large monsters') then
+		local monsterCollection = TEST_MONSTERS or LARGE_MONSTERS
+		local foundMonster = false
+		for enemy,boss in pairs(monsterCollection) do
+			foundMonster = true
+			local monsterIsInReport = REPORT_MONSTERS[enemy]
+			local changed, wantsIt = imgui.checkbox('Include ' .. boss.name, monsterIsInReport)
+			if changed then
+				if wantsIt then
+					AddMonsterToReport(enemy, boss)
+				else
+					RemoveMonsterFromReport(enemy)
+				end
+				generateReport(REPORT_MONSTERS)
+			end
+		end
+
+		if not foundMonster then
+			imgui.text('(n/a)')
+		end
+
+		imgui.new_line()
+
+		imgui.tree_pop()
+	end
+
+	-- draw buttons for attacker types
+	if imgui.tree_node('Attack type') then
+		if imgui.tree_node('General') then
+			showCheckboxForAttackerType('weapon')
+			showCheckboxForAttackerType('otomo')
+			showCheckboxForAttackerType('monster')
+
+			imgui.new_line()
+
+			imgui.tree_pop()
+		end
+
+		if imgui.tree_node('Items') then
+			showCheckboxForAttackerType('barrelbombs')
+			showCheckboxForAttackerType('barrelbombl')
+			showCheckboxForAttackerType('nitro')
+			showCheckboxForAttackerType('capturesmokebomb')
+			showCheckboxForAttackerType('capturebullet')
+			showCheckboxForAttackerType('kunai')
+
+			imgui.new_line()
+
+			imgui.tree_pop()
+		end
+
+		if imgui.tree_node('Installations') then
+			showCheckboxForAttackerType('hmballista')
+			showCheckboxForAttackerType('hmcannon')
+			showCheckboxForAttackerType('hmgatling')
+			showCheckboxForAttackerType('hmtrap')
+			showCheckboxForAttackerType('hmnpc')
+			showCheckboxForAttackerType('hmflamethrower')
+			showCheckboxForAttackerType('hmdragonator')
+
+			imgui.new_line()
+
+			imgui.tree_pop()
+		end
+
+		if imgui.tree_node('Unknown') then
+			showCheckboxForAttackerType('makimushi')
+			showCheckboxForAttackerType('onibimine')
+			showCheckboxForAttackerType('ballistahate')
+			showCheckboxForAttackerType('waterbeetle')
+			showCheckboxForAttackerType('detonationgrenade')
+			showCheckboxForAttackerType('fg005')
+			showCheckboxForAttackerType('ecbatexplode')
+
+			imgui.new_line()
+
+			imgui.tree_pop()
+		end
+
+		imgui.tree_pop()
+	end
+end
+
 local function showColorSection()
 	if imgui.button('Apply color scheme') then
 		applySelectedColorscheme()
@@ -2350,44 +2580,50 @@ local function showColorSection()
 		COLORSCHEME_OPTIONS_SELECTED = value
 	end
 
-	imgui.new_line()
+	if imgui.button('Reset to default colors') then
+		loadDefaultColors()
+	end
 
-	showColorPicker('Title background', 'TITLE_BG')
-	showColorPicker('Title foreground', 'TITLE_FG')
-	showColorPicker('Bar background', 'BAR_BG')
-	showColorPicker('Bar outline', 'BAR_OUTLINE')
+	if imgui.tree_node('Customize colors') then
+		showColorPicker('Title background', 'TITLE_BG')
+		showColorPicker('Title foreground', 'TITLE_FG')
+		showColorPicker('Bar background', 'BAR_BG')
+		showColorPicker('Bar outline', 'BAR_OUTLINE')
 
-	imgui.new_line()
+		imgui.new_line()
 
-	showColorPickerForUnique('Player 1', 'PLAYER', 1)
-	showColorPickerForUnique('Player 2', 'PLAYER', 2)
-	showColorPickerForUnique('Player 3', 'PLAYER', 3)
-	showColorPickerForUnique('Player 4', 'PLAYER', 4)
-	showColorPicker('Buddies', 'OTOMO')
+		showColorPickerForUnique('Player 1', 'PLAYER', 1)
+		showColorPickerForUnique('Player 2', 'PLAYER', 2)
+		showColorPickerForUnique('Player 3', 'PLAYER', 3)
+		showColorPickerForUnique('Player 4', 'PLAYER', 4)
+		showColorPicker('Buddies', 'OTOMO')
 
-	imgui.new_line()
+		imgui.new_line()
 
-	showColorPicker('Physical damage', 'BAR_DMG_PHYSICAL')
-	showColorPickerForUnique('P1 Physical Damage', 'BAR_DMG_PHYSICAL_UNIQUE', 1)
-	showColorPickerForUnique('P2 Physical Damage', 'BAR_DMG_PHYSICAL_UNIQUE', 2)
-	showColorPickerForUnique('P3 Physical Damage', 'BAR_DMG_PHYSICAL_UNIQUE', 3)
-	showColorPickerForUnique('P4 Physical Damage', 'BAR_DMG_PHYSICAL_UNIQUE', 4)
+		showColorPicker('Physical damage', 'BAR_DMG_PHYSICAL')
+		showColorPickerForUnique('P1 Physical Damage', 'BAR_DMG_PHYSICAL_UNIQUE', 1)
+		showColorPickerForUnique('P2 Physical Damage', 'BAR_DMG_PHYSICAL_UNIQUE', 2)
+		showColorPickerForUnique('P3 Physical Damage', 'BAR_DMG_PHYSICAL_UNIQUE', 3)
+		showColorPickerForUnique('P4 Physical Damage', 'BAR_DMG_PHYSICAL_UNIQUE', 4)
 
-	imgui.new_line()
+		imgui.new_line()
 
-	showColorPicker('Element damage', 'BAR_DMG_ELEMENT')
-	showColorPickerForUnique('P1 Element Damage', 'BAR_DMG_ELEMENT_UNIQUE', 1)
-	showColorPickerForUnique('P2 Element Damage', 'BAR_DMG_ELEMENT_UNIQUE', 2)
-	showColorPickerForUnique('P3 Element Damage', 'BAR_DMG_ELEMENT_UNIQUE', 3)
-	showColorPickerForUnique('P4 Element Damage', 'BAR_DMG_ELEMENT_UNIQUE', 4)
+		showColorPicker('Element damage', 'BAR_DMG_ELEMENT')
+		showColorPickerForUnique('P1 Element Damage', 'BAR_DMG_ELEMENT_UNIQUE', 1)
+		showColorPickerForUnique('P2 Element Damage', 'BAR_DMG_ELEMENT_UNIQUE', 2)
+		showColorPickerForUnique('P3 Element Damage', 'BAR_DMG_ELEMENT_UNIQUE', 3)
+		showColorPickerForUnique('P4 Element Damage', 'BAR_DMG_ELEMENT_UNIQUE', 4)
 
-	imgui.new_line()
+		imgui.new_line()
 
-	showColorPicker('Buddy damage', 'BAR_DMG_OTOMO')
-	showColorPicker('Poison damage', 'BAR_DMG_POISON')
-	showColorPicker('Blast damage', 'BAR_DMG_BLAST')
-	showColorPicker('Other damage', 'BAR_DMG_OTHER')
-	showColorPicker('Ailment buildup', 'BAR_DMG_AILMENT')
+		showColorPicker('Buddy damage', 'BAR_DMG_OTOMO')
+		showColorPicker('Poison damage', 'BAR_DMG_POISON')
+		showColorPicker('Blast damage', 'BAR_DMG_BLAST')
+		showColorPicker('Other damage', 'BAR_DMG_OTHER')
+		showColorPicker('Ailment buildup', 'BAR_DMG_AILMENT')
+
+		imgui.tree_pop()
+	end
 end
 
 local function DrawWindowSettings()
@@ -2432,6 +2668,11 @@ local function DrawWindowSettings()
 		dpsUpdate()
 	end
 
+	imgui.same_line()
+	if imgui.button('Set Hotkeys') then
+		DRAW_WINDOW_HOTKEYS = not DRAW_WINDOW_HOTKEYS
+	end
+
 	imgui.new_line()
 
 	if imgui.button('Save settings') then
@@ -2450,290 +2691,96 @@ local function DrawWindowSettings()
 
 	showCheckboxForSetting('AUTO_SAVE')
 
-	imgui.new_line()
-
-	showCheckboxForSetting('HIDE_OVERLAY_IN_VILLAGE')
-
-	-- Show test data
-	changed, wantsIt = imgui.checkbox('Show test data while menu is open', CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'))
-	if changed then
-		SetCFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN', wantsIt)
-		if wantsIt then
-			initializeTestData()
-		else
-			clearTestData()
-			dpsUpdate()
-		end
-	end
-
-	imgui.new_line()
-	imgui.text('Hotkeys')
-	if imgui.button('edit hotkeys') then
-		DRAW_WINDOW_HOTKEYS = not DRAW_WINDOW_HOTKEYS
-	end
-
 	-- Presets
 	imgui.new_line()
-	imgui.text('Presets')
 
-	changed, value = imgui.combo('', PRESET_OPTIONS_SELECTED, PRESET_OPTIONS)
-	if changed then
-		PRESET_OPTIONS_SELECTED = value
-	end
-	imgui.same_line()
 	if imgui.button('Apply preset') then
 		applySelectedPreset()
 	end
+	imgui.same_line()
+	changed, value = imgui.combo('Presets', PRESET_OPTIONS_SELECTED, PRESET_OPTIONS)
+	if changed then
+		PRESET_OPTIONS_SELECTED = value
+	end
+
+	imgui.new_line()
 
 	-- Settings
-	imgui.new_line()
-	imgui.text('Settings')
+	if imgui.collapsing_header('General') then
+		--showSliderForFloatSetting('UPDATE_RATE')
+		showCheckboxForSetting('HIDE_OVERLAY_IN_VILLAGE')
 
-	--showSliderForFloatSetting('UPDATE_RATE')
-	showCheckboxForSetting('COMBINE_OTOMO_WITH_HUNTER')
-	showCheckboxForSetting('CONDITION_LIKE_DAMAGE')
-	showCheckboxForSetting('PDPS_BASED_ON_FIRST_STRIKE')
-
-	imgui.new_line()
-	imgui.text('Privacy')
-
-	showCheckboxForSetting('DRAW_BAR_TEXT_YOU')
-	showCheckboxForSetting('DRAW_BAR_TEXT_NAME_USE_REAL_NAMES')
-	showCheckboxForSetting('DRAW_BAR_REVEAL_HR')
-
-	imgui.new_line()
-
-	imgui.text('Scale Overlay')
-	showSliderForFloatSetting('TABLE_SCALE')
-	imgui.text('Save changes and RESET SCRIPTS to apply scaling to text')
-
-	imgui.new_line()
-
-	imgui.text('Customization')
-
-	if imgui.tree_node('Appearance') then
-		showSliderForFloatSetting('TABLE_X')
-		showSliderForFloatSetting('TABLE_Y')
-		showSliderForIntSetting('TABLE_WIDTH')
-
-		imgui.new_line()
-
-		showCheckboxForSetting('DRAW_TITLE')
-		showCheckboxForSetting('DRAW_TITLE_TEXT')
-		showCheckboxForSetting('DRAW_TITLE_MONSTER')
-		showSliderForIntSetting('DRAW_TITLE_HEIGHT')
-		showCheckboxForSetting('DRAW_TITLE_BACKGROUND')
-
-		imgui.new_line()
-
-		showCheckboxForSetting('DRAW_HEADER')
-		showSliderForIntSetting('DRAW_HEADER_HEIGHT')
-		showCheckboxForSetting('DRAW_HEADER_BACKGROUND')
-
-		imgui.new_line()
-
-		showCheckboxForSetting('DRAW_TABLE_BACKGROUND')
-		showCheckboxForSetting('DRAW_BAR_OUTLINES')
-		showCheckboxForSetting('DRAW_BAR_COLORBLOCK')
-		showCheckboxForSetting('DRAW_BAR_USE_PLAYER_COLORS')
-		showCheckboxForSetting('DRAW_BAR_USE_UNIQUE_COLORS')
-
-		imgui.new_line()
-
-		showCheckboxForSetting('DRAW_BAR_RELATIVE_TO_PARTY')
-		showCheckboxForSetting('USE_MINIMAL_BARS')
-		showCheckboxForSetting('TABLE_GROWS_UPWARD')
-		showCheckboxForSetting('TABLE_SORT_ASC')
-		showCheckboxForSetting('TABLE_SORT_IN_ORDER')
-
-		imgui.new_line()
-
-		showSliderForIntSetting('TABLE_ROWH')
-		showSliderForIntSetting('TABLE_ROW_PADDING')
-
-		imgui.new_line()
-
-		imgui.tree_pop()
-	end
-
-	if imgui.tree_node('Text') then
-		showTextboxForSetting('FONT_FAMILY')
-		imgui.text('Save changes and RESET SCRIPTS to apply changes to font')
-
-		imgui.new_line()
-
-		showCheckboxForSetting('TEXT_DRAW_SHADOWS')
-		showSliderForIntSetting('TEXT_SHADOW_OFFSET_X')
-		showSliderForIntSetting('TEXT_SHADOW_OFFSET_Y')
-
-		imgui.new_line()
-
-		showSliderForIntSetting('TABLE_HEADER_TEXT_OFFSET_X')
-		showSliderForIntSetting('TABLE_ROW_TEXT_OFFSET_X')
-		showSliderForIntSetting('TABLE_ROW_TEXT_OFFSET_Y')
-
-
-		imgui.new_line()
-
-		imgui.tree_pop()
-	end
-
-	if imgui.tree_node('Select columns') then
-		-- draw combo and slider for each column
-		for i,currentCol in ipairs(_CFG['TABLE_COLS']) do
-			local selected = 1
-			-- find option id for selected column
-			for idxId,key in ipairs(TABLE_COLUMNS_OPTIONS_ID) do
-				if key == currentCol then
-					selected = idxId
-				end
-			end
-			-- show combo for choice
-			local changedCol, newCol = imgui.combo('Column ' .. i, selected, TABLE_COLUMNS_OPTIONS_READABLE)
-			if changedCol then
-				_CFG['TABLE_COLS'][i] = TABLE_COLUMNS_OPTIONS_ID[newCol]
-			end
-		end
-		imgui.new_line()
-		imgui.tree_pop()
-	end
-
-	if imgui.tree_node('Column width') then
-		for i,currentWidth in ipairs(_CFG['TABLE_COLS_WIDTH']) do
-			-- skip 'None'
-			if i > 1 then
-				-- show slider for width
-				local changedWidth, newWidth = imgui.slider_int(TABLE_COLUMNS[i], currentWidth, 0, 250)
-				if changedWidth then
-					_CFG['TABLE_COLS_WIDTH'][i] = newWidth
-				end
+		-- Show test data
+		changed, wantsIt = imgui.checkbox('Show test data while menu is open', CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'))
+		if changed then
+			SetCFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN', wantsIt)
+			if wantsIt then
+				initializeTestData()
+			else
+				clearTestData()
+				dpsUpdate()
 			end
 		end
 
 		imgui.new_line()
 
-		imgui.tree_pop()
-	end
+		showCheckboxForSetting('COMBINE_OTOMO_WITH_HUNTER')
+		showCheckboxForSetting('CONDITION_LIKE_DAMAGE')
+		showCheckboxForSetting('PDPS_BASED_ON_FIRST_STRIKE')
 
-	imgui.new_line()
+		imgui.new_line()
+	end
 
 	if imgui.collapsing_header('Colors') then
 		showColorSection()
+		imgui.new_line()
+	end
+
+	if imgui.collapsing_header('Privacy') then
+		showCheckboxForSetting('DRAW_BAR_TEXT_YOU')
+		showCheckboxForSetting('DRAW_BAR_TEXT_NAME_USE_REAL_NAMES')
+		showCheckboxForSetting('DRAW_BAR_REVEAL_HR')
+
+		imgui.new_line()
 	end
 
 	imgui.new_line()
 
-	imgui.text('Data filtering')
-	if imgui.button('edit filters') then
-		DRAW_WINDOW_REPORT = not DRAW_WINDOW_REPORT
+	if imgui.collapsing_header('Select columns') then
+		showSelectDataSection()
+		imgui.new_line()
+	end
+
+	if imgui.collapsing_header('Select filters') then
+		showFilterSection()
+		imgui.new_line()
 	end
 
 	imgui.new_line()
 
-	imgui.text('Debugging')
-	if imgui.button('open debug menu') then
-		DRAW_WINDOW_DEBUG = not DRAW_WINDOW_DEBUG
+	showAppearanceSection()
+
+	if imgui.collapsing_header('Text') then
+		showTextSection()
+		imgui.new_line()
+	end
+
+	if imgui.collapsing_header('Column width') then
+		showColumnWidthSection()
+		imgui.new_line()
 	end
 
 	imgui.new_line()
 
-	imgui.end_window()
-end
-
-local function showCheckboxForAttackerType(type)
-	local typeIsInReport = _FILTERS.ATTACKER_TYPES[type]
-	local changed, wantsIt = imgui.checkbox(ATTACKER_TYPE_TEXT[type], typeIsInReport)
-	if changed then
-		if wantsIt then
-			AddAttackerTypeToReport(type)
-		else
-			RemoveAttackerTypeFromReport(type)
+	if imgui.collapsing_header('Debug') then
+		if imgui.button('open debug menu') then
+			DRAW_WINDOW_DEBUG = not DRAW_WINDOW_DEBUG
 		end
-		generateReport(REPORT_MONSTERS)
-	end
-end
 
-local function DrawWindowReport()
-	local changed, wantsIt
-
-	wantsIt = imgui.begin_window('coavins dps meter - filters', DRAW_WINDOW_REPORT, WINDOW_FLAGS)
-	if DRAW_WINDOW_REPORT and not wantsIt then
-		DRAW_WINDOW_REPORT = false
-	end
-
-	changed, wantsIt = imgui.checkbox('Include buddies', _FILTERS.INCLUDE_OTOMO)
-	if changed then
-		_FILTERS.INCLUDE_OTOMO = wantsIt
-		generateReport(REPORT_MONSTERS)
-	end
-
-	changed, wantsIt = imgui.checkbox('Include monsters, etc', _FILTERS.INCLUDE_OTHER)
-	if changed then
-		_FILTERS.INCLUDE_OTHER = wantsIt
-		generateReport(REPORT_MONSTERS)
+		imgui.new_line()
 	end
 
 	imgui.new_line()
-
-	-- draw buttons for each boss monster in the cache
-	imgui.text('Monsters')
-
-	local monsterCollection = TEST_MONSTERS or LARGE_MONSTERS
-	local foundMonster = false
-	for enemy,boss in pairs(monsterCollection) do
-		foundMonster = true
-		local monsterIsInReport = REPORT_MONSTERS[enemy]
-		changed, wantsIt = imgui.checkbox(boss.name, monsterIsInReport)
-		if changed then
-			if wantsIt then
-				AddMonsterToReport(enemy, boss)
-			else
-				RemoveMonsterFromReport(enemy)
-			end
-			generateReport(REPORT_MONSTERS)
-		end
-	end
-	if not foundMonster then
-		imgui.text('(n/a)')
-	end
-
-	imgui.new_line()
-
-	-- draw buttons for attacker types
-	imgui.text('Attack type')
-
-	showCheckboxForAttackerType('weapon')
-	showCheckboxForAttackerType('otomo')
-	showCheckboxForAttackerType('monster')
-
-	imgui.new_line()
-
-	showCheckboxForAttackerType('barrelbombs')
-	showCheckboxForAttackerType('barrelbombl')
-	showCheckboxForAttackerType('nitro')
-	showCheckboxForAttackerType('capturesmokebomb')
-	showCheckboxForAttackerType('capturebullet')
-	showCheckboxForAttackerType('kunai')
-
-	imgui.new_line()
-
-	showCheckboxForAttackerType('hmballista')
-	showCheckboxForAttackerType('hmcannon')
-	showCheckboxForAttackerType('hmgatling')
-	showCheckboxForAttackerType('hmtrap')
-	showCheckboxForAttackerType('hmnpc')
-	showCheckboxForAttackerType('hmflamethrower')
-	showCheckboxForAttackerType('hmdragonator')
-
-	imgui.new_line()
-
-	showCheckboxForAttackerType('makimushi')
-	showCheckboxForAttackerType('onibimine')
-	showCheckboxForAttackerType('ballistahate')
-	showCheckboxForAttackerType('waterbeetle')
-	showCheckboxForAttackerType('detonationgrenade')
-	showCheckboxForAttackerType('fg005')
-	showCheckboxForAttackerType('ecbatexplode')
 
 	imgui.end_window()
 end
@@ -3112,10 +3159,6 @@ re.on_frame(function()
 		DrawWindowSettings()
 	end
 
-	if DRAW_WINDOW_REPORT then
-		DrawWindowReport()
-	end
-
 	if DRAW_WINDOW_HOTKEYS then
 		DrawWindowHotkeys()
 	else
@@ -3125,10 +3168,6 @@ re.on_frame(function()
 
 	if DRAW_WINDOW_DEBUG then
 		DrawWindowDebug()
-	end
-
-	if DRAW_WINDOW_COLORS then
-		DrawWindowColors()
 	end
 
 	registerWaitingHotkeys()

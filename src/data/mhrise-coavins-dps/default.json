@@ -76,11 +76,11 @@
 		},
 		"DRAW_TABLE_BACKGROUND": {
 			"VALUE": true,
-			"TEXT": "Show table background"
+			"TEXT": "Show row background"
 		},
 		"DRAW_BAR_OUTLINES": {
 			"VALUE": false,
-			"TEXT": "Show bar outlines"
+			"TEXT": "Show row outline"
 		},
 		"DRAW_BAR_COLORBLOCK": {
 			"VALUE": true,
