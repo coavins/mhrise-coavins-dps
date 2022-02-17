@@ -1913,6 +1913,10 @@ local function drawReportItem(item, x, y, width, height)
 end
 
 local function drawReport(index)
+	if SCREEN_W == 0 or SCREEN_H == 0 then
+		return
+	end
+
 	local report = DAMAGE_REPORTS[index]
 	if not report then
 		return
@@ -3110,6 +3114,11 @@ local function dpsFrame()
 	-- get our function hooks if we don't have them yet
 	tryLoadTypeDefinitions()
 
+	--do some initialization if needed
+	if SCREEN_W == 0 or SCREEN_H == 0 then
+		readScreenDimensions()
+	end
+
 	local wasInQuest = IS_IN_QUEST
 	local wasInTraininghall = IS_IN_TRAININGHALL
 
@@ -3234,6 +3243,9 @@ loadColorschemes()
 
 -- perform sanity checks
 sanityCheck()
+
+-- initialize an empty report
+generateReport({})
 
 -- make sure this table has all modifiers in it
 for key,_ in pairs(ENUM_KEYBOARD_MODIFIERS) do
