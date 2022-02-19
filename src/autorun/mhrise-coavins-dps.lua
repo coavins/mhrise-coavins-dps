@@ -683,6 +683,7 @@ local function applySelectedPreset()
 	if preset then
 		-- load save file on top of current config
 		mergeCfgIntoLeft(_CFG, preset.CFG)
+		mergeFiltersIntoLeft(_FILTERS, preset.FILTERS)
 		mergeColorsIntoLeft(_COLORS, preset.COLORS)
 
 		log_info(string.format('applied preset %s', name))
