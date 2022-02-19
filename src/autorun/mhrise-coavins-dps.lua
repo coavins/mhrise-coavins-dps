@@ -763,6 +763,14 @@ local function attackerIdIsOtomo(attackerId)
 	end
 end
 
+local function attackerIdIsOther(attackerId)
+	if not attackerIdIsPlayer(attackerId)
+	and not attackerIdIsOtomo(attackerId)
+	then return true
+	else return false
+	end
+end
+
 local function getFakeAttackerIdForOtomoId(otomoId)
 	return FAKE_OTOMO_RANGE_START + otomoId
 end
@@ -1339,6 +1347,16 @@ local function initializeReportItem(id)
 	return item
 end
 
+local function getOrInsertReportItem(report, id)
+	-- get report item, creating it if necessary
+	local item = getReportItem(report, id)
+	if not item then
+		item = initializeReportItem(id)
+		table.insert(report.items, item)
+	end
+	return item
+end
+
 local function sumDamageCountersList(counters, attackerTypeFilter)
 	local sum = {}
 	sum.total = 0.0
@@ -1548,14 +1566,9 @@ local function mergeBossIntoReport(report, boss)
 		-- if we aren't excluding this type of source
 		if attackerIdIsPlayer(effSourceId)
 		or (attackerIdIsOtomo(effSourceId) and _FILTERS.INCLUDE_OTOMO)
-		or (not attackerIdIsOtomo(effSourceId) and _FILTERS.INCLUDE_OTHER)
+		or (attackerIdIsOther(effSourceId) and _FILTERS.INCLUDE_OTHER)
 		then
-			-- get report item, creating it if necessary
-			local item = getReportItem(report, effSourceId)
-			if not item then
-				item = initializeReportItem(effSourceId)
-				table.insert(report.items, item)
-			end
+			local item = getOrInsertReportItem(report, effSourceId)
 
 			mergeDamageSourceIntoReportItem(item, source)
 		end
