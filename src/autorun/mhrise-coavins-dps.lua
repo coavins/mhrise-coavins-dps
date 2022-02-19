@@ -1677,68 +1677,66 @@ end
 
 local function drawRichDamageBar(item, x, y, maxWidth, h, colorPhysical, colorElemental)
 	local w
-	local colorCondition = COLOR('BAR_DMG_AILMENT')
-	local colorOtomo     = COLOR('BAR_DMG_OTOMO')
-	local colorPoison    = COLOR('BAR_DMG_POISON')
-	local colorBlast     = COLOR('BAR_DMG_BLAST')
-	local colorOther     = COLOR('BAR_DMG_OTHER')
 
-	if not CFG('DRAW_BAR_USE_UNIQUE_COLORS') then
-		colorElemental = colorPhysical
-		colorCondition = colorPhysical
-		colorOtomo     = colorPhysical
-		colorPoison    = colorPhysical
-		colorBlast     = colorPhysical
-		colorOther     = colorPhysical
-	end
+	if CFG('DRAW_BAR_USE_UNIQUE_COLORS') then
+		local colorCondition = COLOR('BAR_DMG_AILMENT')
+		local colorOtomo     = COLOR('BAR_DMG_OTOMO')
+		local colorPoison    = COLOR('BAR_DMG_POISON')
+		local colorBlast     = COLOR('BAR_DMG_BLAST')
+		local colorOther     = COLOR('BAR_DMG_OTHER')
 
-	local remainder = item.total
-		- item.totalPhysical
-		- item.totalElemental
-		- item.totalPoison
-		- item.totalBlast
-		- item.totalOtomo
+		local remainder = item.total
+			- item.totalPhysical
+			- item.totalElemental
+			- item.totalPoison
+			- item.totalBlast
+			- item.totalOtomo
 
-	if CFG('CONDITION_LIKE_DAMAGE') then
-		remainder = remainder - item.totalCondition
-	end
+		if CFG('CONDITION_LIKE_DAMAGE') then
+			remainder = remainder - item.totalCondition
+		end
 
-	-- draw physical damage
-	w = (item.totalPhysical / item.total) * maxWidth
-	d2d.fill_rect(x, y, w, h, colorPhysical)
-	x = x + w
-
-	-- draw elemental damage
-	w = (item.totalElemental / item.total) * maxWidth
-	d2d.fill_rect(x, y, w, h, colorElemental)
-	x = x + w
-
-	if CFG('CONDITION_LIKE_DAMAGE') then
-		-- draw ailment damage
-		w = (item.totalCondition / item.total) * maxWidth
-		d2d.fill_rect(x, y, w, h, colorCondition)
+		-- draw physical damage
+		w = (item.totalPhysical / item.total) * maxWidth
+		d2d.fill_rect(x, y, w, h, colorPhysical)
 		x = x + w
-	end
 
-	-- draw poison damage
-	w = (item.totalPoison / item.total) * maxWidth
-	d2d.fill_rect(x, y, w, h, colorPoison)
-	x = x + w
+		-- draw elemental damage
+		w = (item.totalElemental / item.total) * maxWidth
+		d2d.fill_rect(x, y, w, h, colorElemental)
+		x = x + w
 
-	-- draw blast damage
-	w = (item.totalBlast / item.total) * maxWidth
-	d2d.fill_rect(x, y, w, h, colorBlast)
-	x = x + w
+		if CFG('CONDITION_LIKE_DAMAGE') then
+			-- draw ailment damage
+			w = (item.totalCondition / item.total) * maxWidth
+			d2d.fill_rect(x, y, w, h, colorCondition)
+			x = x + w
+		end
 
-	-- draw otomo damage
-	w = (item.totalOtomo / item.total) * maxWidth
-	d2d.fill_rect(x, y, w, h, colorOtomo)
-	x = x + w
+		-- draw poison damage
+		w = (item.totalPoison / item.total) * maxWidth
+		d2d.fill_rect(x, y, w, h, colorPoison)
+		x = x + w
 
-	if remainder > 0 then
-		-- draw whatever's left, just in case
-		w = (remainder / item.total) * maxWidth
-		d2d.fill_rect(x, y, w, h, colorOther)
+		-- draw blast damage
+		w = (item.totalBlast / item.total) * maxWidth
+		d2d.fill_rect(x, y, w, h, colorBlast)
+		x = x + w
+
+		-- draw otomo damage
+		w = (item.totalOtomo / item.total) * maxWidth
+		d2d.fill_rect(x, y, w, h, colorOtomo)
+		x = x + w
+
+		if remainder > 0 then
+			-- draw whatever's left, just in case
+			w = (remainder / item.total) * maxWidth
+			d2d.fill_rect(x, y, w, h, colorOther)
+		end
+	else
+		-- draw all damage
+		w = maxWidth
+		d2d.fill_rect(x, y, w, h, colorPhysical)
 	end
 end
 
