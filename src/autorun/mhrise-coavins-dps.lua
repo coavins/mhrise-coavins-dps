@@ -359,6 +359,12 @@ local function log_error(text)
 	log.error('mhrise-coavins-dps: ' .. text)
 end
 
+local function log_debug(text)
+	if DPS_DEBUG then
+		log.info('mhrise-coavins-dps: ' .. text)
+	end
+end
+
 local function readScreenDimensions()
 	local size = SCENE_MANAGER_VIEW:call("get_Size")
 	if not size then
@@ -703,7 +709,7 @@ local function cleanUpData(message)
 	makeTableEmpty(REPORT_MONSTERS)
 	makeTableEmpty(PLAYER_NAMES)
 	makeTableEmpty(PLAYER_TIMES)
-	log_info('cleared data: ' .. message)
+	log_debug('cleared data: ' .. message)
 end
 
 local function AddMonsterToReport(enemyToAdd, bossInfo)
@@ -729,12 +735,12 @@ end
 
 local function AddAttackerTypeToReport(typeToAdd)
 	_FILTERS.ATTACKER_TYPES[typeToAdd] = true
-	log_info(string.format('damage type %s added to report', typeToAdd))
+	log_debug(string.format('damage type %s added to report', typeToAdd))
 end
 
 local function RemoveAttackerTypeFromReport(typeToRemove)
 	_FILTERS.ATTACKER_TYPES[typeToRemove] = false
-	log_info(string.format('damage type %s removed from report', typeToRemove))
+	log_debug(string.format('damage type %s removed from report', typeToRemove))
 end
 
 local function SetReportOtomo(value)
@@ -830,7 +836,7 @@ local function updatePlayers()
 	for key, value in ipairs(PLAYER_NAMES) do
 		-- update start time for this player when the name changes
 		if oldNames[key] ~= value or (PLAYER_TIMES[key] and PLAYER_TIMES[key] > QUEST_DURATION) then
-			log_info(string.format('updated quest time for player %d to %.0f', key, QUEST_DURATION))
+			log_debug(string.format('updated quest time for player %d to %.0f', key, QUEST_DURATION))
 			PLAYER_TIMES[key] = QUEST_DURATION
 			-- TODO: clear this player's data
 		end
@@ -1116,7 +1122,7 @@ local function initializeBossMonster(bossEnemy)
 	-- all monsters are in the report by default
 	AddMonsterToReport(bossEnemy, boss)
 
-	log_info('initialized new ' .. boss.name)
+	log_debug('initialized new ' .. boss.name)
 end
 
 local function initializeBossMonsterWithDummyData(bossKey, fakeName)
@@ -3017,10 +3023,10 @@ local function updateBossEnemy(args)
 		if setInfo then
 			local id = setInfo:call("get_UniqueId")
 			if id then
-				log_info('found id ' .. id .. ' for ' .. boss.name)
+				log_debug('found id ' .. id .. ' for ' .. boss.name)
 				if id == 0 then
 					id = FAKE_ATTACKER_ID
-					log_info('override id to ' .. id)
+					log_debug('override id to ' .. id)
 				end
 
 				boss.id = id
@@ -3038,9 +3044,9 @@ local function updateBossEnemy(args)
 		boss.lastTime = QUEST_DURATION
 		boss.isInCombat = isInCombat
 		if isInCombat then
-			log_info(string.format('%s entered combat at %.4f', boss.name, QUEST_DURATION))
+			log_debug(string.format('%s entered combat at %.4f', boss.name, QUEST_DURATION))
 		else
-			log_info(string.format('%s exited combat at %.4f', boss.name, QUEST_DURATION))
+			log_debug(string.format('%s exited combat at %.4f', boss.name, QUEST_DURATION))
 		end
 	end
 
@@ -3086,7 +3092,7 @@ local function updateBossEnemy(args)
 			local playerIndex = marioParam:call("get_MarioPlayerIndex")
 			if boss.rider ~= playerIndex then
 				boss.rider = playerIndex
-				log_info('player ' .. playerIndex .. ' is earning marionette damage for ' .. boss.name)
+				log_debug('player ' .. playerIndex .. ' is earning marionette damage for ' .. boss.name)
 			end
 		end
 	end
@@ -3140,7 +3146,7 @@ local function read_AfterCalcInfo_DamageSide(args)
 				break
 			end
 		end
-		log_info('riderID is ' .. riderId)
+		log_debug('riderID is ' .. riderId)
 	end
 
 	addDamageToBoss(boss, attackerId, attackerTypeId
@@ -3166,7 +3172,7 @@ local function tryLoadTypeDefinitions()
 			sdk.hook(SNOW_ENEMY_ENEMYCHARACTERBASE_UPDATE,
 				function(args) updateBossEnemy(args) end,
 				function(retval) return retval end)
-				log_info('Hooked snow.enemy.EnemyCharacterBase:update()')
+			log_debug('Hooked snow.enemy.EnemyCharacterBase:update()')
 
 			-- stockDamage function also works, for host only
 			SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE =
@@ -3175,7 +3181,7 @@ local function tryLoadTypeDefinitions()
 			sdk.hook(SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE,
 				function(args) read_AfterCalcInfo_DamageSide(args) end,
 				function(retval) return retval end)
-			log_info('Hooked snow.enemy.EnemyCharacterBase:afterCalcDamage_DamageSide()')
+			log_debug('Hooked snow.enemy.EnemyCharacterBase:afterCalcDamage_DamageSide()')
 		else
 			log_error('Failed to find snow.enemy.EnemyCharacterBase')
 		end
