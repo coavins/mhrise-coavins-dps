@@ -30,6 +30,10 @@
 			"VALUE": true,
 			"TEXT": "pDPS starts counting from player's first attack"
 		},
+		"MARIONETTE_IS_PLAYER_DMG": {
+			"VALUE": true,
+			"TEXT": "Damage from Wyvern Riding goes to the rider instead of the monster"
+		},
 		"DEBUG_SHOW_MISSING_DAMAGE": {
 			"VALUE": false,
 			"TEXT": "Show in the title bar any damage that is not accounted for in the table"

@@ -88,6 +88,58 @@ describe("mhrise-coavins-dps", function()
 
 	end)
 
+	describe('marionette', function()
+
+		it('counts damage for players', function()
+			local boss = initializeMockBossMonster()
+
+			SetCFG('MARIONETTE_IS_PLAYER_DMG', true)
+
+			local monsterAttackerId = 300
+			local marionetteAttackerTypeId = 125
+			addDamageToBoss(boss, monsterAttackerId, marionetteAttackerTypeId
+			, 100, 0, nil, nil, nil, nil, nil, 1)
+
+			generateReport(REPORT_MONSTERS)
+
+			local r= DAMAGE_REPORTS[1]
+
+			for _,item in ipairs(r.items) do
+				local actual = item.total
+				if item.id == monsterAttackerId then
+					assert.is_equal(0, actual)
+				elseif item.id == 1 then
+					assert.is_equal(100, actual)
+				end
+			end
+		end)
+
+		it('counts damage for monster', function()
+			local boss = initializeMockBossMonster()
+
+			SetCFG('MARIONETTE_IS_PLAYER_DMG', false)
+
+			local monsterAttackerId = 300
+			local marionetteAttackerTypeId = 125
+			addDamageToBoss(boss, monsterAttackerId, marionetteAttackerTypeId
+			, 100, 0, nil, nil, nil, nil, nil, 1)
+
+			generateReport(REPORT_MONSTERS)
+
+			local r= DAMAGE_REPORTS[1]
+
+			for _,item in ipairs(r.items) do
+				local actual = item.total
+				if item.id == monsterAttackerId then
+					assert.is_equal(100, actual)
+				elseif item.id == 1 then
+					assert.is_equal(0, actual)
+				end
+			end
+		end)
+
+	end)
+
 	describe("biggest hit", function()
 
 		it("counts correctly", function()

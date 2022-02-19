@@ -934,6 +934,10 @@ local function initializeDamageCounter()
 	c.numDnCrit = 0 -- how many negative crits
 	c.firstStrike = HIGH_NUMBER -- time of first strike
 
+	-- table of damage counters by attacker ID
+	-- used to track damage dealt via marionette riders
+	c.riders = nil
+
 	return c
 end
 
@@ -974,6 +978,31 @@ local function mergeDamageCounters(a, b)
 	c.numUpCrit = a.numUpCrit + b.numUpCrit
 	c.numDnCrit = a.numDnCrit + b.numDnCrit
 	c.firstStrike = math.min(a.firstStrike, b.firstStrike)
+
+	-- merge rider tables
+	if a.riders then
+		if not c.riders then
+			c.riders = {}
+		end
+		for key, value in pairs(a.riders) do
+			if not c.riders[key] then
+				c.riders[key] = initializeDamageCounter()
+			end
+			c.riders[key] = mergeDamageCounters(c.riders[key], value)
+		end
+	end
+	if b.riders then
+		if not c.riders then
+			c.riders = {}
+		end
+		for key, value in pairs(b.riders) do
+			if not c.riders[key] then
+				c.riders[key] = initializeDamageCounter()
+			end
+			c.riders[key] = mergeDamageCounters(c.riders[key], value)
+		end
+	end
+
 	return c
 end
 
@@ -1148,7 +1177,7 @@ local function initializeBossMonsterWithDummyData(bossKey, fakeName)
 end
 
 local function addDamageToBoss(boss, attackerId, attackerTypeId
-	, amtPhysical, amtElemental, amtCondition, typeCondition, amtAilment, typeAilment, criticalType)
+	, amtPhysical, amtElemental, amtCondition, typeCondition, amtAilment, typeAilment, criticalType, riderId)
 	amtPhysical = amtPhysical or 0
 	amtElemental = amtElemental or 0
 	amtCondition = amtCondition or 0
@@ -1201,8 +1230,21 @@ local function addDamageToBoss(boss, attackerId, attackerTypeId
 	end
 	local c = s.counters[attackerType]
 
-	-- add damage facts to counter
-	s.counters[attackerType] = mergeDamageCounters(c, amt)
+	-- handle marionette attacks
+	if riderId then
+		if not c.riders then
+			c.riders = {}
+		end
+		if not c.riders[riderId] then
+			c.riders[riderId] = initializeDamageCounter()
+		end
+
+		-- put this damage on the rider counter instead
+		c.riders[riderId] = mergeDamageCounters(c.riders[riderId], amt)
+	else
+		-- add damage facts to counter
+		s.counters[attackerType] = mergeDamageCounters(c, amt)
+	end
 
 	-- accumulate buildup for certain ailment types
 	if typeCondition == 4 or typeCondition == 5 then
@@ -1305,7 +1347,7 @@ local function initializeReportItem(id)
 		item.name = OTOMO_NAMES[item.otomoNumber]
 --  elseif item.id == FAKE_MARIONETTE_ID then
 --		item.name = 'Wyvern Riding'
---	else
+	else
 		for _,boss in pairs(LARGE_MONSTERS) do
 			if boss.id and boss.id == item.id then
 				item.name = boss.name
@@ -1571,6 +1613,25 @@ local function mergeBossIntoReport(report, boss)
 			local item = getOrInsertReportItem(report, effSourceId)
 
 			mergeDamageSourceIntoReportItem(item, source)
+		end
+
+		-- if this source is a monster, find marionette rider damage
+		-- add this damage to the appropriate report items
+		if attackerIdIsOther(effSourceId) then
+			local c = source.counters['marionette']
+			if c.riders then
+				for riderId,riderCounter in pairs(c.riders) do
+					if CFG('MARIONETTE_IS_PLAYER_DMG') then
+						-- merge into rider's report item
+						local item = getOrInsertReportItem(report, riderId)
+						item.counters['marionette'] = mergeDamageCounters(item.counters['marionette'], riderCounter)
+					elseif _FILTERS.INCLUDE_OTHER then
+						-- merge into monster's report item
+						local item = getOrInsertReportItem(report, effSourceId)
+						item.counters['marionette'] = mergeDamageCounters(item.counters['marionette'], riderCounter)
+					end
+				end
+			end
 		end
 	end
 
@@ -2756,6 +2817,7 @@ local function DrawWindowSettings()
 		showCheckboxForSetting('COMBINE_OTOMO_WITH_HUNTER')
 		showCheckboxForSetting('CONDITION_LIKE_DAMAGE')
 		showCheckboxForSetting('PDPS_BASED_ON_FIRST_STRIKE')
+		showCheckboxForSetting('MARIONETTE_IS_PLAYER_DMG')
 
 		imgui.new_line()
 	end
@@ -3002,11 +3064,8 @@ local function updateBossEnemy(args)
 			local playerIndex = marioParam:call("get_MarioPlayerIndex")
 			if boss.rider ~= playerIndex then
 				boss.rider = playerIndex
-				log_info('player ' .. playerIndex .. 'is riding ' .. boss.name)
+				log_info('player ' .. playerIndex .. ' is earning marionette damage for ' .. boss.name)
 			end
-		elseif boss.rider then
-			log_info('player ' .. boss.rider .. 'stopped riding ' .. boss.name)
-			boss.rider = nil
 		end
 	end
 end
@@ -3031,6 +3090,7 @@ local function read_AfterCalcInfo_DamageSide(args)
 
 	local attackerId     = info:call("get_AttackerID")
 	local attackerTypeId = info:call("get_DamageAttackerType")
+	local riderId = nil
 
 	local physicalDamage  = tonumber(info:call("get_PhysicalDamage"))
 	local elementDamage   = tonumber(info:call("get_ElementDamage"))
@@ -3052,10 +3112,17 @@ local function read_AfterCalcInfo_DamageSide(args)
 	-- override attacker type for marionette attackers
 	if isMarionetteAttack then
 		attackerTypeId = 125
+		for _,b in pairs(LARGE_MONSTERS) do
+			if b.id == attackerId then
+				riderId = b.rider
+				break
+			end
+		end
+		log_info('riderID is ' .. riderId)
 	end
 
 	addDamageToBoss(boss, attackerId, attackerTypeId
-	, physicalDamage, elementDamage, conditionDamage, conditionType, 0, 0, criticalType)
+	, physicalDamage, elementDamage, conditionDamage, conditionType, 0, 0, criticalType, riderId)
 end
 
 local function tryLoadTypeDefinitions()
