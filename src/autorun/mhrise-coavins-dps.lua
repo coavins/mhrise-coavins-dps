@@ -301,7 +301,6 @@ local SCREEN_W = 0
 local SCREEN_H = 0
 local DEBUG_Y = 0
 local FAKE_OTOMO_RANGE_START = 9990 -- it is important that attacker ids near this are never used by the game
-local FAKE_MARIONETTE_ID = 9989 -- all marionette attacks are treated as if they came from this attacker id
 local FAKE_ATTACKER_ID = 10189 -- monsters with id=0 are treated as if they had this attacker id
 local HIGH_NUMBER = 9999.0
 
@@ -1296,9 +1295,9 @@ local function initializeReportItem(id)
 	elseif attackerIdIsOtomo(item.id) then
 		item.otomoNumber = getOtomoIdFromFakeAttackerId(item.id) + 1
 		item.name = OTOMO_NAMES[item.otomoNumber]
-	elseif item.id == FAKE_MARIONETTE_ID then
-		item.name = 'Wyvern Riding'
-	else
+--  elseif item.id == FAKE_MARIONETTE_ID then
+--		item.name = 'Wyvern Riding'
+--	else
 		for _,boss in pairs(LARGE_MONSTERS) do
 			if boss.id and boss.id == item.id then
 				item.name = boss.name
