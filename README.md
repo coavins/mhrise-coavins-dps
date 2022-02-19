@@ -67,6 +67,8 @@ Note: Poison and blast damage will be credited proportionately to players based 
 
 You can also configure the filters to show all damage dealers, not just players: buddies, monsters, and villager NPCs can appear as separate rows in the table.
 
+![Fylex preset](https://user-images.githubusercontent.com/91746207/154783679-3d8a7107-05fd-4677-a28d-32657b43dae8.png)
+
 ## Usage
 
 The overlay will display each party member using the same color-coding that is shown with the player names on the left side of the screen. Some additional colors are used to indicate different types of damage.
