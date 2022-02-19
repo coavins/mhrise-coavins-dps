@@ -292,7 +292,7 @@
             "kunai": true,
             "makimushi": true,
             "marionette": true,
-            "monster": false,
+            "monster": true,
             "nitro": true,
             "onibimine": true,
             "otomo": true,
