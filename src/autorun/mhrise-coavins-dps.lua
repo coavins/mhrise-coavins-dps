@@ -2911,15 +2911,17 @@ local function updateBossEnemy(args)
 
 	if not boss.id then
 		local setInfo = enemy:call("get_SetInfo")
-		local id = setInfo:call("get_UniqueId")
-		if id then
-			log_info('found id ' .. id .. ' for ' .. boss.name)
-			if id == 0 then
-				id = FAKE_ATTACKER_ID
-				log_info('override id to ' .. id)
-			end
+		if setInfo then
+			local id = setInfo:call("get_UniqueId")
+			if id then
+				log_info('found id ' .. id .. ' for ' .. boss.name)
+				if id == 0 then
+					id = FAKE_ATTACKER_ID
+					log_info('override id to ' .. id)
+				end
 
-			boss.id = id
+				boss.id = id
+			end
 		end
 	end
 
