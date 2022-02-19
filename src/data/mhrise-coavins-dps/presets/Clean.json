@@ -300,7 +300,7 @@
             "weapon": true
         },
         "INCLUDE_OTHER": false,
-        "INCLUDE_OTOMO": true
+        "INCLUDE_OTOMO": false
     },
     "HOTKEYS": {
         "MONSTER_NEXT": {

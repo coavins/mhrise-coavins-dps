@@ -1,5 +1,9 @@
 {
     "CFG": {
+        "AUTO_SAVE": {
+            "TEXT": "Automatically save all settings",
+            "VALUE": true
+        },
         "COMBINE_OTOMO_WITH_HUNTER": {
             "TEXT": "Combine buddies with their hunters",
             "VALUE": true
@@ -8,12 +12,16 @@
             "TEXT": "Ailment buildup counts as damage",
             "VALUE": false
         },
+        "DEBUG_SHOW_MISSING_DAMAGE": {
+            "TEXT": "Show in the title bar any damage that is not accounted for in the table",
+            "VALUE": false
+        },
         "DRAW_BAR_COLORBLOCK": {
             "TEXT": "Show color block",
             "VALUE": false
         },
         "DRAW_BAR_OUTLINES": {
-            "TEXT": "Show bar outlines",
+            "TEXT": "Show row outline",
             "VALUE": false
         },
         "DRAW_BAR_RELATIVE_TO_PARTY": {
@@ -44,13 +52,33 @@
             "TEXT": "Show header",
             "VALUE": false
         },
+        "DRAW_HEADER_BACKGROUND": {
+            "TEXT": "Show header background",
+            "VALUE": true
+        },
+        "DRAW_HEADER_HEIGHT": {
+            "MAX": 100.0,
+            "MIN": 0.0,
+            "TEXT": "Header height",
+            "VALUE": 18.0
+        },
         "DRAW_TABLE_BACKGROUND": {
-            "TEXT": "Show table background",
+            "TEXT": "Show row background",
             "VALUE": false
+        },
+        "DRAW_TITLE": {
+            "TEXT": "Show title",
+            "VALUE": true
         },
         "DRAW_TITLE_BACKGROUND": {
             "TEXT": "Show title background",
             "VALUE": false
+        },
+        "DRAW_TITLE_HEIGHT": {
+            "MAX": 100.0,
+            "MIN": 0.0,
+            "TEXT": "Title height",
+            "VALUE": 18.0
         },
         "DRAW_TITLE_MONSTER": {
             "TEXT": "Show selected monsters in title",
@@ -59,6 +87,18 @@
         "DRAW_TITLE_TEXT": {
             "TEXT": "Show title text",
             "VALUE": false
+        },
+        "FONT_FAMILY": {
+            "TEXT": "Font family",
+            "VALUE": "Tahoma"
+        },
+        "HIDE_OVERLAY_IN_VILLAGE": {
+            "TEXT": "Hide the overlay when in the village",
+            "VALUE": false
+        },
+        "PDPS_BASED_ON_FIRST_STRIKE": {
+            "TEXT": "pDPS starts counting from player's first attack",
+            "VALUE": true
         },
         "SHOW_TEST_DATA_WHILE_MENU_IS_OPEN": {
             "TEXT": "Show test data while menu is open",
@@ -69,6 +109,9 @@
             5.0,
             4.0,
             6.0,
+            1.0,
+            1.0,
+            1.0,
             1.0,
             1.0,
             1.0,
@@ -92,7 +135,10 @@
             39.0,
             58.0,
             58.0,
-            58.0
+            58.0,
+            53.0,
+            53.0,
+            39.0
         ],
         "TABLE_GROWS_UPWARD": {
             "TEXT": "Table grows upward instead of down",
@@ -101,7 +147,7 @@
         "TABLE_HEADER_TEXT_OFFSET_X": {
             "MAX": 100.0,
             "MIN": -100.0,
-            "TEXT": "Table text offset X",
+            "TEXT": "Title text offset X",
             "VALUE": 3.0
         },
         "TABLE_ROWH": {
@@ -135,7 +181,7 @@
             "VALUE": 1.0
         },
         "TABLE_SORT_ASC": {
-            "TEXT": "Sort ascending",
+            "TEXT": "Reverse sort order",
             "VALUE": false
         },
         "TABLE_SORT_IN_ORDER": {
@@ -159,6 +205,22 @@
             "MIN": 0.0,
             "TEXT": "Vertical position",
             "VALUE": 0.7900000214576721
+        },
+        "TEXT_DRAW_SHADOWS": {
+            "TEXT": "Draw text shadows",
+            "VALUE": true
+        },
+        "TEXT_SHADOW_OFFSET_X": {
+            "MAX": 5.0,
+            "MIN": -5.0,
+            "TEXT": "Text shadow offset X",
+            "VALUE": 1.0
+        },
+        "TEXT_SHADOW_OFFSET_Y": {
+            "MAX": 5.0,
+            "MIN": -5.0,
+            "TEXT": "Text shadow offset Y",
+            "VALUE": 1.0
         },
         "UPDATE_RATE": {
             "MAX": 10.0,
@@ -229,6 +291,7 @@
             "hmtrap": true,
             "kunai": true,
             "makimushi": true,
+            "marionette": true,
             "monster": true,
             "nitro": true,
             "onibimine": true,
@@ -237,6 +300,41 @@
             "weapon": true
         },
         "INCLUDE_OTHER": false,
-        "INCLUDE_OTOMO": true
+        "INCLUDE_OTOMO": false
+    },
+    "HOTKEYS": {
+        "MONSTER_NEXT": {
+            "KEY": "33",
+            "MODIFIERS": {
+                "160": false,
+                "161": false,
+                "162": false,
+                "163": false,
+                "164": false,
+                "165": false
+            }
+        },
+        "MONSTER_PREV": {
+            "KEY": "34",
+            "MODIFIERS": {
+                "160": false,
+                "161": false,
+                "162": false,
+                "163": false,
+                "164": false,
+                "165": false
+            }
+        },
+        "TOGGLE_OVERLAY": {
+            "KEY": "109",
+            "MODIFIERS": {
+                "160": false,
+                "161": false,
+                "162": false,
+                "163": false,
+                "164": false,
+                "165": false
+            }
+        }
     }
 }
