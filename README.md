@@ -1,12 +1,12 @@
 # coavins dps meter for Monster Hunter Rise (PC)
 
-![screenshot-table-7](https://user-images.githubusercontent.com/91746207/151688477-c84e63a2-4862-4392-8116-3a063643ece6.png)
+![Standard look](https://user-images.githubusercontent.com/91746207/154780082-413f445c-c620-40c9-b08f-7c8b07cf2ec9.png)
 
 This mod records all damage dealt to large monsters and can display a wide selection of information in a highly customizable overlay.
 
 Please don't use the information provided by this tool to engage in harassment toward other players. All of the party members you meet are trying their best, and unsolicited comments about performance can be hurtful to players who may not have as much experience as you.
 
-This mod is NOT intended to reveal any hidden information about monsters or give the player any unfair advantage. The goal is to help players know how they are performing without affecting the intended playing experience.
+This mod is NOT intended to reveal any hidden information about monsters or give the player any unfair advantage. The goal is to help players know how they are performing without affecting the intended playing experience. 
 
 ## Prerequisites
 
@@ -15,8 +15,25 @@ This mod is NOT intended to reveal any hidden information about monsters or give
 
 ## Install
 
-1. Extract the archive into the `reframework` directory under your game install folder
-2. Click `Reset scripts` in the REFramework window if the game was already running
+1. Extract the archive into the `reframework` directory under your game install folder.
+
+You should end up with the following folder structure:
+```
+MonsterHunterRise/
+  reframework/
+    autorun/
+      mhrise-coavins-dps.lua
+    data/
+      mhrise-coavins-dps/
+        colors/
+        presets/
+        saves/
+        default.json
+```
+          
+2. Click `Reset scripts` in the REFramework window if the game was already running.
+
+<img src="https://user-images.githubusercontent.com/91746207/154781422-9747faa8-16f9-4b9f-aa8c-9667c6573e51.png" align="right">
 
 ## Configuration
 
@@ -24,19 +41,9 @@ You can configure settings from the UI inside the REFramework window.
 
 1. Open the REFramework menu (default key: `Insert`)
 2. Expand `Script Generated UI`
-3. Click on the coavins dps meter `settings` button
+3. Click on the coavins dps meter `open settings` button
 
-## Usage
-
-The overlay will display each party member using the same color-coding that is shown with the player names on the left side of the screen. Some additional colors are used to indicate different types of damage.
-
-By default:
-* Light player color is physical damage
-* Dark player color is elemental damage
-* Pale red is status buildup
-* Pink is poison damage
-* Orange is blast damage
-* Light blue is damage dealt by your palico or palamute
+### Select columns
 
 The following columns can be chosen to appear on the table for each player:
 
@@ -59,3 +66,15 @@ The following columns can be chosen to appear on the table for each player:
 Note: Poison and blast damage will be credited proportionately to players based on how much status buildup you contributed.
 
 You can also configure the filters to show all damage dealers, not just players: buddies, monsters, and villager NPCs can appear as separate rows in the table.
+
+## Usage
+
+The overlay will display each party member using the same color-coding that is shown with the player names on the left side of the screen. Some additional colors are used to indicate different types of damage.
+
+By default:
+* Light player color is physical damage
+* Dark player color is elemental damage
+* Pale red is status buildup
+* Pink is poison damage
+* Orange is blast damage
+* Light blue is damage dealt by your palico or palamute
