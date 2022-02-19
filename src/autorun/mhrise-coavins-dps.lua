@@ -1060,6 +1060,9 @@ local function initializeBossMonster(bossEnemy)
 		end
 	end
 
+	-- index of player who is currently riding
+	boss.rider = nil
+
 	boss.hp = {}
 	boss.hp.current = 0.0
 	boss.hp.max     = 0.0
@@ -2976,6 +2979,22 @@ local function updateBossEnemy(args)
 			if isDamage then
 				addAilmentDamageToBoss(boss, 4, poisonDamage)
 			end
+		end
+	end
+
+	-- get marionette rider
+	local marioParam = enemy:get_field("<MarioParam>k__BackingField")
+	if marioParam then
+		local isMarionette = marioParam:call("get_IsMarionette")
+		if isMarionette then
+			local playerIndex = marioParam:call("get_MarioPlayerIndex")
+			if boss.rider ~= playerIndex then
+				boss.rider = playerIndex
+				log_info('player ' .. playerIndex .. 'is riding ' .. boss.name)
+			end
+		elseif boss.rider then
+			log_info('player ' .. boss.rider .. 'stopped riding ' .. boss.name)
+			boss.rider = nil
 		end
 	end
 end
