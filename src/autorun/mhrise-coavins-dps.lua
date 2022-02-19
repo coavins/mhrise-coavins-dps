@@ -2323,25 +2323,28 @@ local function dpsUpdate()
 	-- update screen dimensions
 	readScreenDimensions()
 
-	-- get player id
-	MY_PLAYER_ID = MANAGER.PLAYER:call("getMasterPlayerID")
+	-- if we are in an active combat area
+	if IS_IN_QUEST or IS_IN_TRAININGHALL then
+		-- get player id
+		MY_PLAYER_ID = MANAGER.PLAYER:call("getMasterPlayerID")
 
-	-- get info for players
-	updatePlayers()
+		-- get info for players
+		updatePlayers()
 
-	-- ensure bosses are initialized
-	local bossCount = MANAGER.ENEMY:call("getBossEnemyCount")
-	for i = 0, bossCount-1 do
-		local bossEnemy = MANAGER.ENEMY:call("getBossEnemy", i)
+		-- ensure bosses are initialized
+		local bossCount = MANAGER.ENEMY:call("getBossEnemyCount")
+		for i = 0, bossCount-1 do
+			local bossEnemy = MANAGER.ENEMY:call("getBossEnemy", i)
 
-		if not LARGE_MONSTERS[bossEnemy] then
-			-- initialize data for this boss
-			initializeBossMonster(bossEnemy)
+			if not LARGE_MONSTERS[bossEnemy] then
+				-- initialize data for this boss
+				initializeBossMonster(bossEnemy)
+			end
 		end
-	end
 
-	-- generate report for selected bosses
-	generateReport(REPORT_MONSTERS)
+		-- generate report for selected bosses
+		generateReport(REPORT_MONSTERS)
+	end
 end
 
 -- update based on wall clock
@@ -2867,6 +2870,8 @@ local function DrawWindowSettings()
 			end
 		end
 
+		showCheckboxForSetting('SAVE_RESULTS_TO_DISK')
+
 		imgui.new_line()
 
 		showCheckboxForSetting('COMBINE_OTOMO_WITH_HUNTER')
@@ -3263,6 +3268,54 @@ local function registerWaitingHotkeys()
 	end
 end
 
+local function exportData()
+	local file = {}
+
+	local MONSTERS = {}
+	for _,boss in pairs(LARGE_MONSTERS) do
+		table.insert(MONSTERS, boss)
+	end
+	file['MONSTERS'] = MONSTERS
+
+	local PLAYERINFO = {}
+	for index, value in pairs(PLAYER_NAMES) do
+		local player = {}
+		player.number = tostring(index)
+		player.id = tostring(index-1)
+		player.name = value
+		table.insert(PLAYERINFO, player)
+	end
+	file['PLAYERINFO'] = PLAYERINFO
+
+	local OTOMOINFO = {}
+	for index, value in pairs(OTOMO_NAMES) do
+		local otomo = {}
+		otomo.number = tostring(index)
+		otomo.id = tostring(getFakeAttackerIdForOtomoId(index-1))
+		otomo.name = value
+		table.insert(OTOMOINFO, otomo)
+	end
+	file['OTOMOINFO'] = OTOMOINFO
+
+	local filename = ''
+
+	for _,boss in pairs(LARGE_MONSTERS) do
+		if filename ~= '' then filename = filename .. '+' end
+		filename = filename .. boss.name
+	end
+
+	if filename == '' then filename = 'NoData' end
+
+	filename = filename .. '+' .. tostring(math.random(999999))
+
+	local success = json.dump_file(DATADIR .. 'logs/' .. filename .. '.json', file)
+	if success then
+		log_info('exported combat data to logs/' .. filename .. '.json')
+	else
+		log_error('failed to export combat data to logs/' .. filename .. '.json')
+	end
+end
+
 -- runs every frame
 local function dpsFrame()
 	-- make sure resources are initialized
@@ -3308,8 +3361,11 @@ local function dpsFrame()
 	elseif IS_IN_QUEST and not wasInQuest then
 		cleanUpData('entered a quest')
 	elseif IS_POST_QUEST and not wasPostQuest then
-		-- quest complete
-		-- TODO: finalize report and save to disk
+		-- quest complete, export combat data to disk
+		log_info('quest complete')
+		if CFG('SAVE_RESULTS_TO_DISK') then
+			exportData()
+		end
 	end
 
 	if IS_IN_QUEST or IS_POST_QUEST then

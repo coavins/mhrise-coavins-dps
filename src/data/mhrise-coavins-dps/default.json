@@ -14,6 +14,10 @@
 			"VALUE": true,
 			"TEXT": "Show test data while menu is open"
 		},
+		"SAVE_RESULTS_TO_DISK": {
+			"VALUE": false,
+			"TEXT": "Save results to disk on quest complete"
+		},
 		"HIDE_OVERLAY_IN_VILLAGE": {
 			"VALUE": false,
 			"TEXT": "Hide the overlay when in the village"
