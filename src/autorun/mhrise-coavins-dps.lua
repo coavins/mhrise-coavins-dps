@@ -785,6 +785,33 @@ local function getOtomoIdFromFakeAttackerId(fakeAttackerId)
 	return fakeAttackerId - FAKE_OTOMO_RANGE_START
 end
 
+-- method copied from https://stackoverflow.com/a/53038524
+-- items in the array are passed into fnKeep as its only parameter
+-- if the function returns false, the item is removed from the array
+-- the order of remaining items should be retained, with empty space compressed
+local function arrayRemove(t, fnKeep)
+	local j, n = 1, #t;
+
+	for i=1,n do
+			if (fnKeep(t[i])) then
+					-- Move i's kept value to j's position, if it's not already there.
+					if (i ~= j) then
+							t[j] = t[i];
+							t[i] = nil;
+					end
+					j = j + 1; -- Increment position of where we'll place the next kept value.
+			else
+					t[i] = nil;
+			end
+	end
+
+	return t;
+end
+
+local function reportItemHasDamage(item)
+	return item.total > 0
+end
+
 local function updatePlayers()
 	local oldNames = {}
 	oldNames[1] = PLAYER_NAMES[1]
@@ -1702,6 +1729,9 @@ local function mergeBossIntoReport(report, boss)
 		-- accumulate total overall damage
 		totalDamage = totalDamage + item.total
 	end
+
+	-- remove report items that have no damage
+	arrayRemove(report.items, reportItemHasDamage)
 
 	report.totalDamage = totalDamage
 	report.topDamage = bestDamage
