@@ -1,8 +1,8 @@
 # coavins dps meter for Monster Hunter Rise (PC)
 
-![Standard look](https://user-images.githubusercontent.com/91746207/154780082-413f445c-c620-40c9-b08f-7c8b07cf2ec9.png)
-
 This mod records all damage dealt to large monsters and can display a wide selection of information in a highly customizable overlay.
+
+![Standard look](https://user-images.githubusercontent.com/91746207/154783176-0961a66b-aa51-4c3c-b718-73d037b84683.png)
 
 Please don't use the information provided by this tool to engage in harassment toward other players. All of the party members you meet are trying their best, and unsolicited comments about performance can be hurtful to players who may not have as much experience as you.
 
@@ -15,7 +15,7 @@ This mod is NOT intended to reveal any hidden information about monsters or give
 
 ## Install
 
-1. Extract the archive into the `reframework` directory under your game install folder.
+1. Extract the .zip file into the `reframework` directory under your game install folder.
 
 You should end up with the following folder structure:
 ```
