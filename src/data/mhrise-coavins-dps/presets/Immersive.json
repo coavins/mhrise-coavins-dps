@@ -1,0 +1,340 @@
+{
+    "CFG": {
+        "AUTO_SAVE": {
+            "TEXT": "Automatically save all settings",
+            "VALUE": true
+        },
+        "COMBINE_OTOMO_WITH_HUNTER": {
+            "TEXT": "Combine buddies with their hunters",
+            "VALUE": true
+        },
+        "CONDITION_LIKE_DAMAGE": {
+            "TEXT": "Ailment buildup counts as damage",
+            "VALUE": false
+        },
+        "DEBUG_SHOW_MISSING_DAMAGE": {
+            "TEXT": "Show in the title bar any damage that is not accounted for in the table",
+            "VALUE": false
+        },
+        "DRAW_BAR_COLORBLOCK": {
+            "TEXT": "Show color block",
+            "VALUE": true
+        },
+        "DRAW_BAR_OUTLINES": {
+            "TEXT": "Show row outline",
+            "VALUE": true
+        },
+        "DRAW_BAR_RELATIVE_TO_PARTY": {
+            "TEXT": "Damage bars will represent share of overall party DPS",
+            "VALUE": false
+        },
+        "DRAW_BAR_REVEAL_HR": {
+            "TEXT": "Reveal player HR",
+            "VALUE": false
+        },
+        "DRAW_BAR_TEXT_NAME_USE_REAL_NAMES": {
+            "TEXT": "Reveal character names",
+            "VALUE": false
+        },
+        "DRAW_BAR_TEXT_YOU": {
+            "TEXT": "Show \"YOU\" on your row",
+            "VALUE": false
+        },
+        "DRAW_BAR_USE_PLAYER_COLORS": {
+            "TEXT": "Show player bars with their assigned color",
+            "VALUE": false
+        },
+        "DRAW_BAR_USE_UNIQUE_COLORS": {
+            "TEXT": "Show each type of damage in a different color",
+            "VALUE": false
+        },
+        "DRAW_HEADER": {
+            "TEXT": "Show header",
+            "VALUE": false
+        },
+        "DRAW_HEADER_BACKGROUND": {
+            "TEXT": "Show header background",
+            "VALUE": true
+        },
+        "DRAW_HEADER_HEIGHT": {
+            "MAX": 100.0,
+            "MIN": 0.0,
+            "TEXT": "Header height",
+            "VALUE": 18.0
+        },
+        "DRAW_TABLE_BACKGROUND": {
+            "TEXT": "Show row background",
+            "VALUE": true
+        },
+        "DRAW_TITLE": {
+            "TEXT": "Show title",
+            "VALUE": true
+        },
+        "DRAW_TITLE_BACKGROUND": {
+            "TEXT": "Show title background",
+            "VALUE": false
+        },
+        "DRAW_TITLE_HEIGHT": {
+            "MAX": 100.0,
+            "MIN": 0.0,
+            "TEXT": "Title height",
+            "VALUE": 18.0
+        },
+        "DRAW_TITLE_MONSTER": {
+            "TEXT": "Show selected monsters in title",
+            "VALUE": false
+        },
+        "DRAW_TITLE_TEXT": {
+            "TEXT": "Show title text",
+            "VALUE": false
+        },
+        "FONT_FAMILY": {
+            "TEXT": "Font family",
+            "VALUE": "Tahoma"
+        },
+        "HIDE_OVERLAY_IN_VILLAGE": {
+            "TEXT": "Hide the overlay when in the village",
+            "VALUE": false
+        },
+        "PDPS_BASED_ON_FIRST_STRIKE": {
+            "TEXT": "pDPS starts counting from player's first attack",
+            "VALUE": true
+        },
+        "SHOW_TEST_DATA_WHILE_MENU_IS_OPEN": {
+            "TEXT": "Show test data while menu is open",
+            "VALUE": true
+        },
+        "TABLE_COLS": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "TABLE_COLS_WIDTH": [
+            0.0,
+            30.0,
+            203.0,
+            46.0,
+            58.0,
+            53.0,
+            53.0,
+            37.0,
+            50.0,
+            39.0,
+            58.0,
+            58.0,
+            58.0,
+            53.0,
+            53.0,
+            39.0
+        ],
+        "TABLE_GROWS_UPWARD": {
+            "TEXT": "Table grows upward instead of down",
+            "VALUE": false
+        },
+        "TABLE_HEADER_TEXT_OFFSET_X": {
+            "MAX": 100.0,
+            "MIN": -100.0,
+            "TEXT": "Title text offset X",
+            "VALUE": 3.0
+        },
+        "TABLE_ROWH": {
+            "MAX": 100.0,
+            "MIN": 0.0,
+            "TEXT": "Row height",
+            "VALUE": 11.0
+        },
+        "TABLE_ROW_PADDING": {
+            "MAX": 150.0,
+            "MIN": 0.0,
+            "TEXT": "Row padding",
+            "VALUE": 9.0
+        },
+        "TABLE_ROW_TEXT_OFFSET_X": {
+            "MAX": 100.0,
+            "MIN": -100.0,
+            "TEXT": "Text offset X",
+            "VALUE": 4.0
+        },
+        "TABLE_ROW_TEXT_OFFSET_Y": {
+            "MAX": 100.0,
+            "MIN": -100.0,
+            "TEXT": "Text offset Y",
+            "VALUE": -18.0
+        },
+        "TABLE_SCALE": {
+            "MAX": 10.0,
+            "MIN": 0.0,
+            "TEXT": "Scaling factor",
+            "VALUE": 1.0
+        },
+        "TABLE_SORT_ASC": {
+            "TEXT": "Reverse sort order",
+            "VALUE": false
+        },
+        "TABLE_SORT_IN_ORDER": {
+            "TEXT": "Sort by player",
+            "VALUE": true
+        },
+        "TABLE_WIDTH": {
+            "MAX": 2000.0,
+            "MIN": 30.0,
+            "TEXT": "Table width",
+            "VALUE": 240.0
+        },
+        "TABLE_X": {
+            "MAX": 1.0,
+            "MIN": 0.0,
+            "TEXT": "Horizontal position",
+            "VALUE": 0.05999999865889549
+        },
+        "TABLE_Y": {
+            "MAX": 1.0,
+            "MIN": 0.0,
+            "TEXT": "Vertical position",
+            "VALUE": 0.44999998807907104
+        },
+        "TEXT_DRAW_SHADOWS": {
+            "TEXT": "Draw text shadows",
+            "VALUE": true
+        },
+        "TEXT_SHADOW_OFFSET_X": {
+            "MAX": 5.0,
+            "MIN": -5.0,
+            "TEXT": "Text shadow offset X",
+            "VALUE": 1.0
+        },
+        "TEXT_SHADOW_OFFSET_Y": {
+            "MAX": 5.0,
+            "MIN": -5.0,
+            "TEXT": "Text shadow offset Y",
+            "VALUE": 1.0
+        },
+        "UPDATE_RATE": {
+            "MAX": 10.0,
+            "MIN": 0.01,
+            "TEXT": "Update frequency (in seconds)",
+            "VALUE": 0.2
+        },
+        "USE_MINIMAL_BARS": {
+            "TEXT": "Use a minimalist style for the damage bars",
+            "VALUE": false
+        }
+    },
+    "COLORS": {
+        "BAR_BG": 1140850688.0,
+        "BAR_DMG_AILMENT": 2946709310.0,
+        "BAR_DMG_BLAST": 2950726402.0,
+        "BAR_DMG_ELEMENT": 2944702865.0,
+        "BAR_DMG_ELEMENT_UNIQUE": [
+            2945195036.0,
+            2937855116.0,
+            2945223708.0,
+            2937883676.0
+        ],
+        "BAR_DMG_OTHER": 2941804902.0,
+        "BAR_DMG_OTOMO": 2936060912.0,
+        "BAR_DMG_PHYSICAL": 2952766674.0,
+        "BAR_DMG_PHYSICAL_UNIQUE": [
+            2949392424.0,
+            2938644684.0,
+            2949434408.0,
+            2938686504.0
+        ],
+        "BAR_DMG_POISON": 2949461981.0,
+        "BAR_OUTLINE": 1140850688.0,
+        "BLACK": 4278190080.0,
+        "BLUE": 2939302655.0,
+        "GRAY": 4289703855.0,
+        "GREEN": 2939354930.0,
+        "OTOMO": 2939343100.0,
+        "PLAYER": [
+            2952737330.0,
+            2939302655.0,
+            2952789810.0,
+            2939354930.0
+        ],
+        "RED": 2952737330.0,
+        "TITLE_BG": 2281701376.0,
+        "TITLE_FG": 4292532954.0,
+        "WHITE": 4294967295.0,
+        "YELLOW": 2952789810.0
+    },
+    "FILTERS": {
+        "ATTACKER_TYPES": {
+            "ballistahate": true,
+            "barrelbombl": true,
+            "barrelbombs": true,
+            "capturebullet": true,
+            "capturesmokebomb": true,
+            "detonationgrenade": true,
+            "ecbatexplode": true,
+            "fg005": true,
+            "hmballista": true,
+            "hmcannon": true,
+            "hmdragonator": true,
+            "hmflamethrower": true,
+            "hmgatling": true,
+            "hmnpc": true,
+            "hmtrap": true,
+            "kunai": true,
+            "makimushi": true,
+            "marionette": true,
+            "monster": true,
+            "nitro": true,
+            "onibimine": true,
+            "otomo": true,
+            "waterbeetle": true,
+            "weapon": true
+        },
+        "INCLUDE_OTHER": false,
+        "INCLUDE_OTOMO": false
+    },
+    "HOTKEYS": {
+        "MONSTER_NEXT": {
+            "KEY": "33",
+            "MODIFIERS": {
+                "160": false,
+                "161": false,
+                "162": false,
+                "163": false,
+                "164": false,
+                "165": false
+            }
+        },
+        "MONSTER_PREV": {
+            "KEY": "34",
+            "MODIFIERS": {
+                "160": false,
+                "161": false,
+                "162": false,
+                "163": false,
+                "164": false,
+                "165": false
+            }
+        },
+        "TOGGLE_OVERLAY": {
+            "KEY": "109",
+            "MODIFIERS": {
+                "160": false,
+                "161": false,
+                "162": false,
+                "163": false,
+                "164": false,
+                "165": false
+            }
+        }
+    }
+}
