@@ -2647,6 +2647,11 @@ local function DrawWindowSettings()
 			clearTestData()
 			dpsUpdate()
 		end
+
+		if CFG('AUTO_SAVE') then
+			-- save when the window is closed
+			saveCurrentConfig()
+		end
 	end
 
 	-- Enabled
