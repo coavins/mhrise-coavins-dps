@@ -276,6 +276,7 @@ local PICKER_FLAGS = 0x40000
 local IS_ONLINE = false
 local QUEST_DURATION = 0.0
 local IS_IN_QUEST = false
+local IS_POST_QUEST = false
 local IS_IN_TRAININGHALL = false
 
 local _CFG = {}
@@ -2293,7 +2294,7 @@ local function dpsDraw()
 
 	if DRAW_OVERLAY then
 		-- show it in quest, training hall, and when settings window is open
-		if (IS_IN_QUEST or IS_IN_TRAININGHALL or DRAW_WINDOW_SETTINGS) then
+		if (IS_IN_QUEST or IS_POST_QUEST or IS_IN_TRAININGHALL or DRAW_WINDOW_SETTINGS) then
 			drawIt = true
 		end
 		-- show it in the village only if the player allows
@@ -3282,13 +3283,15 @@ local function dpsFrame()
 	end
 
 	local wasInQuest = IS_IN_QUEST
+	local wasPostQuest = IS_POST_QUEST
 	local wasInTraininghall = IS_IN_TRAININGHALL
 
 	local villageArea = 0
 	local questStatus = MANAGER.QUEST:get_field("_QuestStatus")
-	IS_IN_QUEST = (questStatus >= 2)
+	IS_IN_QUEST = (questStatus == 2)
+	IS_POST_QUEST = (questStatus > 2)
 
-	if not IS_IN_QUEST then
+	if not IS_IN_QUEST and not IS_POST_QUEST then
 		-- VillageAreaManager is unreliable, not always there, stale references
 		-- get a new reference
 		MANAGER.AREA = sdk.get_managed_singleton("snow.VillageAreaManager")
@@ -3297,16 +3300,19 @@ local function dpsFrame()
 		end
 	end
 
-	IS_IN_TRAININGHALL = (villageArea == 5 and not IS_IN_QUEST)
+	IS_IN_TRAININGHALL = (villageArea == 5 and not IS_IN_QUEST and not IS_POST_QUEST)
 
 	-- if we changed places, clear all data
-	if (IS_IN_TRAININGHALL and not wasInTraininghall) then
+	if IS_IN_TRAININGHALL and not wasInTraininghall then
 		cleanUpData('entered training hall')
-	elseif (IS_IN_QUEST and not wasInQuest) then
+	elseif IS_IN_QUEST and not wasInQuest then
 		cleanUpData('entered a quest')
+	elseif IS_POST_QUEST and not wasPostQuest then
+		-- quest complete
+		-- TODO: finalize report and save to disk
 	end
 
-	if IS_IN_QUEST then
+	if IS_IN_QUEST or IS_POST_QUEST then
 		SetQuestDuration(MANAGER.QUEST:call("getQuestElapsedTimeSec"))
 	elseif IS_IN_TRAININGHALL then
 		SetQuestDuration(MANAGER.AREA:call("get_TrainingHallStayTime"))
