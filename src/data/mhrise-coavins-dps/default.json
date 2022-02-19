@@ -32,11 +32,15 @@
 		},
 		"MARIONETTE_IS_PLAYER_DMG": {
 			"VALUE": true,
-			"TEXT": "Damage from Wyvern Riding goes to the rider instead of the monster"
+			"TEXT": "Credit players with damage from Wyvern Riding"
 		},
 		"DEBUG_SHOW_MISSING_DAMAGE": {
 			"VALUE": false,
 			"TEXT": "Show in the title bar any damage that is not accounted for in the table"
+		},
+		"DEBUG_SHOW_ATTACKER_ID": {
+			"VALUE": false,
+			"TEXT": "Show attacker IDs instead of HR"
 		},
 		"DRAW_BAR_RELATIVE_TO_PARTY": {
 			"VALUE": false,

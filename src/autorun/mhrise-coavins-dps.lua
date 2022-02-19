@@ -1938,8 +1938,14 @@ local function drawReportItem(item, x, y, width, height)
 		d2d.fill_rect(x, y, damageBarWidth, height, combatantColor)
 
 		-- hr
-		if item.playerNumber and item.rank and CFG('DRAW_BAR_REVEAL_HR') then
-			local text = string.format('%s',item.rank)
+		if (CFG('DRAW_BAR_REVEAL_HR') and item.rank)
+		or (CFG('DEBUG_SHOW_ATTACKER_ID') and item.id) then
+			local text
+			if CFG('DEBUG_SHOW_ATTACKER_ID') then
+				text = string.format('%s', item.id)
+			else
+				text = string.format('%s', item.rank)
+			end
 			drawRichText(text, x + (3 * CFG('TABLE_SCALE')), y, COLOR('WHITE'), COLOR('BLACK'))
 		end
 	else
@@ -1954,8 +1960,14 @@ local function drawReportItem(item, x, y, width, height)
 			d2d.fill_rect(x, y, colorBlockWidth, height, combatantColor)
 
 			-- hr
-			if item.playerNumber and item.rank and CFG('DRAW_BAR_REVEAL_HR') then
-				local text = string.format('%s',item.rank)
+			if (CFG('DRAW_BAR_REVEAL_HR') and item.rank)
+			or (CFG('DEBUG_SHOW_ATTACKER_ID') and item.id) then
+				local text
+				if CFG('DEBUG_SHOW_ATTACKER_ID') then
+					text = string.format('%s', item.id)
+				else
+					text = string.format('%s', item.rank)
+				end
 				drawRichText(text, x + (3 * CFG('TABLE_SCALE')), y, COLOR('WHITE'), COLOR('BLACK'))
 			end
 		end
@@ -2083,7 +2095,13 @@ local function drawReport(index)
 		end
 
 		if CFG('DRAW_BAR_COLORBLOCK') and CFG('DRAW_BAR_REVEAL_HR') then
-			drawRichText('HR', x, y, COLOR('GRAY'), COLOR('BLACK'))
+			local text
+			if CFG('DEBUG_SHOW_ATTACKER_ID') then
+				text = 'ID'
+			else
+				text = 'HR'
+			end
+			drawRichText(text, x, y, COLOR('GRAY'), COLOR('BLACK'))
 		end
 
 		local colorBlockWidth = 30 * scale
@@ -2936,6 +2954,10 @@ local function DrawWindowDebug()
 	imgui.text('and y is the amount of damage that this mod says has been done.')
 	imgui.text('If the mod is working perfectly, then these values will be the same')
 	imgui.text('For accurate results, make sure to enable all filters.')
+
+	imgui.new_line()
+
+	showCheckboxForSetting('DEBUG_SHOW_ATTACKER_ID')
 
 	imgui.end_window()
 end
