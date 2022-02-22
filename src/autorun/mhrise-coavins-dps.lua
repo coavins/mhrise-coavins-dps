@@ -23,6 +23,8 @@ TABLE_COLUMNS[13] = 'Blast'
 TABLE_COLUMNS[14] = 'Crit%'
 TABLE_COLUMNS[15] = 'Weak%'
 TABLE_COLUMNS[16] = 'pDPS'
+TABLE_COLUMNS[17] = 'Physical'
+TABLE_COLUMNS[18] = 'Element'
 
 -- list of columns sorted for the combo box
 local TABLE_COLUMNS_OPTIONS_ID = {}
@@ -33,15 +35,17 @@ TABLE_COLUMNS_OPTIONS_ID[4] = 10
 TABLE_COLUMNS_OPTIONS_ID[5] = 4
 TABLE_COLUMNS_OPTIONS_ID[6] = 16
 TABLE_COLUMNS_OPTIONS_ID[7] = 5
-TABLE_COLUMNS_OPTIONS_ID[8] = 12
-TABLE_COLUMNS_OPTIONS_ID[9] = 13
-TABLE_COLUMNS_OPTIONS_ID[10] = 11
-TABLE_COLUMNS_OPTIONS_ID[11] = 6
-TABLE_COLUMNS_OPTIONS_ID[12] = 7
-TABLE_COLUMNS_OPTIONS_ID[13] = 14
-TABLE_COLUMNS_OPTIONS_ID[14] = 15
-TABLE_COLUMNS_OPTIONS_ID[15] = 8
-TABLE_COLUMNS_OPTIONS_ID[16] = 9
+TABLE_COLUMNS_OPTIONS_ID[8] = 17
+TABLE_COLUMNS_OPTIONS_ID[9] = 18
+TABLE_COLUMNS_OPTIONS_ID[10] = 12
+TABLE_COLUMNS_OPTIONS_ID[11] = 13
+TABLE_COLUMNS_OPTIONS_ID[12] = 11
+TABLE_COLUMNS_OPTIONS_ID[13] = 6
+TABLE_COLUMNS_OPTIONS_ID[14] = 7
+TABLE_COLUMNS_OPTIONS_ID[15] = 14
+TABLE_COLUMNS_OPTIONS_ID[16] = 15
+TABLE_COLUMNS_OPTIONS_ID[17] = 8
+TABLE_COLUMNS_OPTIONS_ID[18] = 9
 
 local TABLE_COLUMNS_OPTIONS_READABLE = {}
 for i,col in ipairs(TABLE_COLUMNS_OPTIONS_ID) do
@@ -1916,6 +1920,10 @@ local function drawReportItemColumn(item, col, x, y)
 		text = string.format('%.0f%%', item.pctDnCrit * 100.0)
 	elseif col == 16 then -- pDPS
 		text = string.format('%.1f', item.dps.personal)
+	elseif col == 17 then -- physical damage
+		text = string.format('%.0f', item.totalPhysical)
+	elseif col == 18 then -- element damage
+		text = string.format('%.0f', item.totalElemental)
 	end
 
 	drawRichText(text, x, y, COLOR('WHITE'), COLOR('BLACK'))
