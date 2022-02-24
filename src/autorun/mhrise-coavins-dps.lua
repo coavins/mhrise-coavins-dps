@@ -1151,8 +1151,10 @@ local function initializeBossMonster(bossEnemy)
 	LARGE_MONSTERS[bossEnemy] = boss
 	table.insert(ORDERED_MONSTERS, bossEnemy)
 
-	-- all monsters are in the report by default
-	AddMonsterToReport(bossEnemy, boss)
+	-- automatically add monster to report if we have all monsters selected
+	if ORDERED_MONSTERS_SELECTED == 0 then
+		AddMonsterToReport(bossEnemy, boss)
+	end
 
 	log_debug('initialized new ' .. boss.name)
 end
