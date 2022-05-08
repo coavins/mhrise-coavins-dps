@@ -4,11 +4,13 @@ First of all, **thank you** for reading this file, as it means you're interested
 
 ## Testing
 
-If you're making changes to the core lua script, you can run the included unit tests by installing [busted](https://olivinelabs.com/busted/) and running `busted .` in the root directory.
+You can run the included unit tests by installing [busted](https://olivinelabs.com/busted/) and running `busted .` in the project root.
 
-We also use [luacheck](https://github.com/lunarmodules/luacheck) for linting, just run `luacheck src tests` in the root directory.
+We use [luacheck](https://github.com/lunarmodules/luacheck) for linting, just run `luacheck src tests` in the project root.
 
-These tests will be automatically run for you every time you add commits to your pull request.
+`busted` and `luacheck` will be automatically run for your pull requests.
+
+If you install [luacov](https://keplerproject.github.io/luacov/), you can run the tests with coverage analysis enabled (`busted -c .`). This will generate a stats file which can be turned into a coverage report by running `luacov` in the project root.
 
 ## Contributing
 

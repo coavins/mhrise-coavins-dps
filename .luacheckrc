@@ -18,9 +18,6 @@ files['tests/'] = {
 }
 
 files['tests/*.test.lua'] = {
-	globals = {
-		'MANAGER'
-	},
 	std = '+busted',
 	enable = {'111','112','212'}
 }

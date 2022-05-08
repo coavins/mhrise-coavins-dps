@@ -1,4 +1,4 @@
 include = {
-	".dps$"
+	"mhrise%-coavins%-dps%/.+$",
 }
 includeuntestedfiles = true
