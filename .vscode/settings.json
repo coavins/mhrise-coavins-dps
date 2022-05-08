@@ -7,6 +7,10 @@
 		"re",
 		"json",
 		"fs",
-		"d2d"
+		"d2d",
+		"describe",
+		"setup",
+		"before_each",
+		"it"
 	]
 }

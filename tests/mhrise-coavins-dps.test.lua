@@ -1,401 +1,65 @@
----@diagnostic disable: undefined-global
-_G._UNIT_TESTING = true
 math.randomseed(os.time())
 
-require 'tests/mock'
-require 'tests/mock_json'
-require 'tests/mock_fs'
-require 'tests/mock_d2d'
-require 'src/autorun/mhrise-coavins-dps'
+require 'tests.mock'
+
+package.path = package.path .. ';src/autorun/?.lua'
+
+local STATE  = require 'mhrise-coavins-dps.state'
+local CORE   = require 'mhrise-coavins-dps.core'
+local ENUM   = require 'mhrise-coavins-dps.enum'
+local DATA   = require 'mhrise-coavins-dps.data'
+local REPORT = require 'mhrise-coavins-dps.report'
 
 local function initializeMockBossMonster()
 	-- automatically puts boss into cache
 	local enemy = MockEnemy:create()
-	initializeBossMonster(enemy)
-	local boss = LARGE_MONSTERS[enemy]
+	DATA.initializeBossMonster(enemy)
+	local boss = STATE.LARGE_MONSTERS[enemy]
 	return boss
 end
 
 describe("mhrise-coavins-dps", function()
 	setup(function()
-		MANAGER.MESSAGE = MockMessageManager:create()
+		STATE.MANAGER.MESSAGE = MockMessageManager:create()
 	end)
 
 	before_each(function()
-		cleanUpData('test')
-
-		SetQuestDuration(0.0)
-
-		-- all attacker types enabled
-		for _,type in pairs(ATTACKER_TYPES) do
-			AddAttackerTypeToReport(type)
+		-- load default settings
+		if not CORE.loadDefaultConfig() then
+			return -- halt script
 		end
 
-		SetCFG('CONDITION_LIKE_DAMAGE', false)
-	end)
+		CORE.cleanUpData('before test')
 
-	describe("boss", function()
+		CORE.SetQuestDuration(0.0)
 
-		it("works through damage hook with one attacker", function()
-			local boss = initializeMockBossMonster()
+		-- all attacker types enabled
+		for _,type in pairs(ENUM.ATTACKER_TYPES) do
+			CORE.AddAttackerTypeToReport(type)
+		end
 
-			addDamageToBoss(boss, 1, 0, 100, 200, 400)
-
-			local sum = sumDamageSourcesList(boss.damageSources)
-			assert.is_equal(100, sum.physical)
-			assert.is_equal(200, sum.elemental)
-			assert.is_equal(400, sum.condition)
-			assert.is_equal(300, sum.total)
-		end)
-
-		it("works through damage hook with a full party of four", function()
-			local boss = initializeMockBossMonster()
-
-			addDamageToBoss(boss, 0, 0, 101, 202, 403)
-			addDamageToBoss(boss, 1, 0, 201, 402, 803)
-			addDamageToBoss(boss, 2, 0, 401, 802, 103)
-			addDamageToBoss(boss, 3, 0, 801, 102, 203)
-
-			local sum = sumDamageSourcesList(boss.damageSources)
-
-			assert.is_equal(101 + 201 + 401 + 801, sum.physical)
-			assert.is_equal(202 + 402 + 802 + 102, sum.elemental)
-			assert.is_equal(403 + 803 + 103 + 203, sum.condition)
-			assert.is_equal(1504 + 1508, sum.total)
-		end)
-
-	end)
-
-	describe("hit count", function()
-
-		it("counts correctly", function()
-			local boss = initializeMockBossMonster()
-
-			addDamageToBoss(boss, 1, 0, 500)
-			addDamageToBoss(boss, 1, 0, 400)
-			addDamageToBoss(boss, 1, 0, 300)
-			addDamageToBoss(boss, 1, 0, 200)
-
-			generateReport(REPORT_MONSTERS)
-
-			local r = DAMAGE_REPORTS[1]
-
-			local expected = 4
-			local actual = r.items[1].numHit
-
-			assert.is_equal(expected, actual)
-		end)
-
-	end)
-
-	describe('marionette', function()
-
-		it('counts damage for players', function()
-			local boss = initializeMockBossMonster()
-
-			SetCFG('MARIONETTE_IS_PLAYER_DMG', true)
-
-			local monsterAttackerId = 300
-			local marionetteAttackerTypeId = 125
-			addDamageToBoss(boss, monsterAttackerId, marionetteAttackerTypeId
-			, 100, 0, nil, nil, nil, nil, nil, 1)
-
-			generateReport(REPORT_MONSTERS)
-
-			local r= DAMAGE_REPORTS[1]
-
-			for _,item in ipairs(r.items) do
-				local actual = item.total
-				if item.id == monsterAttackerId then
-					assert.is_equal(0, actual)
-				elseif item.id == 1 then
-					assert.is_equal(100, actual)
-				end
-			end
-		end)
-
-		it('counts damage for monster', function()
-			local boss = initializeMockBossMonster()
-
-			SetCFG('MARIONETTE_IS_PLAYER_DMG', false)
-
-			local monsterAttackerId = 300
-			local marionetteAttackerTypeId = 125
-			addDamageToBoss(boss, monsterAttackerId, marionetteAttackerTypeId
-			, 100, 0, nil, nil, nil, nil, nil, 1)
-
-			generateReport(REPORT_MONSTERS)
-
-			local r= DAMAGE_REPORTS[1]
-
-			for _,item in ipairs(r.items) do
-				local actual = item.total
-				if item.id == monsterAttackerId then
-					assert.is_equal(100, actual)
-				elseif item.id == 1 then
-					assert.is_equal(0, actual)
-				end
-			end
-		end)
-
-	end)
-
-	describe("biggest hit", function()
-
-		it("counts correctly", function()
-			local boss = initializeMockBossMonster()
-
-			addDamageToBoss(boss, 1, 0, 500)
-			addDamageToBoss(boss, 1, 0, 400)
-			addDamageToBoss(boss, 1, 0, 300)
-			addDamageToBoss(boss, 1, 0, 200)
-
-			generateReport(REPORT_MONSTERS)
-
-			local r = DAMAGE_REPORTS[1]
-
-			local expected = 500
-			local actual = r.items[1].maxHit
-
-			assert.is_equal(expected, actual)
-		end)
-
-	end)
-
-	describe("buildup", function()
-
-		it("gets set on boss", function()
-			local boss = initializeMockBossMonster()
-
-			addDamageToBoss(boss, 1, 0, 100, 0, 50, 5)
-
-			local expected = 50
-			local actual = boss.ailment.buildup[5][1]
-
-			assert.is_equal(expected, actual)
-		end)
-
-		it("accumulates on boss", function()
-			local boss = initializeMockBossMonster()
-
-			addDamageToBoss(boss, 1, 0, 100, 0, 1, 5)
-			addDamageToBoss(boss, 1, 0, 100, 0, 2, 5)
-			addDamageToBoss(boss, 1, 0, 100, 0, 4, 5)
-
-			local expected = 7
-			local actual = boss.ailment.buildup[5][1]
-
-			assert.is_equal(expected, actual)
-		end)
-
-		it("accumulates on boss for multiple attackers", function()
-			local boss = initializeMockBossMonster()
-
-			addDamageToBoss(boss, 1, 0, 100, 0, 1, 5)
-			addDamageToBoss(boss, 2, 0, 100, 0, 2, 5)
-			addDamageToBoss(boss, 654, 0, 100, 0, 4, 5)
-
-			assert.is_equal(1, boss.ailment.buildup[5][1])
-			assert.is_equal(2, boss.ailment.buildup[5][2])
-			assert.is_equal(4, boss.ailment.buildup[5][654])
-		end)
-
-	end)
-
-	describe("ailment damage", function()
-
-		it("is distributed fairly", function()
-			local boss = initializeMockBossMonster()
-
-			addDamageToBoss(boss, 1, 0, 100, 0, 100, 5)
-			addDamageToBoss(boss, 2, 0, 100, 0, 100, 5)
-
-			calculateAilmentContrib(boss, 5)
-
-			assert.is_equal(0.5, boss.ailment.share[5][1])
-			assert.is_equal(0.5, boss.ailment.share[5][2])
-		end)
-
-		it("is distributed fairly", function()
-			local boss = initializeMockBossMonster()
-
-			addDamageToBoss(boss, 1, 0, 100, 0, 100, 4)
-			addDamageToBoss(boss, 2, 0, 100, 0, 100, 4)
-
-			calculateAilmentContrib(boss, 4)
-
-			assert.is_equal(0.5, boss.ailment.share[4][1])
-			assert.is_equal(0.5, boss.ailment.share[4][2])
-		end)
-
-		it("is distributed fairly", function()
-			local boss = initializeMockBossMonster()
-
-			addDamageToBoss(boss, 1, 0, 100, 0, 100, 5)
-			addDamageToBoss(boss, 2, 0, 100, 0, 100, 5)
-			addDamageToBoss(boss, 3, 0, 100, 0, 200, 5)
-
-			calculateAilmentContrib(boss, 5)
-
-			assert.is_equal(0.25, boss.ailment.share[5][1])
-			assert.is_equal(0.25, boss.ailment.share[5][2])
-			assert.is_equal(0.5, boss.ailment.share[5][3])
-		end)
-
-		it("is distributed fairly (blast)", function()
-			local boss = initializeMockBossMonster()
-
-			SetCFG('TABLE_SORT_IN_ORDER', true)
-
-			addDamageToBoss(boss, 0, 0, 100, 0, 100, 5)
-			addDamageToBoss(boss, 1, 0, 100, 0, 100, 5)
-			addDamageToBoss(boss, 2, 0, 100, 0, 200, 5)
-			addDamageToBoss(boss, 3, 0, 100, 0, 400, 5)
-
-			calculateAilmentContrib(boss, 5)
-
-			assert.is_equal(0.125, boss.ailment.share[5][0])
-			assert.is_equal(0.125, boss.ailment.share[5][1])
-			assert.is_equal(0.25, boss.ailment.share[5][2])
-			assert.is_equal(0.5, boss.ailment.share[5][3])
-
-			addAilmentDamageToBoss(boss, 5, 1000)
-
-			generateReport(REPORT_MONSTERS)
-
-			local r = DAMAGE_REPORTS[1]
-
-			assert.is_equal(125, r.items[1].totalBlast)
-			assert.is_equal(125, r.items[2].totalBlast)
-			assert.is_equal(250, r.items[3].totalBlast)
-			assert.is_equal(500, r.items[4].totalBlast)
-
-			addAilmentDamageToBoss(boss, 5, 1500)
-
-			generateReport(REPORT_MONSTERS)
-
-			r = DAMAGE_REPORTS[1]
-
-			assert.is_equal(2500 * 0.125, r.items[1].totalBlast)
-			assert.is_equal(2500 * 0.125, r.items[2].totalBlast)
-			assert.is_equal(2500 * 0.25, r.items[3].totalBlast)
-			assert.is_equal(2500 * 0.5, r.items[4].totalBlast)
-		end)
-
-		it("is distributed fairly (poison)", function()
-			local boss = initializeMockBossMonster()
-
-			SetCFG('TABLE_SORT_IN_ORDER', true)
-
-			addDamageToBoss(boss, 0, 0, 100, 0, 100, 4)
-			addDamageToBoss(boss, 1, 0, 100, 0, 100, 4)
-			addDamageToBoss(boss, 2, 0, 100, 0, 200, 4)
-			addDamageToBoss(boss, 3, 0, 100, 0, 400, 4)
-
-			calculateAilmentContrib(boss, 4)
-
-			assert.is_equal(0.125, boss.ailment.share[4][0])
-			assert.is_equal(0.125, boss.ailment.share[4][1])
-			assert.is_equal(0.25, boss.ailment.share[4][2])
-			assert.is_equal(0.5, boss.ailment.share[4][3])
-
-			addAilmentDamageToBoss(boss, 4, 20)
-			addAilmentDamageToBoss(boss, 4, 20)
-			addAilmentDamageToBoss(boss, 4, 20)
-			addAilmentDamageToBoss(boss, 4, 20)
-			addAilmentDamageToBoss(boss, 4, 20)
-
-			generateReport(REPORT_MONSTERS)
-
-			local r = DAMAGE_REPORTS[1]
-
-			assert.is_equal(12.5, r.items[1].totalPoison)
-			assert.is_equal(12.5, r.items[2].totalPoison)
-			assert.is_equal(25, r.items[3].totalPoison)
-			assert.is_equal(50, r.items[4].totalPoison)
-		end)
-
-	end)
-
-	describe("damage counter", function()
-
-		it("is empty when initialized", function()
-			local c = initializeDamageCounter()
-
-			assert.is_equal(c.physical, 0)
-			assert.is_equal(c.elemental, 0)
-			assert.is_equal(c.condition, 0)
-
-			local total = getTotalDamageForDamageCounter(c)
-
-			assert.is_equal(0, total)
-		end)
-
-		it("merges correctly", function ()
-			local a = initializeDamageCounter()
-			local b = initializeDamageCounter()
-			local result = initializeDamageCounter()
-
-			a.physical = 100
-			b.physical = 100
-			result.physical = 200
-
-			a.elemental = 405
-			b.elemental = 5
-			result.elemental = 410
-
-			a.condition = 999
-			b.condition = 3
-			result.condition = 1002
-
-			local actual = mergeDamageCounters(a,b)
-
-			assert.are_same(result, actual)
-		end)
-
-		it("shows the right total", function()
-			local c = initializeDamageCounter()
-
-			c.physical = 100
-			c.elemental = 212
-			c.condition = 323
-
-			local actual = getTotalDamageForDamageCounter(c)
-
-			assert.is_equal(100 + 212, actual)
-		end)
-
-	end)
-
-	describe("damage source", function()
-
-		it("is empty when initialized", function()
-			local s = initializeDamageSource()
-
-			assert.is_nil(s.id)
-		end)
-
+		CORE.SetCFG('CONDITION_LIKE_DAMAGE', false)
 	end)
 
 	describe("report", function()
 
 		it("includes condition when it should", function()
 			-- config
-			SetCFG('CONDITION_LIKE_DAMAGE', true)
+			CORE.SetCFG('CONDITION_LIKE_DAMAGE', true)
 
-			local r = initializeReport()
+			local r = REPORT.initializeReport()
 			local b = initializeMockBossMonster()
 
 			local s = {}
-			s[1] = initializeDamageSource(1)
-			s[1].counters['weapon'] = initializeDamageCounter()
+			s[1] = DATA.initializeDamageSource(1)
+			s[1].counters['weapon'] = DATA.initializeDamageCounter()
 			s[1].counters['weapon'].physical = 100
 			s[1].counters['weapon'].elemental = 200
 			s[1].counters['weapon'].condition = 400
 
 			b.damageSources = s
 
-			mergeBossIntoReport(r, b)
+			REPORT.mergeBossIntoReport(r, b)
 
 			local expected = 700
 			local actual = r.items[1].total
@@ -406,21 +70,21 @@ describe("mhrise-coavins-dps", function()
 
 		it("doesn't include condition when it shouldn't", function()
 			-- config
-			SetCFG('CONDITION_LIKE_DAMAGE', false)
+			CORE.SetCFG('CONDITION_LIKE_DAMAGE', false)
 
-			local r = initializeReport()
+			local r = REPORT.initializeReport()
 			local b = initializeMockBossMonster()
 
 			local s = {}
-			s[1] = initializeDamageSource(1)
-			s[1].counters['weapon'] = initializeDamageCounter()
+			s[1] = DATA.initializeDamageSource(1)
+			s[1].counters['weapon'] = DATA.initializeDamageCounter()
 			s[1].counters['weapon'].physical = 100
 			s[1].counters['weapon'].elemental = 200
 			s[1].counters['weapon'].condition = 400
 
 			b.damageSources = s
 
-			mergeBossIntoReport(r, b)
+			REPORT.mergeBossIntoReport(r, b)
 
 			local expected = 300
 			local actual = r.items[1].total
@@ -430,32 +94,32 @@ describe("mhrise-coavins-dps", function()
 		end)
 
 		it("merges a boss correctly", function()
-			local r = initializeReport()
+			local r = REPORT.initializeReport()
 			local b = initializeMockBossMonster()
 
 			local s = {}
-			s[1] = initializeDamageSource(1)
-			s[1].counters['weapon'] = initializeDamageCounter()
+			s[1] = DATA.initializeDamageSource(1)
+			s[1].counters['weapon'] = DATA.initializeDamageCounter()
 			s[1].counters['weapon'].physical = 100
 
 			b.damageSources = s
 
 			local actual = 100
 
-			mergeBossIntoReport(r, b)
+			REPORT.mergeBossIntoReport(r, b)
 
 			assert.is_equal(actual, r.totalDamage)
 
 		end)
 
 		it("merges two bosses correctly", function()
-			local r = initializeReport()
+			local r = REPORT.initializeReport()
 			local boss1 = initializeMockBossMonster()
 			local boss2 = initializeMockBossMonster()
 
 			local s1 = {}
-			s1[1] = initializeDamageSource(1)
-			s1[1].counters['weapon'] = initializeDamageCounter()
+			s1[1] = DATA.initializeDamageSource(1)
+			s1[1].counters['weapon'] = DATA.initializeDamageCounter()
 			s1[1].counters['weapon'].physical = 100
 			s1[1].counters['weapon'].elemental = 200
 			s1[1].counters['weapon'].condition = 400
@@ -463,16 +127,16 @@ describe("mhrise-coavins-dps", function()
 			boss1.damageSources = s1
 
 			local s2 = {}
-			s2[1] = initializeDamageSource(1)
-			s2[1].counters['weapon'] = initializeDamageCounter()
+			s2[1] = DATA.initializeDamageSource(1)
+			s2[1].counters['weapon'] = DATA.initializeDamageCounter()
 			s2[1].counters['weapon'].physical = 800
 			s2[1].counters['weapon'].elemental = 1600
 			s2[1].counters['weapon'].condition = 3200
 
 			boss2.damageSources = s2
 
-			mergeBossIntoReport(r, boss1)
-			mergeBossIntoReport(r, boss2)
+			REPORT.mergeBossIntoReport(r, boss1)
+			REPORT.mergeBossIntoReport(r, boss2)
 
 			local expected = 100 + 200 + 800 + 1600
 			local actual = r.totalDamage
@@ -482,14 +146,14 @@ describe("mhrise-coavins-dps", function()
 		end)
 
 		it("merges three bosses correctly", function()
-			local r = initializeReport()
+			local r = REPORT.initializeReport()
 			local boss1 = initializeMockBossMonster()
 			local boss2 = initializeMockBossMonster()
 			local boss3 = initializeMockBossMonster()
 
 			local s1 = {}
-			s1[1] = initializeDamageSource(1)
-			s1[1].counters['weapon'] = initializeDamageCounter()
+			s1[1] = DATA.initializeDamageSource(1)
+			s1[1].counters['weapon'] = DATA.initializeDamageCounter()
 			s1[1].counters['weapon'].physical = 1
 			s1[1].counters['weapon'].elemental = 2
 			s1[1].counters['weapon'].condition = 4
@@ -497,8 +161,8 @@ describe("mhrise-coavins-dps", function()
 			boss1.damageSources = s1
 
 			local s2 = {}
-			s2[1] = initializeDamageSource(1)
-			s2[1].counters['weapon'] = initializeDamageCounter()
+			s2[1] = DATA.initializeDamageSource(1)
+			s2[1].counters['weapon'] = DATA.initializeDamageCounter()
 			s2[1].counters['weapon'].physical = 8
 			s2[1].counters['weapon'].elemental = 16
 			s2[1].counters['weapon'].condition = 32
@@ -506,15 +170,15 @@ describe("mhrise-coavins-dps", function()
 			boss2.damageSources = s2
 
 			local s3 = {}
-			s3[1] = initializeDamageSource(1)
-			s3[1].counters['weapon'] = initializeDamageCounter()
-			s3[1].counters['otomo'] = initializeDamageCounter()
+			s3[1] = DATA.initializeDamageSource(1)
+			s3[1].counters['weapon'] = DATA.initializeDamageCounter()
+			s3[1].counters['otomo'] = DATA.initializeDamageCounter()
 
 			boss3.damageSources = s3
 
-			mergeBossIntoReport(r, boss1)
-			mergeBossIntoReport(r, boss2)
-			mergeBossIntoReport(r, boss3)
+			REPORT.mergeBossIntoReport(r, boss1)
+			REPORT.mergeBossIntoReport(r, boss2)
+			REPORT.mergeBossIntoReport(r, boss3)
 
 			local expected = 1 + 2 + 8 + 16
 			local actual = r.totalDamage
@@ -526,14 +190,14 @@ describe("mhrise-coavins-dps", function()
 		it("generates from boss cache correctly", function()
 			local boss = initializeMockBossMonster()
 
-			SetCFG('CONDITION_LIKE_DAMAGE', false)
+			CORE.SetCFG('CONDITION_LIKE_DAMAGE', false)
 
-			addDamageToBoss(boss, 1, 0, 100, 200, 400)
-			addDamageToBoss(boss, 2, 0, 0, 800, 0)
+			DATA.addDamageToBoss(boss, 1, 0, 100, 200, 400)
+			DATA.addDamageToBoss(boss, 2, 0, 0, 800, 0)
 
-			generateReport(REPORT_MONSTERS)
+			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
-			local r = DAMAGE_REPORTS[1]
+			local r = STATE.DAMAGE_REPORTS[1]
 
 			assert.is_equal(r.totalDamage, 1100)
 			assert.is_equal(r.topDamage, 800)
@@ -542,15 +206,15 @@ describe("mhrise-coavins-dps", function()
 		it("includes otomo when they are merged", function()
 			local boss = initializeMockBossMonster()
 
-			SetCFG('CONDITION_LIKE_DAMAGE', false)
-			SetCFG('COMBINE_OTOMO_WITH_HUNTER', true)
+			CORE.SetCFG('CONDITION_LIKE_DAMAGE', false)
+			CORE.SetCFG('COMBINE_OTOMO_WITH_HUNTER', true)
 
-			addDamageToBoss(boss, 1, 0, 1, 2, 4)
-			addDamageToBoss(boss, 1, 19, 8, 16, 32)
+			DATA.addDamageToBoss(boss, 1, 0, 1, 2, 4)
+			DATA.addDamageToBoss(boss, 1, 19, 8, 16, 32)
 
-			generateReport(REPORT_MONSTERS)
+			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
-			local r = DAMAGE_REPORTS[1]
+			local r = STATE.DAMAGE_REPORTS[1]
 
 			local expected = 1+2+8+16
 			local actual = r.totalDamage
@@ -561,16 +225,16 @@ describe("mhrise-coavins-dps", function()
 		it("includes otomo when they are unmerged", function()
 			local boss = initializeMockBossMonster()
 
-			SetCFG('CONDITION_LIKE_DAMAGE', false)
-			SetCFG('COMBINE_OTOMO_WITH_HUNTER', false)
-			SetReportOtomo(true)
+			CORE.SetCFG('CONDITION_LIKE_DAMAGE', false)
+			CORE.SetCFG('COMBINE_OTOMO_WITH_HUNTER', false)
+			CORE.SetReportOtomo(true)
 
-			addDamageToBoss(boss, 0, 0, 1, 2, 4)
-			addDamageToBoss(boss, 0, 19, 8, 16, 32)
+			DATA.addDamageToBoss(boss, 0, 0, 1, 2, 4)
+			DATA.addDamageToBoss(boss, 0, 19, 8, 16, 32)
 
-			generateReport(REPORT_MONSTERS)
+			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
-			local r = DAMAGE_REPORTS[1]
+			local r = STATE.DAMAGE_REPORTS[1]
 
 			local expected = 1+2+8+16
 			local actual = r.totalDamage
@@ -580,17 +244,17 @@ describe("mhrise-coavins-dps", function()
 
 		it("excludes otomo when they are filtered out", function()
 			-- set config
-			SetCFG('COMBINE_OTOMO_WITH_HUNTER', false)
-			SetReportOtomo(false)
+			CORE.SetCFG('COMBINE_OTOMO_WITH_HUNTER', false)
+			CORE.SetReportOtomo(false)
 
 			local boss = initializeMockBossMonster()
 
-			addDamageToBoss(boss, 0, 0, 1, 2)
-			addDamageToBoss(boss, 0, 19, 8, 16)
+			DATA.addDamageToBoss(boss, 0, 0, 1, 2)
+			DATA.addDamageToBoss(boss, 0, 19, 8, 16)
 
-			generateReport(REPORT_MONSTERS)
+			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
-			local r = DAMAGE_REPORTS[1]
+			local r = STATE.DAMAGE_REPORTS[1]
 
 			local expected = 1+2
 			local actual = r.totalDamage
@@ -601,8 +265,8 @@ describe("mhrise-coavins-dps", function()
 		it("generates a full party correctly (merged pets)", function()
 			local boss = initializeMockBossMonster()
 
-			SetCFG('CONDITION_LIKE_DAMAGE', false)
-			SetCFG('COMBINE_OTOMO_WITH_HUNTER', true)
+			CORE.SetCFG('CONDITION_LIKE_DAMAGE', false)
+			CORE.SetCFG('COMBINE_OTOMO_WITH_HUNTER', true)
 
 			local damagesPhysical = {}
 			table.insert(damagesPhysical, 100)
@@ -633,37 +297,37 @@ describe("mhrise-coavins-dps", function()
 			-- 3825 including condition
 
 			for index,_ in ipairs(damagesPhysical) do
-				addDamageToBoss(boss, 0, 0,
+				DATA.addDamageToBoss(boss, 0, 0,
 				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-				addDamageToBoss(boss, 1, 0,
+				DATA.addDamageToBoss(boss, 1, 0,
 				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-				addDamageToBoss(boss, 2, 0,
+				DATA.addDamageToBoss(boss, 2, 0,
 				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-				addDamageToBoss(boss, 3, 0,
+				DATA.addDamageToBoss(boss, 3, 0,
 				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-				addDamageToBoss(boss, 0, 19,
+				DATA.addDamageToBoss(boss, 0, 19,
 				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-				addDamageToBoss(boss, 1, 19,
+				DATA.addDamageToBoss(boss, 1, 19,
 				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-				addDamageToBoss(boss, 2, 19,
+				DATA.addDamageToBoss(boss, 2, 19,
 				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-				addDamageToBoss(boss, 3, 19,
+				DATA.addDamageToBoss(boss, 3, 19,
 				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 			end
 
-			generateReport(REPORT_MONSTERS)
+			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
-			local r = DAMAGE_REPORTS[1]
+			local r = STATE.DAMAGE_REPORTS[1]
 
 			assert.is_equal(1950 * 8, r.totalDamage)
 			assert.is_equal(1950 * 2, r.topDamage)
 
 			-- and also with condition included
-			SetCFG('CONDITION_LIKE_DAMAGE', true)
+			CORE.SetCFG('CONDITION_LIKE_DAMAGE', true)
 
-			generateReport(REPORT_MONSTERS)
+			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
-			r = DAMAGE_REPORTS[1]
+			r = STATE.DAMAGE_REPORTS[1]
 
 			assert.is_equal(3825 * 8, r.totalDamage)
 			assert.is_equal(3825 * 2, r.topDamage)
@@ -674,16 +338,16 @@ describe("mhrise-coavins-dps", function()
 	it("doesn't retain information from old reports", function()
 		local boss = initializeMockBossMonster()
 
-		addDamageToBoss(boss, 1, 0, 100)
+		DATA.addDamageToBoss(boss, 1, 0, 100)
 
-		generateReport(REPORT_MONSTERS)
-		local r = DAMAGE_REPORTS[1]
+		REPORT.generateReport(STATE.REPORT_MONSTERS)
+		local r = STATE.DAMAGE_REPORTS[1]
 
 		assert.is_equal(r.totalDamage, 100)
 		assert.is_equal(r.topDamage, 100)
 
-		generateReport(REPORT_MONSTERS)
-		r = DAMAGE_REPORTS[1]
+		REPORT.generateReport(STATE.REPORT_MONSTERS)
+		r = STATE.DAMAGE_REPORTS[1]
 
 		assert.is_equal(r.totalDamage, 100)
 		assert.is_equal(r.topDamage, 100)
@@ -721,40 +385,40 @@ describe("mhrise-coavins-dps", function()
 		-- 3825 including condition
 
 		for index,_ in ipairs(damagesPhysical) do
-			addDamageToBoss(boss, 0, 0,
+			DATA.addDamageToBoss(boss, 0, 0,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			addDamageToBoss(boss, 1, 0,
+			DATA.addDamageToBoss(boss, 1, 0,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			addDamageToBoss(boss, 2, 0,
+			DATA.addDamageToBoss(boss, 2, 0,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			addDamageToBoss(boss, 3, 0,
+			DATA.addDamageToBoss(boss, 3, 0,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			addDamageToBoss(boss, 0, 19,
+			DATA.addDamageToBoss(boss, 0, 19,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			addDamageToBoss(boss, 1, 19,
+			DATA.addDamageToBoss(boss, 1, 19,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			addDamageToBoss(boss, 2, 19,
+			DATA.addDamageToBoss(boss, 2, 19,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			addDamageToBoss(boss, 3, 19,
+			DATA.addDamageToBoss(boss, 3, 19,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 		end
 
-		SetCFG('CONDITION_LIKE_DAMAGE', false)
-		SetCFG('COMBINE_OTOMO_WITH_HUNTER', false)
-		SetReportOtomo(true)
+		CORE.SetCFG('CONDITION_LIKE_DAMAGE', false)
+		CORE.SetCFG('COMBINE_OTOMO_WITH_HUNTER', false)
+		CORE.SetReportOtomo(true)
 
-		generateReport(REPORT_MONSTERS)
+		REPORT.generateReport(STATE.REPORT_MONSTERS)
 
-		local r = DAMAGE_REPORTS[1]
+		local r = STATE.DAMAGE_REPORTS[1]
 
 		assert.is_equal(1950 * 8, r.totalDamage)
 		assert.is_equal(1950, r.topDamage)
 
-		SetCFG('CONDITION_LIKE_DAMAGE', true)
+		CORE.SetCFG('CONDITION_LIKE_DAMAGE', true)
 
-		generateReport(REPORT_MONSTERS)
+		REPORT.generateReport(STATE.REPORT_MONSTERS)
 
-		r = DAMAGE_REPORTS[1]
+		r = STATE.DAMAGE_REPORTS[1]
 
 		assert.is_equal(3825 * 8, r.totalDamage)
 		assert.is_equal(3825, r.topDamage)
@@ -783,42 +447,42 @@ describe("mhrise-coavins-dps", function()
 		end
 
 		for index,_ in ipairs(damagesPhysical) do
-			addDamageToBoss(boss, 0, 0,
+			DATA.addDamageToBoss(boss, 0, 0,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			addDamageToBoss(boss, 1, 0,
+			DATA.addDamageToBoss(boss, 1, 0,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			addDamageToBoss(boss, 2, 0,
+			DATA.addDamageToBoss(boss, 2, 0,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			addDamageToBoss(boss, 3, 0,
+			DATA.addDamageToBoss(boss, 3, 0,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			addDamageToBoss(boss, 0, 19,
+			DATA.addDamageToBoss(boss, 0, 19,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			addDamageToBoss(boss, 1, 19,
+			DATA.addDamageToBoss(boss, 1, 19,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			addDamageToBoss(boss, 2, 19,
+			DATA.addDamageToBoss(boss, 2, 19,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			addDamageToBoss(boss, 3, 19,
+			DATA.addDamageToBoss(boss, 3, 19,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 		end
 
 		expected = expected * 8
 		expectedCondition = expectedCondition * 8
 
-		SetCFG('CONDITION_LIKE_DAMAGE', false)
-		SetCFG('COMBINE_OTOMO_WITH_HUNTER', false)
-		SetReportOtomo(true)
+		CORE.SetCFG('CONDITION_LIKE_DAMAGE', false)
+		CORE.SetCFG('COMBINE_OTOMO_WITH_HUNTER', false)
+		CORE.SetReportOtomo(true)
 
-		generateReport(REPORT_MONSTERS)
+		REPORT.generateReport(STATE.REPORT_MONSTERS)
 
-		local r = DAMAGE_REPORTS[1]
+		local r = STATE.DAMAGE_REPORTS[1]
 
 		assert.is_equal(expected, r.totalDamage)
 
-		SetCFG('CONDITION_LIKE_DAMAGE', true)
+		CORE.SetCFG('CONDITION_LIKE_DAMAGE', true)
 
-		generateReport(REPORT_MONSTERS)
+		REPORT.generateReport(STATE.REPORT_MONSTERS)
 
-		r = DAMAGE_REPORTS[1]
+		r = STATE.DAMAGE_REPORTS[1]
 
 		assert.is_equal(expected + expectedCondition, r.totalDamage)
 	end)
@@ -828,14 +492,14 @@ describe("mhrise-coavins-dps", function()
 		it("is calculated correctly for one boss", function()
 			local boss = initializeMockBossMonster()
 
-			addDamageToBoss(boss, 1, 0, 750, 250, 0)
+			DATA.addDamageToBoss(boss, 1, 0, 750, 250, 0)
 
 			boss.timeline[0] = true
 			boss.timeline[100] = false
 
-			generateReport(REPORT_MONSTERS)
+			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
-			local r = DAMAGE_REPORTS[1]
+			local r = STATE.DAMAGE_REPORTS[1]
 
 			local expected = 10.0
 			local actual = r.items[1].dps.report
@@ -847,17 +511,17 @@ describe("mhrise-coavins-dps", function()
 			local boss1 = initializeMockBossMonster()
 			local boss2 = initializeMockBossMonster()
 
-			addDamageToBoss(boss1, 1, 0, 750, 250, 0)
-			addDamageToBoss(boss2, 1, 0, 250, 250, 0)
+			DATA.addDamageToBoss(boss1, 1, 0, 750, 250, 0)
+			DATA.addDamageToBoss(boss2, 1, 0, 250, 250, 0)
 
 			boss1.timeline[0] = true
 			boss1.timeline[100] = false
 			boss2.timeline[50] = true
 			boss2.timeline[150] = false
 
-			generateReport(REPORT_MONSTERS)
+			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
-			local r = DAMAGE_REPORTS[1]
+			local r = STATE.DAMAGE_REPORTS[1]
 
 			local expected = (750+250+250+250) / 150.0
 			local actual = r.items[1].dps.report
@@ -870,9 +534,9 @@ describe("mhrise-coavins-dps", function()
 			local boss2 = initializeMockBossMonster()
 			local boss3 = initializeMockBossMonster()
 
-			addDamageToBoss(boss1, 1, 0, 750, 250, 0)
-			addDamageToBoss(boss2, 1, 0, 250, 250, 0)
-			addDamageToBoss(boss3, 1, 0, 616, 19842, 0)
+			DATA.addDamageToBoss(boss1, 1, 0, 750, 250, 0)
+			DATA.addDamageToBoss(boss2, 1, 0, 250, 250, 0)
+			DATA.addDamageToBoss(boss3, 1, 0, 616, 19842, 0)
 
 			boss1.timeline[0] = true
 			boss1.timeline[100] = false
@@ -881,9 +545,9 @@ describe("mhrise-coavins-dps", function()
 			boss3.timeline[200] = true
 			boss3.timeline[205] = false
 
-			generateReport(REPORT_MONSTERS)
+			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
-			local r = DAMAGE_REPORTS[1]
+			local r = STATE.DAMAGE_REPORTS[1]
 
 			local expected = (750 + 250 + 250 + 250 + 616 + 19842) / (100 + 10 + 5)
 			local actual = r.items[1].dps.report
@@ -895,17 +559,17 @@ describe("mhrise-coavins-dps", function()
 			-- config
 			local currentTime = 70
 			local startTime = 50
-			SetQuestDuration(currentTime)
+			CORE.SetQuestDuration(currentTime)
 
 			local boss1 = initializeMockBossMonster()
 
-			addDamageToBoss(boss1, 1, 0, 100, 0, 0)
+			DATA.addDamageToBoss(boss1, 1, 0, 100, 0, 0)
 
 			boss1.timeline[startTime] = true
 
-			generateReport(REPORT_MONSTERS)
+			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
-			local r= DAMAGE_REPORTS[1]
+			local r= STATE.DAMAGE_REPORTS[1]
 
 			local expected = 100 / (currentTime - startTime)
 			local actual = r.items[1].dps.report
@@ -915,21 +579,21 @@ describe("mhrise-coavins-dps", function()
 
 		it("is calculated correctly while still in combat but one monster left", function()
 			-- config
-			SetQuestDuration(100)
+			CORE.SetQuestDuration(100)
 
 			local boss1 = initializeMockBossMonster()
 			local boss2 = initializeMockBossMonster()
 
-			addDamageToBoss(boss1, 1, 0, 100, 0, 0)
-			addDamageToBoss(boss1, 1, 0, 200, 0, 0)
+			DATA.addDamageToBoss(boss1, 1, 0, 100, 0, 0)
+			DATA.addDamageToBoss(boss1, 1, 0, 200, 0, 0)
 
 			boss1.timeline[60] = true
 			boss2.timeline[80] = true
 			boss1.timeline[90] = false
 
-			generateReport(REPORT_MONSTERS)
+			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
-			local r= DAMAGE_REPORTS[1]
+			local r= STATE.DAMAGE_REPORTS[1]
 
 			local expected = 300 / 40
 			local actual = r.items[1].dps.report

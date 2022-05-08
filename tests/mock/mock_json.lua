@@ -1,4 +1,5 @@
-local jsonlua = require 'tests/json'
+local jsonlua = require 'tests.mock.json'
+
 json = {}
 
 json.load_file = function(filename)

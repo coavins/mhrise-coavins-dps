@@ -1,6 +1,12 @@
+package.path = package.path .. ';tests/?.lua'
+
+require 'mock.mock_d2d'
+require 'mock.mock_fs'
+require 'mock.mock_json'
+
 --#region type definition
 
-function createMockTypeDefinition()
+local function createMockTypeDefinition()
 	local mockTypeDefinition = {}
 
 	function mockTypeDefinition:get_method(name)
