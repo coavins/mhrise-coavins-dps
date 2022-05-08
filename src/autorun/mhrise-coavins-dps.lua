@@ -1,6 +1,16 @@
 -- dps meter for monster hunter rise
 -- written by github.com/coavins
 
+-- reframework-d2d is used to make the overlay look better and support CJK characters
+-- If you change this value to false, the script will not attempt to load or use d2d
+-- This can be useful in environments where the plugin doesn't work, like Proton
+local USE_PLUGIN_D2D = true
+
+-- auto-detect missing plugin
+if not d2d then
+	USE_PLUGIN_D2D = false
+end
+
 --#region enums
 
 -- list of available columns for the table
@@ -347,9 +357,42 @@ local SNOW_ENEMY_ENEMYCHARACTERBASE_UPDATE = nil
 
 --#region Helper functions
 
+-- drawing
+local function rgb_to_bgr(color)
+	local blue  = (color >>  0) & 0xFF
+	local green = (color >>  8) & 0xFF
+	local red   = (color >> 16) & 0xFF
+	local alpha = (color >> 24) & 0xFF
+	return (alpha << 24) | (blue << 16) | (green << 8) | (red << 0)
+end
+
+local function draw_filled_rect(x, y, w, h, color)
+	if USE_PLUGIN_D2D then
+		d2d.filled_rect(x, y, w, h, color)
+	else
+		draw.filled_rect(x, y, w, h, rgb_to_bgr(color))
+	end
+end
+
+local function draw_outline_rect(x, y, w, h, thickness, color)
+	if USE_PLUGIN_D2D then
+		d2d.outline_rect(x, y, w, h, thickness, color)
+	else
+		draw.outline_rect(x, y, w, h, rgb_to_bgr(color))
+	end
+end
+
+local function draw_text(text, x, y, color)
+	if USE_PLUGIN_D2D then
+		d2d.text(FONT, text, x, y, color)
+	else
+		draw.text(text, x, y, rgb_to_bgr(color))
+	end
+end
+
 local function debug_line(text)
 	DEBUG_Y = DEBUG_Y + 20
-	d2d.text(FONT, text, 0, DEBUG_Y, 0xCFAFAFAF)
+	draw_text(text, 0, DEBUG_Y, 0xCFAFAFAF)
 end
 
 local function makeTableEmpty(table)
@@ -1790,9 +1833,9 @@ local function drawRichText(text, x, y, colorText, colorShadow)
 		local scale = CFG('TABLE_SCALE')
 		local offsetX = CFG('TEXT_SHADOW_OFFSET_X') * scale
 		local offsetY = CFG('TEXT_SHADOW_OFFSET_Y') * scale
-		d2d.text(FONT, text, x + offsetX, y + offsetY, colorShadow)
+		draw_text(text, x + offsetX, y + offsetY, colorShadow)
 	end
-	d2d.text(FONT, text, x, y, colorText)
+	draw_text(text, x, y, colorText)
 end
 
 local function drawRichDamageBar(item, x, y, maxWidth, h, colorPhysical, colorElemental)
@@ -1818,45 +1861,45 @@ local function drawRichDamageBar(item, x, y, maxWidth, h, colorPhysical, colorEl
 
 		-- draw physical damage
 		w = (item.totalPhysical / item.total) * maxWidth
-		d2d.fill_rect(x, y, w, h, colorPhysical)
+		draw_filled_rect(x, y, w, h, colorPhysical)
 		x = x + w
 
 		-- draw elemental damage
 		w = (item.totalElemental / item.total) * maxWidth
-		d2d.fill_rect(x, y, w, h, colorElemental)
+		draw_filled_rect(x, y, w, h, colorElemental)
 		x = x + w
 
 		if CFG('CONDITION_LIKE_DAMAGE') then
 			-- draw ailment damage
 			w = (item.totalCondition / item.total) * maxWidth
-			d2d.fill_rect(x, y, w, h, colorCondition)
+			draw_filled_rect(x, y, w, h, colorCondition)
 			x = x + w
 		end
 
 		-- draw poison damage
 		w = (item.totalPoison / item.total) * maxWidth
-		d2d.fill_rect(x, y, w, h, colorPoison)
+		draw_filled_rect(x, y, w, h, colorPoison)
 		x = x + w
 
 		-- draw blast damage
 		w = (item.totalBlast / item.total) * maxWidth
-		d2d.fill_rect(x, y, w, h, colorBlast)
+		draw_filled_rect(x, y, w, h, colorBlast)
 		x = x + w
 
 		-- draw otomo damage
 		w = (item.totalOtomo / item.total) * maxWidth
-		d2d.fill_rect(x, y, w, h, colorOtomo)
+		draw_filled_rect(x, y, w, h, colorOtomo)
 		x = x + w
 
 		if remainder > 0 then
 			-- draw whatever's left, just in case
 			w = (remainder / item.total) * maxWidth
-			d2d.fill_rect(x, y, w, h, colorOther)
+			draw_filled_rect(x, y, w, h, colorOther)
 		end
 	else
 		-- draw all damage
 		w = maxWidth
-		d2d.fill_rect(x, y, w, h, colorPhysical)
+		draw_filled_rect(x, y, w, h, colorPhysical)
 	end
 end
 
@@ -1978,11 +2021,11 @@ local function drawReportItem(item, x, y, width, height)
 	if CFG('USE_MINIMAL_BARS') then
 		-- bar is overlaid on top of the color block
 		-- color block
-		d2d.fill_rect(x, y, colorBlockWidth, height, elementalColor)
+		draw_filled_rect(x, y, colorBlockWidth, height, elementalColor)
 
 		-- damage bar
 		local damageBarWidth = colorBlockWidth * damageBarWidthMultiplier
-		d2d.fill_rect(x, y, damageBarWidth, height, combatantColor)
+		draw_filled_rect(x, y, damageBarWidth, height, combatantColor)
 
 		-- hr
 		if (CFG('DRAW_BAR_REVEAL_HR') and item.rank)
@@ -1999,12 +2042,12 @@ local function drawReportItem(item, x, y, width, height)
 		-- bar takes up the entire width of the table
 		if CFG('DRAW_TABLE_BACKGROUND') then
 			-- draw background
-			d2d.fill_rect(x, y, width, height, COLOR('BAR_BG'))
+			draw_filled_rect(x, y, width, height, COLOR('BAR_BG'))
 		end
 
 		if CFG('DRAW_BAR_COLORBLOCK') then
 			-- color block
-			d2d.fill_rect(x, y, colorBlockWidth, height, combatantColor)
+			draw_filled_rect(x, y, colorBlockWidth, height, combatantColor)
 
 			-- hr
 			if (CFG('DRAW_BAR_REVEAL_HR') and item.rank)
@@ -2042,7 +2085,7 @@ local function drawReportItem(item, x, y, width, height)
 
 	if CFG('DRAW_BAR_OUTLINES') then
 		-- draw outline
-		d2d.outline_rect(x, y, width, height, 2, COLOR('BAR_OUTLINE'))
+		draw_outline_rect(x, y, width, height, 2, COLOR('BAR_OUTLINE'))
 	end
 end
 
@@ -2073,7 +2116,7 @@ local function drawReport(index)
 		-- title bar
 		if CFG('DRAW_TITLE_BACKGROUND') then
 			-- title background
-			d2d.fill_rect(origin_x, origin_y, tableWidth, titleHeight, COLOR('TITLE_BG'))
+			draw_filled_rect(origin_x, origin_y, tableWidth, titleHeight, COLOR('TITLE_BG'))
 		end
 
 		if CFG('DRAW_TITLE_TEXT') then
@@ -2138,7 +2181,7 @@ local function drawReport(index)
 
 		if CFG('DRAW_HEADER_BACKGROUND') then
 			-- background
-			d2d.fill_rect(origin_x, y, tableWidth, headerHeight, COLOR('TITLE_BG'))
+			draw_filled_rect(origin_x, y, tableWidth, headerHeight, COLOR('TITLE_BG'))
 		end
 
 		if CFG('DRAW_BAR_COLORBLOCK') and CFG('DRAW_BAR_REVEAL_HR') then
@@ -2189,7 +2232,7 @@ local function drawReport(index)
 			y = y + headerHeight * dir -- skip header row
 		end
 
-		d2d.text(FONT, 'No data', x, y, COLOR('GRAY'))
+		draw_text('No data', x, y, COLOR('GRAY'))
 	end
 
 	-- draw report items
@@ -2571,7 +2614,11 @@ end
 
 local function showTextSection()
 	showTextboxForSetting('FONT_FAMILY')
-	imgui.text('Save changes and RESET SCRIPTS to apply changes to font')
+	if not USE_PLUGIN_D2D then
+		imgui.text('Requires plugin: reframework-d2d')
+	else
+		imgui.text('Save changes and RESET SCRIPTS to apply changes to font')
+	end
 
 	imgui.new_line()
 
@@ -2848,6 +2895,12 @@ local function DrawWindowSettings()
 	end
 
 	showCheckboxForSetting('AUTO_SAVE')
+
+	if not USE_PLUGIN_D2D then
+		imgui.new_line()
+		imgui.text('Missing plugin: reframework-d2d')
+		imgui.text('Some features are not available')
+	end
 
 	-- Presets
 	imgui.new_line()
@@ -3402,6 +3455,11 @@ local function dpsFrame()
 	elseif IS_IN_TRAININGHALL then
 		dpsUpdateOccasionally(QUEST_DURATION)
 	end
+
+	-- if d2d is not enabled
+	if not USE_PLUGIN_D2D then
+		dpsDraw()
+	end
 end
 
 re.on_frame(function()
@@ -3486,10 +3544,16 @@ for key,_ in pairs(ENUM_KEYBOARD_MODIFIERS) do
 	CURRENTLY_HELD_MODIFIERS[key] = false
 end
 
--- register with d2d plugin
-d2d.register(function()
-	FONT = d2d.create_font(CFG('FONT_FAMILY'), 14 * CFG('TABLE_SCALE'))
-end, dpsDraw)
+if USE_PLUGIN_D2D then
+	-- register font and draw method with d2d plugin
+	d2d.register(function()
+		FONT = d2d.create_font(CFG('FONT_FAMILY'), 14 * CFG('TABLE_SCALE'))
+	end, dpsDraw)
+end
+
+if not USE_PLUGIN_D2D then
+	log_info('reframework-d2d plugin is disabled')
+end
 
 log_info('init complete')
 
