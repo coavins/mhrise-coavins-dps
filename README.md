@@ -11,7 +11,13 @@ This mod is NOT intended to reveal any hidden information about monsters or give
 ## Prerequisites
 
 * [REFramework](https://github.com/praydog/REFramework)
-* [REFramework Direct2D](https://github.com/cursey/reframework-d2d)
+* [REFramework Direct2D](https://github.com/cursey/reframework-d2d) (optional)
+
+Make sure to install the latest version.
+
+### Supports Steam Deck / Proton!
+
+If you're trying to run this mod in a Proton environment, don't install Direct 2D. The overlay should fall back to a compatible renderer.
 
 ## Install
 
