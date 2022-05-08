@@ -23,6 +23,8 @@ MonsterHunterRise/
   reframework/
     autorun/
       mhrise-coavins-dps.lua
+      mhrise-coavins-dps/
+        <Numerous .lua files>
     data/
       mhrise-coavins-dps/
         colors/
