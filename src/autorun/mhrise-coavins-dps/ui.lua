@@ -17,6 +17,7 @@ this.showCheckboxForSetting = function(setting)
 	local changed, value = imgui.checkbox(CORE.TXT(setting), CORE.CFG(setting))
 	if changed then
 		CORE.SetCFG(setting, value)
+		STATE.NEEDS_UPDATE = true
 	end
 end
 
@@ -454,6 +455,7 @@ this.DrawWindowSettings = function()
 			CORE.SetCFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN', wantsIt)
 			if wantsIt then
 				DATA.initializeTestData()
+				STATE.NEEDS_UPDATE = true
 			else
 				DATA.clearTestData()
 				STATE.NEEDS_UPDATE = true
