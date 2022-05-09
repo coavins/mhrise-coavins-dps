@@ -30,7 +30,7 @@ local function dpsUpdate()
 	CORE.readScreenDimensions()
 
 	-- if we are in an active combat area
-	if STATE.IS_IN_QUEST or STATE.IS_IN_TRAININGHALL then
+	if STATE.IS_IN_QUEST or STATE.IS_IN_TRAININGHALL or STATE.NEEDS_UPDATE then
 		-- get player id
 		STATE.MY_PLAYER_ID = STATE.MANAGER.PLAYER:call("getMasterPlayerID")
 
