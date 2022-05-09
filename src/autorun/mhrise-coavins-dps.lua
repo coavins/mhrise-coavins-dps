@@ -187,11 +187,12 @@ re.on_draw_ui(function()
 		if STATE.DRAW_WINDOW_SETTINGS then
 			if CORE.CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN') then
 				DATA.initializeTestData()
+				STATE.NEEDS_UPDATE = true
 			end
 		else
 			if DATA.isInTestMode() then
 				DATA.clearTestData()
-				dpsUpdate()
+				STATE.NEEDS_UPDATE = true
 			end
 		end
 	end
