@@ -181,7 +181,11 @@ re.on_draw_ui(function()
 
 	imgui.same_line()
 
-	if imgui.button('open settings') then
+	local buttonText = 'open settings'
+	if STATE.DRAW_WINDOW_SETTINGS then
+		buttonText = 'close settings'
+	end
+	if imgui.button(buttonText) then
 		STATE.DRAW_WINDOW_SETTINGS = not STATE.DRAW_WINDOW_SETTINGS
 
 		if STATE.DRAW_WINDOW_SETTINGS then
