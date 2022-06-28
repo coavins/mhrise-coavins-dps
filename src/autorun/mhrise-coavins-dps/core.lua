@@ -364,6 +364,7 @@ this.cleanUpData = function(message)
 	this.makeTableEmpty(STATE.REPORT_MONSTERS)
 	this.makeTableEmpty(STATE.PLAYER_NAMES)
 	this.makeTableEmpty(STATE.PLAYER_TIMES)
+	this.makeTableEmpty(STATE.PLAYER_DEATHS)
 	this.log_debug('cleared data: ' .. message)
 end
 

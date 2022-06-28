@@ -198,6 +198,66 @@ this.tryHookSdk = function()
 			CORE.log_error('Failed to find snow.enemy.EnemyCharacterBase')
 		end
 	end
+	
+	if not STATE.QUEST_MANAGER_TYPE then
+		STATE.QUEST_MANAGER_TYPE = sdk.find_type_definition("snow.QuestManager")
+		if STATE.QUEST_MANAGER_TYPE then
+			STATE.QUEST_MANAGER_TYPE_RECV_FORFEIT = STATE.QUEST_MANAGER_TYPE:get_method("netRecvForfeit")
+			STATE.QUEST_MANAGER_TYPE_SEND_FORFEIT = STATE.QUEST_MANAGER_TYPE:get_method("netSendForfeit")
+			STATE.QUEST_MANAGER_TYPE_NOTIFY_DEATH = STATE.QUEST_MANAGER_TYPE:get_method("notifyDeath")
+			
+			sdk.hook(STATE.QUEST_MANAGER_TYPE_RECV_FORFEIT, --For NOT host
+				function(args) this.deaths(args, "recv") end,
+				function(retval) return retval end)
+				
+			sdk.hook(STATE.QUEST_MANAGER_TYPE_SEND_FORFEIT, --For host
+				function(args) this.deaths(args, "send") end,
+				function(retval) return retval end)
+			
+			sdk.hook(STATE.QUEST_MANAGER_TYPE_NOTIFY_DEATH, -- For Offline
+				function(args) this.deaths(args, "noti") end,
+				function(retval) return retval end)
+			
+		else
+			CORE.log_error('Failed to find snow.QuestManager')
+		end
+	end
+end
+
+this.deaths = function(args, t)
+	if not STATE.IS_ONLINE then --We reach here with notifyDeath when player is offline
+		if STATE.PLAYER_DEATHS[0] == nil then
+			STATE.PLAYER_DEATHS[0] = 1
+		else
+			STATE.PLAYER_DEATHS[0] = STATE.PLAYER_DEATHS[0] + 1
+		end
+		return
+	end
+	
+	if STATE.MY_PLAYER_ID == 0 then -- If player is host, netSendForfeit is always correct
+		if t == "send" then
+			local player_index = sdk.to_int64(args[3])
+			if STATE.PLAYER_DEATHS[player_index] == nil then
+				STATE.PLAYER_DEATHS[player_index] = 1
+			else
+				STATE.PLAYER_DEATHS[player_index] = STATE.PLAYER_DEATHS[player_index] + 1
+			end
+		end
+	else
+		if t == "recv" then
+			o = sdk.to_managed_object(args[3])
+			local player_index = o:get_field("_DeadPlIndex")
+			local isFromHost = o:get_field("_IsFromQuestHostPacket")
+			if isFromHost then -- Data is sent twice, 1 from host and 1 from dead player. Check if from host to only add 1
+				if STATE.PLAYER_DEATHS[player_index] == nil then
+					STATE.PLAYER_DEATHS[player_index] = 1
+				else
+					STATE.PLAYER_DEATHS[player_index] = STATE.PLAYER_DEATHS[player_index] + 1
+				end
+			end
+		end
+	end
+
 end
 
 return this
