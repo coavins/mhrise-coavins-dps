@@ -521,6 +521,7 @@ this.updatePlayers = function()
 		if oldNames[key] ~= value or (STATE.PLAYER_TIMES[key] and STATE.PLAYER_TIMES[key] > STATE.QUEST_DURATION) then
 			this.log_debug(string.format('updated quest time for player %d to %.0f', key, STATE.QUEST_DURATION))
 			STATE.PLAYER_TIMES[key] = STATE.QUEST_DURATION
+			STATE.PLAYER_DEATHS[key] = nil
 			-- TODO: clear this player's data
 		end
 	end
