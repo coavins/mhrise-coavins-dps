@@ -43,12 +43,14 @@ this.initializeReportItem = function(id)
 	item.playerNumber = nil
 	item.otomoNumber = nil
 	item.name = ''
+	item.carts = nil
 
 	-- initialize player number and name if we can
 	if item.id >= 0 and item.id <= 3 then
 		item.playerNumber = item.id + 1
 		item.name = STATE.PLAYER_NAMES[item.playerNumber]
 		item.rank = STATE.PLAYER_RANKS[item.playerNumber]
+		item.carts = STATE.PLAYER_DEATHS[item.playerNumber] or 0
 	elseif CORE.attackerIdIsOtomo(item.id) then
 		item.otomoNumber = CORE.getOtomoIdFromFakeAttackerId(item.id) + 1
 		item.name = STATE.OTOMO_NAMES[item.otomoNumber]

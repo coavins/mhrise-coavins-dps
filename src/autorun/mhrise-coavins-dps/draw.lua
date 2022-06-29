@@ -183,6 +183,8 @@ this.drawReportItemColumn = function(item, col, x, y)
 		text = string.format('%.0f', item.totalPhysical)
 	elseif col == 18 then -- element damage
 		text = string.format('%.0f', item.totalElemental)
+	elseif col == 19 and item.carts then -- carts
+		text = string.format('%.0f', item.carts)
 	end
 
 	this.drawRichText(text, x, y, CORE.COLOR('WHITE'), CORE.COLOR('BLACK'))

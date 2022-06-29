@@ -3,6 +3,7 @@ local this = {}
 -- list of available columns for the table
 -- the values here will appear in the header, if enabled
 -- only add new columns to the end of this table
+-- add it to TABLE_COLUMNS_OPTIONS_ID too
 this.TABLE_COLUMNS = {}
 this.TABLE_COLUMNS[1] = 'None'
 this.TABLE_COLUMNS[2] = 'HR'
@@ -22,6 +23,7 @@ this.TABLE_COLUMNS[15] = 'Weak%'
 this.TABLE_COLUMNS[16] = 'pDPS'
 this.TABLE_COLUMNS[17] = 'Physical'
 this.TABLE_COLUMNS[18] = 'Element'
+this.TABLE_COLUMNS[19] = 'Carts'
 
 -- list of columns sorted for the combo box
 this.TABLE_COLUMNS_OPTIONS_ID = {}
@@ -43,6 +45,7 @@ this.TABLE_COLUMNS_OPTIONS_ID[15] = 14
 this.TABLE_COLUMNS_OPTIONS_ID[16] = 15
 this.TABLE_COLUMNS_OPTIONS_ID[17] = 8
 this.TABLE_COLUMNS_OPTIONS_ID[18] = 9
+this.TABLE_COLUMNS_OPTIONS_ID[19] = 19
 
 this.TABLE_COLUMNS_OPTIONS_READABLE = {}
 for i,col in ipairs(this.TABLE_COLUMNS_OPTIONS_ID) do

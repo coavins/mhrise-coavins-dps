@@ -65,6 +65,7 @@ this.PLAYER_NAMES = {}
 this.OTOMO_NAMES = {}
 this.PLAYER_RANKS = {}
 this.PLAYER_TIMES = {} -- the time when they entered the quest
+this.PLAYER_DEATHS = {} -- how many times each player carted
 
 -- initialized later when they become available
 this.MANAGER = {}
@@ -86,7 +87,6 @@ this.QUEST_MANAGER_TYPE = nil
 this.QUEST_MANAGER_TYPE_RECV_FORFEIT = nil
 this.QUEST_MANAGER_TYPE_SEND_FORFEIT = nil
 this.QUEST_MANAGER_TYPE_NOTIFY_DEATH = nil
-this.PLAYER_DEATHS = {}
 
 this.SNOW_ENEMY_ENEMYCHARACTERBASE = nil
 this.SNOW_ENEMY_ENEMYCHARACTERBASE_AFTERCALCDAMAGE_DAMAGESIDE = nil
