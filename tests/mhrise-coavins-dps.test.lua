@@ -52,10 +52,10 @@ describe("mhrise-coavins-dps", function()
 
 			local s = {}
 			s[1] = DATA.initializeDamageSource(1)
-			s[1].counters['weapon'] = DATA.initializeDamageCounter()
-			s[1].counters['weapon'].physical = 100
-			s[1].counters['weapon'].elemental = 200
-			s[1].counters['weapon'].condition = 400
+			s[1].counters['PlayerWeapon'] = DATA.initializeDamageCounter()
+			s[1].counters['PlayerWeapon'].physical = 100
+			s[1].counters['PlayerWeapon'].elemental = 200
+			s[1].counters['PlayerWeapon'].condition = 400
 
 			b.damageSources = s
 
@@ -77,10 +77,10 @@ describe("mhrise-coavins-dps", function()
 
 			local s = {}
 			s[1] = DATA.initializeDamageSource(1)
-			s[1].counters['weapon'] = DATA.initializeDamageCounter()
-			s[1].counters['weapon'].physical = 100
-			s[1].counters['weapon'].elemental = 200
-			s[1].counters['weapon'].condition = 400
+			s[1].counters['PlayerWeapon'] = DATA.initializeDamageCounter()
+			s[1].counters['PlayerWeapon'].physical = 100
+			s[1].counters['PlayerWeapon'].elemental = 200
+			s[1].counters['PlayerWeapon'].condition = 400
 
 			b.damageSources = s
 
@@ -99,8 +99,8 @@ describe("mhrise-coavins-dps", function()
 
 			local s = {}
 			s[1] = DATA.initializeDamageSource(1)
-			s[1].counters['weapon'] = DATA.initializeDamageCounter()
-			s[1].counters['weapon'].physical = 100
+			s[1].counters['PlayerWeapon'] = DATA.initializeDamageCounter()
+			s[1].counters['PlayerWeapon'].physical = 100
 
 			b.damageSources = s
 
@@ -119,19 +119,19 @@ describe("mhrise-coavins-dps", function()
 
 			local s1 = {}
 			s1[1] = DATA.initializeDamageSource(1)
-			s1[1].counters['weapon'] = DATA.initializeDamageCounter()
-			s1[1].counters['weapon'].physical = 100
-			s1[1].counters['weapon'].elemental = 200
-			s1[1].counters['weapon'].condition = 400
+			s1[1].counters['PlayerWeapon'] = DATA.initializeDamageCounter()
+			s1[1].counters['PlayerWeapon'].physical = 100
+			s1[1].counters['PlayerWeapon'].elemental = 200
+			s1[1].counters['PlayerWeapon'].condition = 400
 
 			boss1.damageSources = s1
 
 			local s2 = {}
 			s2[1] = DATA.initializeDamageSource(1)
-			s2[1].counters['weapon'] = DATA.initializeDamageCounter()
-			s2[1].counters['weapon'].physical = 800
-			s2[1].counters['weapon'].elemental = 1600
-			s2[1].counters['weapon'].condition = 3200
+			s2[1].counters['PlayerWeapon'] = DATA.initializeDamageCounter()
+			s2[1].counters['PlayerWeapon'].physical = 800
+			s2[1].counters['PlayerWeapon'].elemental = 1600
+			s2[1].counters['PlayerWeapon'].condition = 3200
 
 			boss2.damageSources = s2
 
@@ -153,26 +153,26 @@ describe("mhrise-coavins-dps", function()
 
 			local s1 = {}
 			s1[1] = DATA.initializeDamageSource(1)
-			s1[1].counters['weapon'] = DATA.initializeDamageCounter()
-			s1[1].counters['weapon'].physical = 1
-			s1[1].counters['weapon'].elemental = 2
-			s1[1].counters['weapon'].condition = 4
+			s1[1].counters['PlayerWeapon'] = DATA.initializeDamageCounter()
+			s1[1].counters['PlayerWeapon'].physical = 1
+			s1[1].counters['PlayerWeapon'].elemental = 2
+			s1[1].counters['PlayerWeapon'].condition = 4
 
 			boss1.damageSources = s1
 
 			local s2 = {}
 			s2[1] = DATA.initializeDamageSource(1)
-			s2[1].counters['weapon'] = DATA.initializeDamageCounter()
-			s2[1].counters['weapon'].physical = 8
-			s2[1].counters['weapon'].elemental = 16
-			s2[1].counters['weapon'].condition = 32
+			s2[1].counters['PlayerWeapon'] = DATA.initializeDamageCounter()
+			s2[1].counters['PlayerWeapon'].physical = 8
+			s2[1].counters['PlayerWeapon'].elemental = 16
+			s2[1].counters['PlayerWeapon'].condition = 32
 
 			boss2.damageSources = s2
 
 			local s3 = {}
 			s3[1] = DATA.initializeDamageSource(1)
-			s3[1].counters['weapon'] = DATA.initializeDamageCounter()
-			s3[1].counters['otomo'] = DATA.initializeDamageCounter()
+			s3[1].counters['PlayerWeapon'] = DATA.initializeDamageCounter()
+			s3[1].counters['Otomo'] = DATA.initializeDamageCounter()
 
 			boss3.damageSources = s3
 
@@ -210,7 +210,7 @@ describe("mhrise-coavins-dps", function()
 			CORE.SetCFG('COMBINE_OTOMO_WITH_HUNTER', true)
 
 			DATA.addDamageToBoss(boss, 1, 0, 1, 2, 4)
-			DATA.addDamageToBoss(boss, 1, 19, 8, 16, 32)
+			DATA.addDamageToBoss(boss, 1, STATE.OTOMO_ATTACKER_TYPE_ID, 8, 16, 32)
 
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
@@ -230,7 +230,7 @@ describe("mhrise-coavins-dps", function()
 			CORE.SetReportOtomo(true)
 
 			DATA.addDamageToBoss(boss, 0, 0, 1, 2, 4)
-			DATA.addDamageToBoss(boss, 0, 19, 8, 16, 32)
+			DATA.addDamageToBoss(boss, 0, STATE.OTOMO_ATTACKER_TYPE_ID, 8, 16, 32)
 
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
@@ -250,7 +250,7 @@ describe("mhrise-coavins-dps", function()
 			local boss = initializeMockBossMonster()
 
 			DATA.addDamageToBoss(boss, 0, 0, 1, 2)
-			DATA.addDamageToBoss(boss, 0, 19, 8, 16)
+			DATA.addDamageToBoss(boss, 0, STATE.OTOMO_ATTACKER_TYPE_ID, 8, 16)
 
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
@@ -305,13 +305,13 @@ describe("mhrise-coavins-dps", function()
 				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 				DATA.addDamageToBoss(boss, 3, 0,
 				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-				DATA.addDamageToBoss(boss, 0, 19,
+				DATA.addDamageToBoss(boss, 0, STATE.OTOMO_ATTACKER_TYPE_ID,
 				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-				DATA.addDamageToBoss(boss, 1, 19,
+				DATA.addDamageToBoss(boss, 1, STATE.OTOMO_ATTACKER_TYPE_ID,
 				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-				DATA.addDamageToBoss(boss, 2, 19,
+				DATA.addDamageToBoss(boss, 2, STATE.OTOMO_ATTACKER_TYPE_ID,
 				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-				DATA.addDamageToBoss(boss, 3, 19,
+				DATA.addDamageToBoss(boss, 3, STATE.OTOMO_ATTACKER_TYPE_ID,
 				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 			end
 
@@ -393,13 +393,13 @@ describe("mhrise-coavins-dps", function()
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 			DATA.addDamageToBoss(boss, 3, 0,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 0, 19,
+			DATA.addDamageToBoss(boss, 0, STATE.OTOMO_ATTACKER_TYPE_ID,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 1, 19,
+			DATA.addDamageToBoss(boss, 1, STATE.OTOMO_ATTACKER_TYPE_ID,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 2, 19,
+			DATA.addDamageToBoss(boss, 2, STATE.OTOMO_ATTACKER_TYPE_ID,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 3, 19,
+			DATA.addDamageToBoss(boss, 3, STATE.OTOMO_ATTACKER_TYPE_ID,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 		end
 
@@ -455,13 +455,13 @@ describe("mhrise-coavins-dps", function()
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 			DATA.addDamageToBoss(boss, 3, 0,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 0, 19,
+			DATA.addDamageToBoss(boss, 0, STATE.OTOMO_ATTACKER_TYPE_ID,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 1, 19,
+			DATA.addDamageToBoss(boss, 1, STATE.OTOMO_ATTACKER_TYPE_ID,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 2, 19,
+			DATA.addDamageToBoss(boss, 2, STATE.OTOMO_ATTACKER_TYPE_ID,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 3, 19,
+			DATA.addDamageToBoss(boss, 3, STATE.OTOMO_ATTACKER_TYPE_ID,
 			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
 		end
 

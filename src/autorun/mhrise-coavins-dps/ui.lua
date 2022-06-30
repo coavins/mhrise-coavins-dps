@@ -243,9 +243,9 @@ this.showFilterSection = function()
 	-- draw buttons for attacker types
 	if imgui.tree_node('Attack type') then
 		if imgui.tree_node('General') then
-			this.showCheckboxForAttackerType('weapon')
-			this.showCheckboxForAttackerType('otomo')
-			this.showCheckboxForAttackerType('monster')
+			this.showCheckboxForAttackerType('PlayerWeapon')
+			this.showCheckboxForAttackerType('Otomo')
+			this.showCheckboxForAttackerType('Invalid') -- Monster
 			this.showCheckboxForAttackerType('marionette')
 
 			imgui.new_line()
@@ -254,12 +254,12 @@ this.showFilterSection = function()
 		end
 
 		if imgui.tree_node('Items') then
-			this.showCheckboxForAttackerType('barrelbombs')
-			this.showCheckboxForAttackerType('barrelbombl')
-			this.showCheckboxForAttackerType('nitro')
-			this.showCheckboxForAttackerType('capturesmokebomb')
-			this.showCheckboxForAttackerType('capturebullet')
-			this.showCheckboxForAttackerType('kunai')
+			this.showCheckboxForAttackerType('BarrelBombSmall')
+			this.showCheckboxForAttackerType('BarrelBombLarge')
+			this.showCheckboxForAttackerType('Nitro')
+			this.showCheckboxForAttackerType('CaptureSmokeBomb')
+			this.showCheckboxForAttackerType('CaptureBullet')
+			this.showCheckboxForAttackerType('Kunai')
 
 			imgui.new_line()
 
@@ -267,13 +267,13 @@ this.showFilterSection = function()
 		end
 
 		if imgui.tree_node('Installations') then
-			this.showCheckboxForAttackerType('hmballista')
-			this.showCheckboxForAttackerType('hmcannon')
-			this.showCheckboxForAttackerType('hmgatling')
-			this.showCheckboxForAttackerType('hmtrap')
-			this.showCheckboxForAttackerType('hmnpc')
-			this.showCheckboxForAttackerType('hmflamethrower')
-			this.showCheckboxForAttackerType('hmdragonator')
+			this.showCheckboxForAttackerType('HmBallista')
+			this.showCheckboxForAttackerType('HmCannon')
+			this.showCheckboxForAttackerType('HmGatling')
+			this.showCheckboxForAttackerType('HmTrap')
+			this.showCheckboxForAttackerType('HmNpc')
+			this.showCheckboxForAttackerType('HmFlameThrower')
+			this.showCheckboxForAttackerType('HmDragnator')
 
 			imgui.new_line()
 
@@ -281,13 +281,23 @@ this.showFilterSection = function()
 		end
 
 		if imgui.tree_node('Unknown') then
-			this.showCheckboxForAttackerType('makimushi')
-			this.showCheckboxForAttackerType('onibimine')
-			this.showCheckboxForAttackerType('ballistahate')
-			this.showCheckboxForAttackerType('waterbeetle')
-			this.showCheckboxForAttackerType('detonationgrenade')
-			this.showCheckboxForAttackerType('fg005')
-			this.showCheckboxForAttackerType('ecbatexplode')
+			this.showCheckboxForAttackerType('Makimushi')
+			this.showCheckboxForAttackerType('OnibiMine')
+			this.showCheckboxForAttackerType('BallistaHate')
+			this.showCheckboxForAttackerType('WaterBeetle')
+			this.showCheckboxForAttackerType('DetonationGrenade')
+			this.showCheckboxForAttackerType('Kabutowari')
+			this.showCheckboxForAttackerType('FlashBoll')
+			this.showCheckboxForAttackerType('Fg005')
+			this.showCheckboxForAttackerType('EcBatExplode')
+			this.showCheckboxForAttackerType('EcWallTrapBugExplode')
+			this.showCheckboxForAttackerType('EcPiranha')
+			this.showCheckboxForAttackerType('EcFlash')
+			this.showCheckboxForAttackerType('EcSandWallShooter')
+			this.showCheckboxForAttackerType('EcForestWallShooter')
+			this.showCheckboxForAttackerType('EcSwampLeech')
+			this.showCheckboxForAttackerType('EcPenetrateFish')
+			this.showCheckboxForAttackerType('Max')
 
 			imgui.new_line()
 

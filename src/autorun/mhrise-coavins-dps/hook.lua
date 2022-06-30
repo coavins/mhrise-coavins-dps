@@ -141,7 +141,7 @@ this.read_AfterCalcInfo_DamageSide = function(args)
 
 	local isMarionetteAttack = info:call("get_IsMarionetteAttack")
 
-	--log.info(string.format('%.0f:%.0f = %.0f:%.0f:%.0f:%.0f'
+	--CORE.log_info(string.format('%.0f:%.0f = %.0f:%.0f:%.0f:%.0f'
 	--, attackerId, attackerTypeId, physicalDamage, elementDamage, conditionDamage, conditionType))
 
 	-- override attacker id for monster attacks when monster has id=0

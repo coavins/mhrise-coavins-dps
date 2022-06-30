@@ -128,7 +128,7 @@ end
 this.initializeDamageSourceWithDummyPlayerData = function(attackerId)
 	local s = this.initializeDamageSource(attackerId)
 
-	s.counters['weapon'] = this.initializeDamageCounterWithDummyData()
+	s.counters['PlayerWeapon'] = this.initializeDamageCounterWithDummyData()
 
 	return s
 end
@@ -136,7 +136,7 @@ end
 this.initializeDamageSourceWithDummyOtomoData = function(attackerId)
 	local s = this.initializeDamageSource(attackerId)
 
-	s.counters['otomo'] = this.initializeDamageCounterWithDummyData(0.25)
+	s.counters['Otomo'] = this.initializeDamageCounterWithDummyData(0.25)
 
 	return s
 end
@@ -319,7 +319,7 @@ this.addDamageToBoss = function(boss, attackerId, attackerTypeId
 	local buildup = boss.ailment.buildup
 	local attackerType = ENUM.ATTACKER_TYPES[attackerTypeId]
 
-	local isOtomo   = (attackerTypeId == 19)
+	local isOtomo   = (attackerType == 'Otomo')
 
 	if isOtomo then
 		-- separate otomo from their master
