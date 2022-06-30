@@ -18,6 +18,7 @@ this.exportData = function()
 		player.number = tostring(index)
 		player.id = tostring(index-1)
 		player.name = value
+		player.carts = tostring(STATE.PLAYER_DEATHS[index] or 0)
 		table.insert(PLAYERINFO, player)
 	end
 	file['PLAYERINFO'] = PLAYERINFO
