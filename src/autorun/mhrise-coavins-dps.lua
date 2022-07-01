@@ -155,6 +155,7 @@ end
 
 --#region REFramework
 
+---@diagnostic disable-next-line: param-type-mismatch
 re.on_frame(function()
 	if STATE.DRAW_WINDOW_SETTINGS then
 		UI.DrawWindowSettings()
@@ -180,6 +181,7 @@ re.on_frame(function()
 	STATE.ASSIGNED_HOTKEY_THIS_FRAME = false
 end)
 
+---@diagnostic disable-next-line: param-type-mismatch
 re.on_draw_ui(function()
 	imgui.begin_group()
 	imgui.text('coavins dps meter')
@@ -209,6 +211,7 @@ re.on_draw_ui(function()
 	imgui.end_group()
 end)
 
+---@diagnostic disable-next-line: param-type-mismatch
 re.on_config_save(function()
 	if CORE.CFG('AUTO_SAVE') then
 		CORE.saveCurrentConfig()
