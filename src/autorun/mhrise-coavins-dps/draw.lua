@@ -185,6 +185,10 @@ this.drawReportItemColumn = function(item, col, x, y)
 		text = string.format('%.0f', item.totalElemental)
 	elseif col == 19 and item.carts then -- carts
 		text = string.format('%.0f', item.carts)
+	elseif col == 20 then -- mr
+		if item.rank2 then
+			text = string.format('%s', item.rank2)
+		end
 	end
 
 	this.drawRichText(text, x, y, CORE.COLOR('WHITE'), CORE.COLOR('BLACK'))
