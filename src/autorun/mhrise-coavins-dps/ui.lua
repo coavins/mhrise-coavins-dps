@@ -492,7 +492,7 @@ this.DrawWindowSettings = function()
 	if imgui.collapsing_header('Privacy') then
 		this.showCheckboxForSetting('DRAW_BAR_TEXT_YOU')
 		this.showCheckboxForSetting('DRAW_BAR_TEXT_NAME_USE_REAL_NAMES')
-		
+
 		local options = {}
 		options[1] = 'Hide'
 		options[2] = 'Show HR'
@@ -502,7 +502,7 @@ this.DrawWindowSettings = function()
 			CORE.SetCFG('DRAW_BAR_REVEAL_RANK', value)
 			STATE.NEEDS_UPDATE = true
 		end
-		
+
 
 		imgui.new_line()
 	end
