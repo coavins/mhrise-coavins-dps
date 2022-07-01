@@ -164,7 +164,9 @@ this.mergeCfgIntoLeft = function(cfg1, cfg2)
 					t1[i] = v
 				end
 			else
-				cfg1[name].VALUE = setting.VALUE -- load only the values
+				if name and cfg1[name] then
+					cfg1[name].VALUE = setting.VALUE -- load only the values
+				end
 			end
 		end
 	end
