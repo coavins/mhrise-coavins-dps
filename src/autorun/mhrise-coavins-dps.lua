@@ -89,8 +89,13 @@ local function dpsFrame()
 
 	local villageArea = 0
 	local questStatus = STATE.MANAGER.QUEST:get_field("_QuestStatus")
-	STATE.IS_IN_QUEST = (questStatus == 2)
-	STATE.IS_POST_QUEST = (questStatus > 2)
+	if not questStatus then
+		STATE.IS_IN_QUEST = false
+		STATE.IS_POST_QUEST = false
+	else
+		STATE.IS_IN_QUEST = (questStatus == 2)
+		STATE.IS_POST_QUEST = (questStatus > 2)
+	end
 
 	if not STATE.IS_IN_QUEST and not STATE.IS_POST_QUEST then
 		-- VillageAreaManager is unreliable, not always there, stale references
