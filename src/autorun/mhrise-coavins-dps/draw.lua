@@ -244,13 +244,19 @@ this.drawReportItem = function(item, x, y, width, height)
 		this.draw_filled_rect(x, y, damageBarWidth, height, combatantColor)
 
 		-- hr
-		if (CORE.CFG('DRAW_BAR_REVEAL_HR') and item.rank)
+		local revealRank = CORE.CFG('DRAW_BAR_REVEAL_RANK')
+		if (revealRank == 2 and item.rank)
+		or (revealRank == 3 and item.rank2)
 		or (CORE.CFG('DEBUG_SHOW_ATTACKER_ID') and item.id) then
 			local text
 			if CORE.CFG('DEBUG_SHOW_ATTACKER_ID') then
 				text = string.format('%s', item.id)
 			else
-				text = string.format('%s', item.rank)
+				if revealRank == 2 then
+					text = string.format('%s', item.rank)
+				elseif revealRank == 3 then
+					text = string.format('%s', item.rank2)
+				end
 			end
 			this.drawRichText(text, x + (3 * CORE.CFG('TABLE_SCALE')), y, CORE.COLOR('WHITE'), CORE.COLOR('BLACK'))
 		end
@@ -266,13 +272,19 @@ this.drawReportItem = function(item, x, y, width, height)
 			this.draw_filled_rect(x, y, colorBlockWidth, height, combatantColor)
 
 			-- hr
-			if (CORE.CFG('DRAW_BAR_REVEAL_HR') and item.rank)
+			local revealRank = CORE.CFG('DRAW_BAR_REVEAL_RANK')
+			if (revealRank == 2 and item.rank)
+			or (revealRank == 3 and item.rank2)
 			or (CORE.CFG('DEBUG_SHOW_ATTACKER_ID') and item.id) then
 				local text
 				if CORE.CFG('DEBUG_SHOW_ATTACKER_ID') then
 					text = string.format('%s', item.id)
 				else
-					text = string.format('%s', item.rank)
+					if revealRank == 2 then
+						text = string.format('%s', item.rank)
+					elseif revealRank == 3 then
+						text = string.format('%s', item.rank2)
+					end
 				end
 				this.drawRichText(text, x + (3 * CORE.CFG('TABLE_SCALE')), y, CORE.COLOR('WHITE'), CORE.COLOR('BLACK'))
 			end
@@ -400,12 +412,14 @@ this.drawReport = function(index)
 			this.draw_filled_rect(origin_x, y, tableWidth, headerHeight, CORE.COLOR('TITLE_BG'))
 		end
 
-		if CORE.CFG('DRAW_BAR_COLORBLOCK') and CORE.CFG('DRAW_BAR_REVEAL_HR') then
+		if CORE.CFG('DRAW_BAR_COLORBLOCK') and CORE.CFG('DRAW_BAR_REVEAL_RANK') > 1 then
 			local text
 			if CORE.CFG('DEBUG_SHOW_ATTACKER_ID') then
 				text = 'ID'
-			else
+			elseif CORE.CFG('DRAW_BAR_REVEAL_RANK') == 2 then
 				text = 'HR'
+			else
+				text = 'MR'
 			end
 			this.drawRichText(text, x, y, CORE.COLOR('GRAY'), CORE.COLOR('BLACK'))
 		end

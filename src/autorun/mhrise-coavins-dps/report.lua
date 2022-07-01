@@ -50,6 +50,7 @@ this.initializeReportItem = function(id)
 		item.playerNumber = item.id + 1
 		item.name = STATE.PLAYER_NAMES[item.playerNumber]
 		item.rank = STATE.PLAYER_RANKS[item.playerNumber]
+		item.rank2 = STATE.PLAYER_MASTERRANKS[item.playerNumber]
 		item.carts = STATE.PLAYER_DEATHS[item.playerNumber] or 0
 	elseif CORE.attackerIdIsOtomo(item.id) then
 		item.otomoNumber = CORE.getOtomoIdFromFakeAttackerId(item.id) + 1

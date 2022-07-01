@@ -28,10 +28,10 @@
             "TEXT": "Damage bars will represent share of overall party DPS",
             "VALUE": false
         },
-        "DRAW_BAR_REVEAL_HR": {
-            "TEXT": "Reveal player HR",
-            "VALUE": false
-        },
+        "DRAW_BAR_REVEAL_RANK": {
+			"VALUE": 3,
+			"TEXT": "Reveal player rank"
+		},
         "DRAW_BAR_TEXT_NAME_USE_REAL_NAMES": {
             "TEXT": "Reveal character names",
             "VALUE": true

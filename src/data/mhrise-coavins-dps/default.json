@@ -154,9 +154,9 @@
 			"VALUE": true,
 			"TEXT": "Reveal character names"
 		},
-		"DRAW_BAR_REVEAL_HR": {
-			"VALUE": true,
-			"TEXT": "Reveal player HR"
+		"DRAW_BAR_REVEAL_RANK": {
+			"VALUE": 3,
+			"TEXT": "Reveal player rank"
 		},
 		"USE_MINIMAL_BARS": {
 			"VALUE": false,

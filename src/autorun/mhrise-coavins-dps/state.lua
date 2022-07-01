@@ -65,6 +65,7 @@ this.MY_PLAYER_ID = nil
 this.PLAYER_NAMES = {}
 this.OTOMO_NAMES = {}
 this.PLAYER_RANKS = {}
+this.PLAYER_MASTERRANKS = {}
 this.PLAYER_TIMES = {} -- the time when they entered the quest
 this.PLAYER_DEATHS = {} -- how many times each player carted
 

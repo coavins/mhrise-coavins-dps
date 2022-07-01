@@ -478,6 +478,7 @@ this.updatePlayers = function()
 	-- clear existing info
 	this.makeTableEmpty(STATE.PLAYER_NAMES)
 	this.makeTableEmpty(STATE.PLAYER_RANKS)
+	this.makeTableEmpty(STATE.PLAYER_MASTERRANKS)
 	this.makeTableEmpty(STATE.OTOMO_NAMES)
 
 	-- get offline player name
@@ -488,6 +489,7 @@ this.updatePlayers = function()
 
 	-- get offline player rank
 	STATE.PLAYER_RANKS[STATE.MY_PLAYER_ID + 1] = STATE.MANAGER.PROGRESS:call("get_HunterRank")
+	STATE.PLAYER_MASTERRANKS[STATE.MY_PLAYER_ID + 1] = STATE.MANAGER.PROGRESS:call("get_MasterRank")
 
 	-- get online players
 	local hunterInfo
@@ -506,10 +508,12 @@ this.updatePlayers = function()
 					local playerId = hunter:get_field("_memberIndex")
 					local name = hunter:get_field("_name")
 					local rank = hunter:get_field("_hunterRank")
+					local rank2 = hunter:get_field("_masterRank")
 
 					if playerId then
 						if name then STATE.PLAYER_NAMES[playerId + 1] = name end
 						if rank then STATE.PLAYER_RANKS[playerId + 1] = rank end
+						if rank2 then STATE.PLAYER_MASTERRANKS[playerId + 1] = rank2 end
 					end
 				end
 			end
