@@ -430,6 +430,14 @@ this.attackerIdIsServant = function(attackerId)
 	end
 end
 
+this.attackerIdIsServantOtomo = function(attackerId)
+	if attackerId == STATE.FAKE_OTOMO_RANGE_START + 5 then
+		return true
+	else
+		return false
+	end
+end
+
 this.attackerIdIsOther = function(attackerId)
 	if not this.attackerIdIsPlayer(attackerId)
 	and not this.attackerIdIsOtomo(attackerId)

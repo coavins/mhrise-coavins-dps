@@ -298,6 +298,29 @@ this.calculateReportTime = function(report)
 	end
 end
 
+this.filterAllowsAttacker = function(attackerId)
+	-- Always show players
+	if CORE.attackerIdIsPlayer(attackerId) then
+		return true
+	-- Show buddies
+	elseif (CORE.attackerIdIsOtomo(attackerId) and STATE._FILTERS.INCLUDE_OTOMO) then
+		-- Only show servant buddy if servants are enabled
+		if CORE.attackerIdIsServantOtomo(attackerId) and not STATE._FILTERS.INCLUDE_SERVANT then
+			return false
+		else
+			return true
+		end
+	-- Show servants
+	elseif (CORE.attackerIdIsServant(attackerId) and STATE._FILTERS.INCLUDE_SERVANT) then
+		return true
+	-- Show other (monsters, villagers during rampage, etc)
+	elseif (CORE.attackerIdIsOther(attackerId) and STATE._FILTERS.INCLUDE_OTHER) then
+		return true
+	else
+		return false
+	end
+end
+
 -- main function responsible for loading a boss into a report
 this.mergeBossIntoReport = function(report, boss)
 	local totalDamage = 0.0
@@ -327,11 +350,7 @@ this.mergeBossIntoReport = function(report, boss)
 		end
 
 		-- if we aren't excluding this type of source
-		if CORE.attackerIdIsPlayer(effSourceId)
-		or (CORE.attackerIdIsOtomo(effSourceId) and STATE._FILTERS.INCLUDE_OTOMO)
-		or (CORE.attackerIdIsServant(effSourceId) and STATE._FILTERS.INCLUDE_SERVANT)
-		or (CORE.attackerIdIsOther(effSourceId) and STATE._FILTERS.INCLUDE_OTHER)
-		then
+		if this.filterAllowsAttacker(effSourceId) then
 			local item = this.getOrInsertReportItem(report, effSourceId)
 
 			this.mergeDamageSourceIntoReportItem(item, source)
