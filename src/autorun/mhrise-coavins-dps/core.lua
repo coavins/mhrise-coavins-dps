@@ -395,6 +395,10 @@ this.SetReportOtomo = function(value)
 	STATE._FILTERS.INCLUDE_OTOMO = value
 end
 
+this.SetReportServant = function(value)
+	STATE._FILTERS.INCLUDE_SERVANT = value
+end
+
 this.SetReportOther = function(value)
 	STATE._FILTERS.INCLUDE_OTHER = value
 end
@@ -409,7 +413,16 @@ end
 
 this.attackerIdIsOtomo = function(attackerId)
 	if attackerId >= STATE.FAKE_OTOMO_RANGE_START
-	and attackerId <= STATE.FAKE_OTOMO_RANGE_START + 4
+	and attackerId <= STATE.FAKE_OTOMO_RANGE_START + 5 -- (4 players + SP buddy + servant buddy)
+	then
+		return true
+	else
+		return false
+	end
+end
+
+this.attackerIdIsServant = function(attackerId)
+	if attackerId == 4
 	then
 		return true
 	else
@@ -420,6 +433,7 @@ end
 this.attackerIdIsOther = function(attackerId)
 	if not this.attackerIdIsPlayer(attackerId)
 	and not this.attackerIdIsOtomo(attackerId)
+	and not this.attackerIdIsServant(attackerId)
 	then return true
 	else return false
 	end

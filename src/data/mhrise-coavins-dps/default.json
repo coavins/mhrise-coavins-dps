@@ -328,6 +328,7 @@
 			"marionette": true
 		},
 		"INCLUDE_OTOMO": true,
+		"INCLUDE_SERVANT": true,
 		"INCLUDE_OTHER": false
 	},
 	"HOTKEYS": {

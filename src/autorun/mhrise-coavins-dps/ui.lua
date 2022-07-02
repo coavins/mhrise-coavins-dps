@@ -194,17 +194,15 @@ this.showFilterSection = function()
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
 		end
 
-		--[[
-		changed, wantsIt = imgui.checkbox('Show Wyvern Riding', _FILTERS.INCLUDE_OTHER)
+		changed, wantsIt = imgui.checkbox('Show servants', STATE._FILTERS.INCLUDE_SERVANT)
 		if changed then
-			_FILTERS.INCLUDE_OTHER = wantsIt
-			generateReport(REPORT_MONSTERS)
+			CORE.SetReportServant(wantsIt)
+			REPORT.generateReport(STATE.REPORT_MONSTERS)
 		end
-		]]
 
 		changed, wantsIt = imgui.checkbox('Show monsters and villagers', STATE._FILTERS.INCLUDE_OTHER)
 		if changed then
-			STATE._FILTERS.INCLUDE_OTHER = wantsIt
+			CORE.SetReportOther(wantsIt)
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
 		end
 

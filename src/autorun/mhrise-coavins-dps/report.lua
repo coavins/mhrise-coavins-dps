@@ -326,6 +326,7 @@ this.mergeBossIntoReport = function(report, boss)
 		-- if we aren't excluding this type of source
 		if CORE.attackerIdIsPlayer(effSourceId)
 		or (CORE.attackerIdIsOtomo(effSourceId) and STATE._FILTERS.INCLUDE_OTOMO)
+		or (CORE.attackerIdIsServant(effSourceId) and STATE._FILTERS.INCLUDE_SERVANT)
 		or (CORE.attackerIdIsOther(effSourceId) and STATE._FILTERS.INCLUDE_OTHER)
 		then
 			local item = this.getOrInsertReportItem(report, effSourceId)
