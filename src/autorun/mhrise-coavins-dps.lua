@@ -50,11 +50,13 @@ local function dpsUpdate()
 
 		-- ensure servants are initialized
 		local servantIdList = STATE.MANAGER.SERVANT:call("getQuestServantIdList")
-		local servantCount = servantIdList:call("get_Count")
-		for i = 0, servantCount-1 do
-			local servantId = servantIdList:call("get_Item", i)
-			if not STATE.SERVANTS[servantId] then
-				DATA.initializeServant(servantId)
+		if servantIdList then
+			local servantCount = servantIdList:call("get_Count")
+			for i = 0, servantCount-1 do
+				local servantId = servantIdList:call("get_Item", i)
+				if not STATE.SERVANTS[servantId] then
+					DATA.initializeServant(servantId)
+				end
 			end
 		end
 
