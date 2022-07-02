@@ -315,11 +315,14 @@ this.mergeBossIntoReport = function(report, boss)
 			if otomoId >= 0 and otomoId <= 3 then
 				-- pretend this damage source belongs to this player
 				effSourceId = otomoId
-			end
 			-- handle secondary otomo
-			if otomoId == 4 then
+			elseif otomoId == 4 then
 				-- pretend to be player 1
 				effSourceId = 0
+			-- handle servant otomo
+			elseif otomoId == 5 then
+				-- pretend to be player 5 (servant)
+				effSourceId = 4
 			end
 		end
 
