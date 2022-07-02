@@ -594,7 +594,7 @@ this.DrawWindowHotkeys = function()
 end
 
 this.DrawWindowDebug = function()
-	local wantsIt
+	local changed, wantsIt
 
 	wantsIt = imgui.begin_window('coavins dps meter - debug', STATE.DRAW_WINDOW_DEBUG, STATE.WINDOW_FLAGS)
 	if STATE.DRAW_WINDOW_DEBUG and not wantsIt then
@@ -612,6 +612,20 @@ this.DrawWindowDebug = function()
 	imgui.new_line()
 
 	this.showCheckboxForSetting('DEBUG_SHOW_ATTACKER_ID')
+
+	imgui.new_line()
+
+	-- Enabled
+	changed, wantsIt = imgui.checkbox('Do not use SDK hooks', not STATE.HOOKS_ENABLED)
+	if changed then
+		STATE.HOOKS_ENABLED = not wantsIt
+	end
+	imgui.text('Use this setting to troubleshoot stuttering or freezing')
+	imgui.text('during the quest, such as when attacks connect with the enemy.')
+	imgui.text('While this box is checked, data not various things will not be')
+	imgui.text('collected and your numbers will be wrong for the rest of the quest')
+
+	imgui.new_line()
 
 	imgui.end_window()
 end

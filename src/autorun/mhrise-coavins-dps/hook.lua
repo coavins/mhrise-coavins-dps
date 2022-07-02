@@ -6,6 +6,10 @@ local this = {}
 
 -- keep track of some things on monsters
 this.updateBossEnemy = function(args)
+	if not STATE.HOOKS_ENABLED then
+		return
+	end
+
 	local enemy = sdk.to_managed_object(args[2])
 
 	-- get this boss from the table
@@ -112,6 +116,10 @@ end
 
 -- track damage taken by monsters
 this.read_AfterCalcInfo_DamageSide = function(args)
+	if not STATE.HOOKS_ENABLED then
+		return
+	end
+
 	local enemy = sdk.to_managed_object(args[2])
 	if not enemy then
 		return
@@ -225,6 +233,10 @@ this.tryHookSdk = function()
 end
 
 this.deaths = function(args, t)
+	if not STATE.HOOKS_ENABLED then
+		return
+	end
+	
 	if not STATE.IS_ONLINE then --We reach here with notifyDeath when player is offline
 		if STATE.PLAYER_DEATHS[1] == nil then
 			STATE.PLAYER_DEATHS[1] = 1
