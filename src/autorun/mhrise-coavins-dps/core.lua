@@ -49,66 +49,50 @@ this.hasNativeResources = function()
 	return true
 end
 
+-- return false if any managed resource is not loaded
+-- we also return false on the first frame that we load it, to delay its use by one frame
 this.hasManagedResources = function()
 	if not STATE.MANAGER.PLAYER then
 		STATE.MANAGER.PLAYER = sdk.get_managed_singleton("snow.player.PlayerManager")
-		if not STATE.MANAGER.PLAYER then
-			return false
-		end
+		return false
 	end
 
 	if not STATE.MANAGER.QUEST then
 		STATE.MANAGER.QUEST = sdk.get_managed_singleton("snow.QuestManager")
-		if not STATE.MANAGER.QUEST then
-			return false
-		end
+		return false
 	end
 
 	if not STATE.MANAGER.ENEMY then
 		STATE.MANAGER.ENEMY = sdk.get_managed_singleton("snow.enemy.EnemyManager")
-		if not STATE.MANAGER.ENEMY then
-			return false
-		end
+		return false
 	end
 
 	if not STATE.MANAGER.MESSAGE then
 		STATE.MANAGER.MESSAGE = sdk.get_managed_singleton("snow.gui.MessageManager")
-		if not STATE.MANAGER.MESSAGE then
-			return false
-		end
+		return false
 	end
 
 	if not STATE.MANAGER.LOBBY then
 		STATE.MANAGER.LOBBY = sdk.get_managed_singleton("snow.LobbyManager")
-		if not STATE.MANAGER.LOBBY then
-			return false
-		end
+		return false
 	end
 
 	if not STATE.MANAGER.OTOMO then
 		STATE.MANAGER.OTOMO = sdk.get_managed_singleton("snow.otomo.OtomoManager")
-		if not STATE.MANAGER.OTOMO then
-			return false
-		end
+		return false
 	end
 
 	if not STATE.MANAGER.KEYBOARD then
 		local softKeyboard = sdk.get_managed_singleton("snow.GameKeyboard")
 		if softKeyboard then
 			STATE.MANAGER.KEYBOARD = softKeyboard:get_field("hardKeyboard")
-			if not STATE.MANAGER.KEYBOARD then
-				return false
-			end
-		else
-			return false
 		end
+		return false
 	end
 
 	if not STATE.MANAGER.PROGRESS then
 		STATE.MANAGER.PROGRESS = sdk.get_managed_singleton("snow.progress.ProgressManager")
-		if not STATE.MANAGER.PROGRESS then
-			return false
-		end
+		return false
 	end
 
 	return true
