@@ -62,6 +62,8 @@ this.REPORT_MONSTERS = {} -- a subset of LARGE_MONSTERS or TEST_MONSTERS that wi
 this.ORDERED_MONSTERS = {} -- an index of LARGE_MONSTERS keys but ordered as an array, used by hotkeys
 this.ORDERED_MONSTERS_SELECTED = 0 -- which index is currently selected, used by hotkeys
 
+this.SERVANTS = {}
+
 this.MY_PLAYER_ID = nil
 this.PLAYER_NAMES = {}
 this.OTOMO_NAMES = {}
@@ -82,6 +84,7 @@ this.MANAGER.OTOMO    = nil
 this.MANAGER.KEYBOARD = nil
 this.MANAGER.SCENE    = nil
 this.MANAGER.PROGRESS = nil
+this.MANAGER.SERVANT  = nil
 
 this.SCENE_MANAGER_TYPE = nil
 this.SCENE_MANAGER_VIEW = nil

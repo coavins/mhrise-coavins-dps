@@ -45,22 +45,30 @@ this.initializeReportItem = function(id)
 	item.name = ''
 	item.carts = nil
 
-	-- initialize player number and name if we can
+	-- Player
 	if item.id >= 0 and item.id <= 3 then
 		item.playerNumber = item.id + 1
 		item.name = STATE.PLAYER_NAMES[item.playerNumber]
 		item.rank = STATE.PLAYER_RANKS[item.playerNumber]
 		item.rank2 = STATE.PLAYER_MASTERRANKS[item.playerNumber]
 		item.carts = STATE.PLAYER_DEATHS[item.playerNumber] or 0
+	-- Otomo
 	elseif CORE.attackerIdIsOtomo(item.id) then
 		item.otomoNumber = CORE.getOtomoIdFromFakeAttackerId(item.id) + 1
 		item.name = STATE.OTOMO_NAMES[item.otomoNumber]
 --  elseif item.id == FAKE_MARIONETTE_ID then
 --		item.name = 'Wyvern Riding'
 	else
+		-- Boss
 		for _,boss in pairs(STATE.LARGE_MONSTERS) do
 			if boss.id and boss.id == item.id then
 				item.name = boss.name
+			end
+		end
+		-- Servant
+		for _,servant in pairs(STATE.SERVANTS) do
+			if servant.id and servant.id == item.id then
+				item.name = servant.name
 			end
 		end
 	end

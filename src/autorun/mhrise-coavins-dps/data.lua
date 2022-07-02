@@ -422,4 +422,20 @@ this.clearTestData = function()
 	CORE.resetReportMonsters()
 end
 
+this.initializeServant = function(servantId)
+	local servant = {}
+
+	servant.servantId = servantId
+	--servant.name = STATE.MANAGER.SERVANT:call("getServantName", servantId)
+
+	local aiControl = STATE.MANAGER.SERVANT:call("getAIControlByServantID", servantId) -- snow.player.PlayerAIControl
+	local servantInfo = aiControl:call("get_ServantInfo") -- snow.ai.ServantInfo
+	servant.name = servantInfo:call("get_ServantName")
+	servant.id = servantInfo:call("get_ServantPlayerIndex")
+
+	-- store it in the table
+	STATE.SERVANTS[servantId] = servant
+	CORE.log_debug('initialized new servant ' .. servant.name)
+end
+
 return this

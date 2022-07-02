@@ -48,6 +48,16 @@ local function dpsUpdate()
 			end
 		end
 
+		-- ensure servants are initialized
+		local servantIdList = STATE.MANAGER.SERVANT:call("getQuestServantIdList")
+		local servantCount = servantIdList:call("get_Count")
+		for i = 0, servantCount-1 do
+			local servantId = servantIdList:call("get_Item", i)
+			if not STATE.SERVANTS[servantId] then
+				DATA.initializeServant(servantId)
+			end
+		end
+
 		-- generate report for selected bosses
 		REPORT.generateReport(STATE.REPORT_MONSTERS)
 	end

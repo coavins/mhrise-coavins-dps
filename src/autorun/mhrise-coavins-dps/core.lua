@@ -95,6 +95,11 @@ this.hasManagedResources = function()
 		return false
 	end
 
+	if not STATE.MANAGER.SERVANT then
+		STATE.MANAGER.SERVANT = sdk.get_managed_singleton("snow.ai.ServantManager")
+		return false
+	end
+
 	return true
 end
 
@@ -351,6 +356,7 @@ this.cleanUpData = function(message)
 	this.makeTableEmpty(STATE.PLAYER_NAMES)
 	this.makeTableEmpty(STATE.PLAYER_TIMES)
 	this.makeTableEmpty(STATE.PLAYER_DEATHS)
+	this.makeTableEmpty(STATE.SERVANTS)
 	this.log_debug('cleared data: ' .. message)
 end
 
