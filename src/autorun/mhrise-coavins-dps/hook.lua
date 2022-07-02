@@ -166,7 +166,7 @@ this.read_AfterCalcInfo_DamageSide = function(args)
 				break
 			end
 		end
-		CORE.log_debug('riderID is ' .. riderId)
+		CORE.log_debug('riderID is ' .. (riderId or 'nil'))
 	end
 
 	DATA.addDamageToBoss(boss, attackerId, attackerTypeId
