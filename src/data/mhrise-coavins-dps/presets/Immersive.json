@@ -300,6 +300,7 @@
             "weapon": true
         },
         "INCLUDE_OTHER": false,
+        "INCLUDE_SERVANT": false,
         "INCLUDE_OTOMO": false
     },
     "HOTKEYS": {
