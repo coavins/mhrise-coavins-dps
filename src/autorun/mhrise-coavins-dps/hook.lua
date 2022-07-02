@@ -236,7 +236,7 @@ this.deaths = function(args, t)
 	if not STATE.HOOKS_ENABLED then
 		return
 	end
-	
+
 	if not STATE.IS_ONLINE then --We reach here with notifyDeath when player is offline
 		if STATE.PLAYER_DEATHS[1] == nil then
 			STATE.PLAYER_DEATHS[1] = 1
