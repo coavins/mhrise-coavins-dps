@@ -122,7 +122,7 @@ this.showAppearanceSection = function()
 
 		this.showCheckboxForSetting('DRAW_BAR_RELATIVE_TO_PARTY')
 		this.showCheckboxForSetting('USE_MINIMAL_BARS')
-		this.
+
 		imgui.new_line()
 
 		this.showCheckboxForSetting('TABLE_SORT_ASC')
