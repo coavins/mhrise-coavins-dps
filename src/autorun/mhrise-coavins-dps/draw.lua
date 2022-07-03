@@ -479,7 +479,7 @@ this.drawReport = function(index)
 		item_y = item_y + (headerHeight * dir) -- skip header row
 	end
 
-	for i,item in ipairs(report.items) do
+	for _,item in ipairs(report.items) do
 		-- Draw this report item if it's not hidden by this setting
 		if not (CORE.CFG('HIDE_COMBINED_OTHERS') and item.id == STATE.COMBINE_ALL_OTHERS_ATTACKER_ID) then
 			this.drawReportItem(item, origin_x, item_y, tableWidth, rowHeight)
