@@ -49,10 +49,12 @@ this.COLORSCHEME_OPTIONS_SELECTED = 1
 this.SCREEN_W = 0
 this.SCREEN_H = 0
 this.DEBUG_Y = 0
+
 this.FAKE_OTOMO_RANGE_START = 9990 -- it is important that attacker ids near this are never used by the game
 this.FAKE_ATTACKER_ID = 10189 -- monsters with id=0 are treated as if they had this attacker id
 this.HIGH_NUMBER = 9999.0
 this.OTOMO_ATTACKER_TYPE_ID = 21
+this.MONSTER_ATTACKER_TYPE_ID = 34
 
 this.LARGE_MONSTERS = {}
 this.TEST_MONSTERS = nil -- like LARGE_MONSTERS, but holds dummy/test data

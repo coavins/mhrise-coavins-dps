@@ -153,7 +153,7 @@ this.read_AfterCalcInfo_DamageSide = function(args)
 	, attackerId, attackerTypeId, physicalDamage, elementDamage, conditionDamage, conditionType))
 
 	-- override attacker id for monster attacks when monster has id=0
-	if attackerId == 0 and attackerTypeId == 23 then
+	if attackerId == 0 and attackerTypeId == STATE.MONSTER_ATTACKER_TYPE_ID then
 		attackerId = STATE.FAKE_ATTACKER_ID
 	end
 
