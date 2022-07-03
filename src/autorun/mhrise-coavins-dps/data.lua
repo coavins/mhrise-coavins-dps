@@ -258,6 +258,9 @@ this.initializeBossMonsterWithDummyData = function(bossKey, fakeName)
 	s[4] = this.initializeDamageSourceWithDummyPlayerData(4)
 	dummyId = CORE.getFakeAttackerIdForOtomoId(5)
 	s[dummyId] = this.initializeDamageSourceWithDummyOtomoData(dummyId)
+	s[5] = this.initializeDamageSourceWithDummyPlayerData(5)
+	dummyId = CORE.getFakeAttackerIdForOtomoId(6)
+	s[dummyId] = this.initializeDamageSourceWithDummyOtomoData(dummyId)
 
 	-- monster
 	s[1001] = this.initializeDamageSourceWithDummyMonsterData(1001)
