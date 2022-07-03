@@ -58,6 +58,8 @@ this.initializeReportItem = function(id)
 		item.name = STATE.OTOMO_NAMES[item.otomoNumber]
 --  elseif item.id == FAKE_MARIONETTE_ID then
 --		item.name = 'Wyvern Riding'
+	elseif item.id == STATE.COMBINE_ALL_OTHERS_ATTACKER_ID then
+		item.name = 'Others'
 	else
 		-- Boss
 		for _,boss in pairs(STATE.LARGE_MONSTERS) do
@@ -218,7 +220,8 @@ this.mergeDamageSourceIntoReportItem = function(item, source)
 	-- don't allow merging source and item with different IDs
 	if item.id ~= source.id then
 		-- make an exception for otomo and player to account for the trick we pulled in mergeDamageSourcesIntoReport()
-		if not CORE.attackerIdIsOtomo(source.id) then
+		-- also make an exception for the "combine all others" setting which allows any id to merge
+		if not CORE.attackerIdIsOtomo(source.id) and item.id ~= STATE.COMBINE_ALL_OTHERS_ATTACKER_ID then
 			CORE.log_error('tried to merge a damage source into a report item with a different id')
 			return
 		end
@@ -317,6 +320,9 @@ this.filterAllowsAttacker = function(attackerId)
 	-- Show other (monsters, villagers during rampage, etc)
 	elseif (CORE.attackerIdIsOther(attackerId) and STATE._FILTERS.INCLUDE_OTHER) then
 		return true
+	-- Always show this fake attacker
+	elseif attackerId == STATE.COMBINE_ALL_OTHERS_ATTACKER_ID then
+		return true
 	else
 		return false
 	end
@@ -348,6 +354,11 @@ this.mergeBossIntoReport = function(report, boss)
 				-- pretend to be player 5 (servant)
 				effSourceId = 4
 			end
+		end
+
+		-- merge others together
+		if CORE.CFG('COMBINE_ALL_OTHERS') and effSourceId ~= STATE.MY_PLAYER_ID then
+			effSourceId = STATE.COMBINE_ALL_OTHERS_ATTACKER_ID
 		end
 
 		-- if we aren't excluding this type of source

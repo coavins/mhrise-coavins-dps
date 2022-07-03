@@ -484,6 +484,7 @@ this.DrawWindowSettings = function()
 		imgui.new_line()
 
 		this.showCheckboxForSetting('COMBINE_OTOMO_WITH_HUNTER')
+		this.showCheckboxForSetting('COMBINE_ALL_OTHERS')
 		this.showCheckboxForSetting('CONDITION_LIKE_DAMAGE')
 		this.showCheckboxForSetting('PDPS_BASED_ON_FIRST_STRIKE')
 		this.showCheckboxForSetting('MARIONETTE_IS_PLAYER_DMG')

@@ -26,6 +26,10 @@
 			"VALUE": true,
 			"TEXT": "Combine buddies with their hunters"
 		},
+		"COMBINE_ALL_OTHERS": {
+			"VALUE": false,
+			"TEXT": "Combine into one row all attackers who aren't you"
+		},
 		"CONDITION_LIKE_DAMAGE": {
 			"VALUE": false,
 			"TEXT": "Ailment buildup counts as damage"
