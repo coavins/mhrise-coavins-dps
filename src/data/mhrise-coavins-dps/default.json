@@ -30,6 +30,10 @@
 			"VALUE": false,
 			"TEXT": "Combine into one row all attackers who aren't you"
 		},
+		"HIDE_COMBINED_OTHERS": {
+			"VALUE": false,
+			"TEXT": "Only show your damage"
+		},
 		"CONDITION_LIKE_DAMAGE": {
 			"VALUE": false,
 			"TEXT": "Ailment buildup counts as damage"

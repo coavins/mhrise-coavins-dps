@@ -482,7 +482,12 @@ this.drawReport = function(index)
 			y = y + headerHeight * dir -- skip header row
 		end
 
-		this.drawReportItem(item, origin_x, y, tableWidth, rowHeight)
+		if CORE.CFG('HIDE_COMBINED_OTHERS')
+		and item.id == STATE.COMBINE_ALL_OTHERS_ATTACKER_ID then
+			-- do not show this row
+		else
+			this.drawReportItem(item, origin_x, y, tableWidth, rowHeight)
+		end
 	end
 end
 

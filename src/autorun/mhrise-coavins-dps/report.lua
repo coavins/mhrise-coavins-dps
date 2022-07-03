@@ -357,7 +357,8 @@ this.mergeBossIntoReport = function(report, boss)
 		end
 
 		-- merge others together
-		if CORE.CFG('COMBINE_ALL_OTHERS') and effSourceId ~= STATE.MY_PLAYER_ID then
+		if (CORE.CFG('COMBINE_ALL_OTHERS') or CORE.CFG('HIDE_COMBINED_OTHERS'))
+		and effSourceId ~= STATE.MY_PLAYER_ID then
 			effSourceId = STATE.COMBINE_ALL_OTHERS_ATTACKER_ID
 		end
 
