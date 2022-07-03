@@ -143,7 +143,7 @@ end
 
 -- merges second cfg into first
 -- returns true if anything was done
-this.mergeCfgIntoLeft = function(cfg1, cfg2)
+this.mergeCfgIntoLeft = function(cfg1, cfg2, isPreset)
 	if cfg2 then
 		for name,setting in pairs(cfg2) do
 			if name == 'TABLE_COLS' or name == 'TABLE_COLS_WIDTH' then
@@ -153,8 +153,12 @@ this.mergeCfgIntoLeft = function(cfg1, cfg2)
 					t1[i] = v
 				end
 			else
+				-- if the setting exists
 				if name and cfg1[name] then
-					cfg1[name].VALUE = setting.VALUE -- load only the values
+					-- if we are loading a preset and this setting is allowed
+					if not isPreset or this.isSettingAllowedForPresets(name) then
+						cfg1[name].VALUE = setting.VALUE -- load only the values
+					end
 				end
 			end
 		end
@@ -236,7 +240,7 @@ this.loadSavedConfigIfExist = function()
 	local file = this.readDataFile('saves/save.json') -- file might not exist
 	if file then
 		-- load save file on top of current config
-		this.mergeCfgIntoLeft(STATE._CFG, file.CFG)
+		this.mergeCfgIntoLeft(STATE._CFG, file.CFG, false)
 		this.mergeColorsIntoLeft(STATE._COLORS, file.COLORS)
 		this.mergeFiltersIntoLeft(STATE._FILTERS, file.FILTERS)
 		this.mergeHotkeysIntoLeft(STATE._HOTKEYS, file.HOTKEYS)
@@ -333,11 +337,25 @@ this.applySelectedPreset = function()
 	local preset = STATE._PRESETS[name]
 	if preset then
 		-- load save file on top of current config
-		this.mergeCfgIntoLeft(STATE._CFG, preset.CFG)
+		this.mergeCfgIntoLeft(STATE._CFG, preset.CFG, true)
 		this.mergeFiltersIntoLeft(STATE._FILTERS, preset.FILTERS)
 		this.mergeColorsIntoLeft(STATE._COLORS, preset.COLORS)
 
 		this.log_info(string.format('applied preset %s', name))
+	end
+end
+
+-- There are some settings that we don't want presets to apply
+this.isSettingAllowedForPresets = function(name)
+	if name == 'SAVE_RESULTS_TO_DISK'
+	or name == 'AUTO_SAVE'
+	or name == 'UPDATE_RATE'
+	or name == 'DEBUG_SHOW_MISSING_DAMAGE'
+	or name == 'DEBUG_SHOW_ATTACKER_ID'
+	then
+		return false
+	else
+		return true
 	end
 end
 
