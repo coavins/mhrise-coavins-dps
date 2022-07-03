@@ -34,7 +34,7 @@
 			},
 			"DRAW_BAR_TEXT_YOU": {
 					"TEXT": "Show \"YOU\" on your row",
-					"VALUE": true
+					"VALUE": false
 			},
 			"DRAW_BAR_USE_PLAYER_COLORS": {
 					"TEXT": "Show player bars with their assigned color",
