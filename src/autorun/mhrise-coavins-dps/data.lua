@@ -326,6 +326,10 @@ this.addDamageToBoss = function(boss, attackerId, attackerTypeId
 	local sources = boss.damageSources
 	local buildup = boss.ailment.buildup
 	local attackerType = ENUM.ATTACKER_TYPES[attackerTypeId]
+	if not attackerType then
+		CORE.log_error('Could not find attacker type for id ' .. attackerTypeId)
+		return
+	end
 
 	local isOtomo   = (attackerTypeId >= 21 and attackerTypeId <= 23)
 

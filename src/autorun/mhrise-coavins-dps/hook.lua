@@ -169,6 +169,18 @@ this.read_AfterCalcInfo_DamageSide = function(args)
 		CORE.log_debug('riderID is ' .. (riderId or 'nil'))
 	end
 
+	if attackerId == nil then
+		CORE.log_error('Attacker ID is nil: '.. string.format('%.0f:%.0f = %.0f:%.0f:%.0f:%.0f'
+		, attackerId, attackerTypeId, physicalDamage, elementDamage, conditionDamage, conditionType))
+		return
+
+	elseif attackerTypeId == nil then
+		CORE.log_error('Attacker Type ID is nil: '.. string.format('%.0f:%.0f = %.0f:%.0f:%.0f:%.0f'
+		, attackerId, attackerTypeId, physicalDamage, elementDamage, conditionDamage, conditionType))
+		return
+
+	end
+
 	DATA.addDamageToBoss(boss, attackerId, attackerTypeId
 	, physicalDamage, elementDamage, conditionDamage, conditionType, 0, 0, criticalType, riderId)
 end
