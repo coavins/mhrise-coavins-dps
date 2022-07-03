@@ -453,6 +453,7 @@ this.DrawWindowSettings = function()
 
 	if imgui.button('Apply preset') then
 		CORE.applySelectedPreset()
+		STATE.NEEDS_UPDATE = true
 	end
 	imgui.same_line()
 	changed, value = imgui.combo('Presets', STATE.PRESET_OPTIONS_SELECTED, STATE.PRESET_OPTIONS)
