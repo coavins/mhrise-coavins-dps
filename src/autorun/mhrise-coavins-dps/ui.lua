@@ -188,19 +188,22 @@ end
 
 this.showFilterSection = function()
 	if imgui.tree_node('Combatants') then
-		local changed, wantsIt = imgui.checkbox('Show buddies', STATE._FILTERS.INCLUDE_OTOMO)
+		imgui.text('Include attacks from the following sources:')
+		local changed, wantsIt = imgui.checkbox('Players (required)', true)
+
+		changed, wantsIt = imgui.checkbox('Buddies (when not combined with hunters)', STATE._FILTERS.INCLUDE_OTOMO)
 		if changed then
 			STATE._FILTERS.INCLUDE_OTOMO = wantsIt
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
 		end
 
-		changed, wantsIt = imgui.checkbox('Show followers', STATE._FILTERS.INCLUDE_SERVANT)
+		changed, wantsIt = imgui.checkbox('Followers', STATE._FILTERS.INCLUDE_SERVANT)
 		if changed then
 			CORE.SetReportServant(wantsIt)
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
 		end
 
-		changed, wantsIt = imgui.checkbox('Show monsters and villagers', STATE._FILTERS.INCLUDE_OTHER)
+		changed, wantsIt = imgui.checkbox('Monsters and villagers', STATE._FILTERS.INCLUDE_OTHER)
 		if changed then
 			CORE.SetReportOther(wantsIt)
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
@@ -212,13 +215,14 @@ this.showFilterSection = function()
 	end
 
 	-- draw buttons for each boss monster in the cache
-	if imgui.tree_node('Large monsters') then
+	if imgui.tree_node('Targets') then
+		imgui.text('Include attacks against the following monsters:')
 		local monsterCollection = STATE.TEST_MONSTERS or STATE.LARGE_MONSTERS
 		local foundMonster = false
 		for enemy,boss in pairs(monsterCollection) do
 			foundMonster = true
 			local monsterIsInReport = STATE.REPORT_MONSTERS[enemy]
-			local changed, wantsIt = imgui.checkbox('Include ' .. boss.name, monsterIsInReport)
+			local changed, wantsIt = imgui.checkbox(boss.name, monsterIsInReport)
 			if changed then
 				if wantsIt then
 					CORE.AddMonsterToReport(enemy, boss)
@@ -230,7 +234,7 @@ this.showFilterSection = function()
 		end
 
 		if not foundMonster then
-			imgui.text('(n/a)')
+			imgui.text('(No monsters yet)')
 		end
 
 		imgui.new_line()
@@ -240,6 +244,7 @@ this.showFilterSection = function()
 
 	-- draw buttons for attacker types
 	if imgui.tree_node('Attack type') then
+		imgui.text('Filter out attacks based on type:')
 		if imgui.tree_node('General') then
 			this.showCheckboxForAttackerType('PlayerWeapon')
 			this.showCheckboxForAttackerType('Invalid') -- Monster
@@ -288,6 +293,7 @@ this.showFilterSection = function()
 		end
 
 		if imgui.tree_node('Unknown') then
+			imgui.text('Let me know if you figure out what these are used for!')
 			this.showCheckboxForAttackerType('Makimushi')
 			this.showCheckboxForAttackerType('OnibiMine')
 			this.showCheckboxForAttackerType('BallistaHate')
