@@ -417,6 +417,10 @@ this.SetReportServant = function(value)
 	STATE._FILTERS.INCLUDE_SERVANT = value
 end
 
+this.SetReportLarge = function(value)
+	STATE._FILTERS.INCLUDE_LARGE = value
+end
+
 this.SetReportOther = function(value)
 	STATE._FILTERS.INCLUDE_OTHER = value
 end
@@ -456,6 +460,15 @@ this.attackerIdIsServantOtomo = function(attackerId)
 	else
 		return false
 	end
+end
+
+this.attackerIdIsBoss = function(attackerId)
+	for _,boss in pairs(STATE.LARGE_MONSTERS) do
+		if boss.id and boss.id == attackerId then
+			return true
+		end
+	end
+	return false
 end
 
 this.attackerIdIsOther = function(attackerId)

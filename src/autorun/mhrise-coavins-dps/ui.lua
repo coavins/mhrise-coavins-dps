@@ -189,7 +189,9 @@ end
 this.showFilterSection = function()
 	if imgui.tree_node('Combatants') then
 		imgui.text('Include attacks from the following sources:')
-		local changed, wantsIt = imgui.checkbox('Players (required)', true)
+		local changed, wantsIt
+
+		imgui.checkbox('Players (required)', true)
 
 		changed, wantsIt = imgui.checkbox('Buddies (when not combined with hunters)', STATE._FILTERS.INCLUDE_OTOMO)
 		if changed then
@@ -203,7 +205,13 @@ this.showFilterSection = function()
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
 		end
 
-		changed, wantsIt = imgui.checkbox('Monsters and villagers', STATE._FILTERS.INCLUDE_OTHER)
+		changed, wantsIt = imgui.checkbox('Large monsters', STATE._FILTERS.INCLUDE_LARGE)
+		if changed then
+			CORE.SetReportLarge(wantsIt)
+			REPORT.generateReport(STATE.REPORT_MONSTERS)
+		end
+
+		changed, wantsIt = imgui.checkbox('Small monsters and villagers', STATE._FILTERS.INCLUDE_OTHER)
 		if changed then
 			CORE.SetReportOther(wantsIt)
 			REPORT.generateReport(STATE.REPORT_MONSTERS)

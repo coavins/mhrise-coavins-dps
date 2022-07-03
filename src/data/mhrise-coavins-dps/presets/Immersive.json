@@ -346,7 +346,8 @@
         },
         "INCLUDE_OTHER": false,
         "INCLUDE_OTOMO": false,
-        "INCLUDE_SERVANT": false
+        "INCLUDE_SERVANT": false,
+        "INCLUDE_LARGE": false
     },
     "HOTKEYS": {
         "MONSTER_NEXT": {

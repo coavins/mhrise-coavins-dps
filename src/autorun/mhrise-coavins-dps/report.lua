@@ -309,18 +309,21 @@ this.filterAllowsAttacker = function(attackerId)
 	if CORE.attackerIdIsPlayer(attackerId) then
 		return true
 	-- Show buddies
-	elseif (CORE.attackerIdIsOtomo(attackerId) and STATE._FILTERS.INCLUDE_OTOMO) then
+	elseif (STATE._FILTERS.INCLUDE_OTOMO and CORE.attackerIdIsOtomo(attackerId)) then
 		-- Only show servant buddy if servants are enabled
-		if CORE.attackerIdIsServantOtomo(attackerId) and not STATE._FILTERS.INCLUDE_SERVANT then
+		if (not STATE._FILTERS.INCLUDE_SERVANT) and CORE.attackerIdIsServantOtomo(attackerId) then
 			return false
 		else
 			return true
 		end
 	-- Show servants
-	elseif (CORE.attackerIdIsServant(attackerId) and STATE._FILTERS.INCLUDE_SERVANT) then
+	elseif (STATE._FILTERS.INCLUDE_SERVANT and CORE.attackerIdIsServant(attackerId)) then
 		return true
-	-- Show other (monsters, villagers during rampage, etc)
-	elseif (CORE.attackerIdIsOther(attackerId) and STATE._FILTERS.INCLUDE_OTHER) then
+	-- Show large monsters
+	elseif (STATE._FILTERS.INCLUDE_LARGE and CORE.attackerIdIsBoss(attackerId)) then
+		return true
+	-- Show other (small monsters, villagers during rampage, etc)
+	elseif (STATE._FILTERS.INCLUDE_OTHER and CORE.attackerIdIsOther(attackerId)) then
 		return true
 	-- Always show this fake attacker
 	elseif attackerId == STATE.COMBINE_ALL_OTHERS_ATTACKER_ID then
