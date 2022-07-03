@@ -194,7 +194,7 @@ this.showFilterSection = function()
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
 		end
 
-		changed, wantsIt = imgui.checkbox('Show servants', STATE._FILTERS.INCLUDE_SERVANT)
+		changed, wantsIt = imgui.checkbox('Show followers', STATE._FILTERS.INCLUDE_SERVANT)
 		if changed then
 			CORE.SetReportServant(wantsIt)
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
