@@ -149,6 +149,12 @@ this.drawReportItemColumn = function(item, col, x, y)
 			else
 				text = string.format('Buddy %.0f', item.otomoNumber)
 			end
+		elseif item.servantNumber then
+			if item.name and item.name ~= '' then
+				text = string.format('%s', item.name)
+			else
+				text = string.format('Follower %.0f', item.servantNumber)
+			end
 		else
 			-- just draw the name
 			text = string.format('%s', item.name)

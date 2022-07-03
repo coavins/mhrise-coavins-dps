@@ -42,11 +42,12 @@ this.initializeReportItem = function(id)
 	item.id = id
 	item.playerNumber = nil
 	item.otomoNumber = nil
+	item.servantNumber = nil
 	item.name = ''
 	item.carts = nil
 
 	-- Player
-	if item.id >= 0 and item.id <= 3 then
+	if CORE.attackerIdIsPlayer(item.id) then
 		item.playerNumber = item.id + 1
 		item.name = STATE.PLAYER_NAMES[item.playerNumber]
 		item.rank = STATE.PLAYER_RANKS[item.playerNumber]
@@ -56,8 +57,15 @@ this.initializeReportItem = function(id)
 	elseif CORE.attackerIdIsOtomo(item.id) then
 		item.otomoNumber = CORE.getOtomoIdFromFakeAttackerId(item.id) + 1
 		item.name = STATE.OTOMO_NAMES[item.otomoNumber]
---  elseif item.id == FAKE_MARIONETTE_ID then
---		item.name = 'Wyvern Riding'
+	-- Servant
+	elseif CORE.attackerIdIsServant(item.id) then
+		item.servantNumber = item.id - 3
+		-- Try to find servant name
+		for _,servant in pairs(STATE.SERVANTS) do
+			if servant.id and servant.id == item.id then
+				item.name = servant.name
+			end
+		end
 	elseif item.id == STATE.COMBINE_ALL_OTHERS_ATTACKER_ID then
 		item.name = 'Others'
 	else
@@ -65,12 +73,6 @@ this.initializeReportItem = function(id)
 		for _,boss in pairs(STATE.LARGE_MONSTERS) do
 			if boss.id and boss.id == item.id then
 				item.name = boss.name
-			end
-		end
-		-- Servant
-		for _,servant in pairs(STATE.SERVANTS) do
-			if servant.id and servant.id == item.id then
-				item.name = servant.name
 			end
 		end
 	end
