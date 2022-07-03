@@ -88,6 +88,10 @@
 					"TEXT": "Font family",
 					"VALUE": "Source Code Pro"
 			},
+			"HIDE_COMBINED_OTHERS": {
+				"TEXT": "Only show your damage",
+				"VALUE": false
+		},
 			"HIDE_OVERLAY_IN_VILLAGE": {
 					"TEXT": "Hide the overlay when in the village",
 					"VALUE": false
