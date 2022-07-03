@@ -34,8 +34,10 @@ local function dpsUpdate()
 		-- get player id
 		STATE.MY_PLAYER_ID = STATE.MANAGER.PLAYER:call("getMasterPlayerID")
 
-		-- get info for players
-		CORE.updatePlayers()
+		if STATE.IS_IN_QUEST or STATE.IS_IN_TRAININGHALL then
+			-- get info for players
+			CORE.updatePlayers()
+		end
 
 		-- ensure bosses are initialized
 		local bossCount = STATE.MANAGER.ENEMY:call("getBossEnemyCount")
