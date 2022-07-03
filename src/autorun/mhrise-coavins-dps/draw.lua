@@ -334,6 +334,10 @@ this.drawReport = function(index)
 		return
 	end
 
+	local dir = 1
+	if CORE.CFG('TABLE_GROWS_UPWARD') then
+		dir = -1
+	end
 	local scale = CORE.CFG('TABLE_SCALE') or 1.0
 	local origin_x = CORE.getScreenXFromX(CORE.CFG('TABLE_X'))
 	local origin_y = CORE.getScreenYFromY(CORE.CFG('TABLE_Y'))
@@ -341,7 +345,7 @@ this.drawReport = function(index)
 	local titleHeight = CORE.CFG('DRAW_TITLE_HEIGHT') * scale
 	local headerHeight = CORE.CFG('DRAW_HEADER_HEIGHT') * scale
 	local rowHeight = CORE.CFG('TABLE_ROWH') * scale
-	local growDistance = rowHeight + CORE.CFG('TABLE_ROW_PADDING')
+	local growDistance = rowHeight + CORE.CFG('TABLE_ROW_PADDING') * dir
 
 	if CORE.CFG('TABLE_GROWS_UPWARD') then
 		origin_y = origin_y - rowHeight
@@ -447,12 +451,6 @@ this.drawReport = function(index)
 		end
 	end
 
-	local dir = 1
-	if CORE.CFG('TABLE_GROWS_UPWARD') then
-		dir = -1
-		growDistance = (rowHeight + CORE.CFG('TABLE_ROW_PADDING')) * -1
-	end
-
 	if #report.items == 0 then
 		local colorBlockWidth = 20
 		if not CORE.CFG('DRAW_BAR_COLORBLOCK') then
@@ -473,20 +471,19 @@ this.drawReport = function(index)
 	end
 
 	-- draw report items
-	for i,item in ipairs(report.items) do
-		local y = origin_y + (growDistance * (i-1))
-		if CORE.CFG('DRAW_TITLE') then
-			y = y + titleHeight * dir -- skip title row
-		end
-		if CORE.CFG('DRAW_HEADER') then
-			y = y + headerHeight * dir -- skip header row
-		end
+	local item_y = origin_y
+	if CORE.CFG('DRAW_TITLE') then
+		item_y = item_y + (titleHeight * dir) -- skip title row
+	end
+	if CORE.CFG('DRAW_HEADER') then
+		item_y = item_y + (headerHeight * dir) -- skip header row
+	end
 
-		if CORE.CFG('HIDE_COMBINED_OTHERS')
-		and item.id == STATE.COMBINE_ALL_OTHERS_ATTACKER_ID then
-			-- do not show this row
-		else
-			this.drawReportItem(item, origin_x, y, tableWidth, rowHeight)
+	for i,item in ipairs(report.items) do
+		-- Draw this report item if it's not hidden by this setting
+		if not (CORE.CFG('HIDE_COMBINED_OTHERS') and item.id == STATE.COMBINE_ALL_OTHERS_ATTACKER_ID) then
+			this.drawReportItem(item, origin_x, item_y, tableWidth, rowHeight)
+			item_y = item_y + growDistance
 		end
 	end
 end
