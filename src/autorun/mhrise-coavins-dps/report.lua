@@ -349,10 +349,13 @@ this.mergeBossIntoReport = function(report, boss)
 			elseif otomoId == 4 then
 				-- pretend to be player 1
 				effSourceId = 0
-			-- handle servant otomo
+			-- handle servant otomos
 			elseif otomoId == 5 then
 				-- pretend to be player 5 (servant)
 				effSourceId = 4
+			elseif otomoId == 6 then
+				-- pretend to be player 6 (servant)
+				effSourceId = 5
 			end
 		end
 
