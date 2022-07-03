@@ -239,30 +239,33 @@ this.drawReportItem = function(item, x, y, width, height)
 
 	-- draw the actual bar
 	if CORE.CFG('USE_MINIMAL_BARS') then
-		-- bar is overlaid on top of the color block
-		-- color block
-		this.draw_filled_rect(x, y, colorBlockWidth, height, elementalColor)
+		-- only proceed if we actually have a color block to use here
+		if CORE.CFG('DRAW_BAR_COLORBLOCK') then
+			-- bar is overlaid on top of the color block
+			-- color block
+			this.draw_filled_rect(x, y, colorBlockWidth, height, elementalColor)
 
-		-- damage bar
-		local damageBarWidth = colorBlockWidth * damageBarWidthMultiplier
-		this.draw_filled_rect(x, y, damageBarWidth, height, combatantColor)
+			-- damage bar
+			local damageBarWidth = colorBlockWidth * damageBarWidthMultiplier
+			this.draw_filled_rect(x, y, damageBarWidth, height, combatantColor)
 
-		-- hr
-		local revealRank = CORE.CFG('DRAW_BAR_REVEAL_RANK')
-		if (revealRank == 2 and item.rank)
-		or (revealRank == 3 and item.rank2)
-		or (CORE.CFG('DEBUG_SHOW_ATTACKER_ID') and item.id) then
-			local text
-			if CORE.CFG('DEBUG_SHOW_ATTACKER_ID') then
-				text = string.format('%s', item.id)
-			else
-				if revealRank == 2 then
-					text = string.format('%s', item.rank)
-				elseif revealRank == 3 then
-					text = string.format('%s', item.rank2)
+			-- hr
+			local revealRank = CORE.CFG('DRAW_BAR_REVEAL_RANK')
+			if (revealRank == 2 and item.rank)
+			or (revealRank == 3 and item.rank2)
+			or (CORE.CFG('DEBUG_SHOW_ATTACKER_ID') and item.id) then
+				local text
+				if CORE.CFG('DEBUG_SHOW_ATTACKER_ID') then
+					text = string.format('%s', item.id)
+				else
+					if revealRank == 2 then
+						text = string.format('%s', item.rank)
+					elseif revealRank == 3 then
+						text = string.format('%s', item.rank2)
+					end
 				end
+				this.drawRichText(text, x + (3 * CORE.CFG('TABLE_SCALE')), y, CORE.COLOR('WHITE'), CORE.COLOR('BLACK'))
 			end
-			this.drawRichText(text, x + (3 * CORE.CFG('TABLE_SCALE')), y, CORE.COLOR('WHITE'), CORE.COLOR('BLACK'))
 		end
 	else
 		-- bar takes up the entire width of the table
