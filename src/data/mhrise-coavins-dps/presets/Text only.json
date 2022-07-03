@@ -1,8 +1,8 @@
 {
     "CFG": {
-        "AUTO_SAVE": {
-            "TEXT": "Automatically save all settings",
-            "VALUE": true
+        "COMBINE_ALL_OTHERS": {
+            "TEXT": "Combine into one row all attackers who aren't you",
+            "VALUE": false
         },
         "COMBINE_OTOMO_WITH_HUNTER": {
             "TEXT": "Combine buddies with their hunters",
@@ -10,10 +10,6 @@
         },
         "CONDITION_LIKE_DAMAGE": {
             "TEXT": "Ailment buildup counts as damage",
-            "VALUE": false
-        },
-        "DEBUG_SHOW_MISSING_DAMAGE": {
-            "TEXT": "Show in the title bar any damage that is not accounted for in the table",
             "VALUE": false
         },
         "DRAW_BAR_COLORBLOCK": {
@@ -29,9 +25,9 @@
             "VALUE": false
         },
         "DRAW_BAR_REVEAL_RANK": {
-			"VALUE": 3,
-			"TEXT": "Reveal player rank"
-		},
+            "TEXT": "Reveal player rank",
+            "VALUE": 3.0
+        },
         "DRAW_BAR_TEXT_NAME_USE_REAL_NAMES": {
             "TEXT": "Reveal character names",
             "VALUE": true
@@ -96,6 +92,10 @@
             "TEXT": "Hide the overlay when in the village",
             "VALUE": false
         },
+        "MARIONETTE_IS_PLAYER_DMG": {
+            "TEXT": "Credit players with damage from Wyvern Riding",
+            "VALUE": true
+        },
         "PDPS_BASED_ON_FIRST_STRIKE": {
             "TEXT": "pDPS starts counting from player's first attack",
             "VALUE": true
@@ -108,6 +108,8 @@
             3.0,
             5.0,
             6.0,
+            1.0,
+            1.0,
             1.0,
             1.0,
             1.0,
@@ -138,7 +140,11 @@
             58.0,
             53.0,
             53.0,
-            39.0
+            39.0,
+            58.0,
+            58.0,
+            30.0,
+            30.0
         ],
         "TABLE_GROWS_UPWARD": {
             "TEXT": "Table grows upward instead of down",
@@ -274,6 +280,41 @@
     },
     "FILTERS": {
         "ATTACKER_TYPES": {
+            "BallistaHate": true,
+            "BarrelBombLarge": true,
+            "BarrelBombSmall": true,
+            "CaptureBullet": true,
+            "CaptureSmokeBomb": true,
+            "DetonationGrenade": true,
+            "EcBatExplode": true,
+            "EcFlash": true,
+            "EcForestWallShooter": true,
+            "EcPenetrateFish": true,
+            "EcPiranha": true,
+            "EcSandWallShooter": true,
+            "EcSwampLeech": true,
+            "EcWallTrapBugExplode": true,
+            "Fg005": true,
+            "FlashBoll": true,
+            "HmBallista": true,
+            "HmCannon": true,
+            "HmDragnator": true,
+            "HmFlameThrower": true,
+            "HmGatling": true,
+            "HmNpc": true,
+            "HmTrap": true,
+            "Invalid": true,
+            "Kabutowari": true,
+            "Kunai": true,
+            "Makimushi": true,
+            "Max": true,
+            "Nitro": true,
+            "OnibiMine": true,
+            "OtAirouShell014": true,
+            "OtAirouShell102": true,
+            "Otomo": true,
+            "PlayerWeapon": true,
+            "WaterBeetle": true,
             "ballistahate": true,
             "barrelbombl": true,
             "barrelbombs": true,
@@ -300,8 +341,8 @@
             "weapon": true
         },
         "INCLUDE_OTHER": false,
-        "INCLUDE_SERVANT": true,
-        "INCLUDE_OTOMO": false
+        "INCLUDE_OTOMO": false,
+        "INCLUDE_SERVANT": true
     },
     "HOTKEYS": {
         "MONSTER_NEXT": {
