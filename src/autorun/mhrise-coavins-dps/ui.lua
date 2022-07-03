@@ -273,6 +273,14 @@ this.showFilterSection = function()
 			imgui.tree_pop()
 		end
 
+		if imgui.tree_node('Moves') then
+			this.showCheckboxForAttackerType('Kabutowari')
+
+			imgui.new_line()
+
+			imgui.tree_pop()
+		end
+
 		if imgui.tree_node('Items') then
 			this.showCheckboxForAttackerType('BarrelBombSmall')
 			this.showCheckboxForAttackerType('BarrelBombLarge')
@@ -307,7 +315,6 @@ this.showFilterSection = function()
 			this.showCheckboxForAttackerType('BallistaHate')
 			this.showCheckboxForAttackerType('WaterBeetle')
 			this.showCheckboxForAttackerType('DetonationGrenade')
-			this.showCheckboxForAttackerType('Kabutowari')
 			this.showCheckboxForAttackerType('FlashBoll')
 			this.showCheckboxForAttackerType('Fg005')
 			this.showCheckboxForAttackerType('EcBatExplode')
