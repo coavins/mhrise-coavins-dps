@@ -342,6 +342,7 @@ this.showColorSection = function()
 		this.showColorPickerForUnique('Player 3', 'PLAYER', 3)
 		this.showColorPickerForUnique('Player 4', 'PLAYER', 4)
 		this.showColorPicker('Buddies', 'OTOMO')
+		this.showColorPicker('Followers', 'SERVANT')
 
 		imgui.new_line()
 

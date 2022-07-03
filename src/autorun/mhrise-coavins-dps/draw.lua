@@ -221,13 +221,6 @@ this.drawReportItem = function(item, x, y, width, height)
 	end
 
 	-- get some colors
-	local combatantColor = CORE.COLOR('GRAY')
-	if item.playerNumber then
-		combatantColor = CORE.COLOR('PLAYER')[item.playerNumber]
-	elseif item.otomoNumber then
-		combatantColor = CORE.COLOR('OTOMO')
-	end
-
 	local physicalColor = CORE.COLOR('BAR_DMG_PHYSICAL_UNIQUE')[item.playerNumber]
 	if not physicalColor or not CORE.CFG('DRAW_BAR_USE_PLAYER_COLORS') then
 		physicalColor = CORE.COLOR('BAR_DMG_PHYSICAL')
@@ -238,9 +231,17 @@ this.drawReportItem = function(item, x, y, width, height)
 		elementalColor = CORE.COLOR('BAR_DMG_ELEMENT')
 	end
 
-	if item.otomoNumber then
+	local combatantColor = CORE.COLOR('GRAY')
+	if item.playerNumber then
+		combatantColor = CORE.COLOR('PLAYER')[item.playerNumber]
+	elseif item.otomoNumber then
+		combatantColor = CORE.COLOR('OTOMO')
 		physicalColor = CORE.COLOR('OTOMO')
 		elementalColor = CORE.COLOR('OTOMO')
+	elseif item.servantNumber then
+		combatantColor = CORE.COLOR('SERVANT')
+		physicalColor = CORE.COLOR('SERVANT')
+		elementalColor = CORE.COLOR('SERVANT')
 	end
 
 	-- draw the actual bar
