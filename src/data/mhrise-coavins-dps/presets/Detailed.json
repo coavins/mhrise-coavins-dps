@@ -118,7 +118,7 @@
             14.0,
             8.0,
             9.0,
-            1.0,
+            19.0,
             1.0,
             1.0,
             1.0,
@@ -202,7 +202,7 @@
             "MAX": 2000.0,
             "MIN": 30.0,
             "TEXT": "Table width",
-            "VALUE": 567.0
+            "VALUE": 573.0
         },
         "TABLE_X": {
             "MAX": 1.0,
@@ -277,6 +277,7 @@
             2939354930.0
         ],
         "RED": 2952737330.0,
+        "SERVANT": 2947251444.0,
         "TITLE_BG": 2281701376.0,
         "TITLE_FG": 4292532954.0,
         "WHITE": 4294967295.0,
@@ -344,10 +345,10 @@
             "waterbeetle": true,
             "weapon": true
         },
+        "INCLUDE_LARGE": true,
         "INCLUDE_OTHER": true,
         "INCLUDE_OTOMO": true,
-        "INCLUDE_SERVANT": true,
-        "INCLUDE_LARGE": true
+        "INCLUDE_SERVANT": true
     },
     "HOTKEYS": {
         "MONSTER_NEXT": {
