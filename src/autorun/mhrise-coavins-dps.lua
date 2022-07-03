@@ -131,6 +131,8 @@ local function dpsFrame()
 		if CORE.CFG('SAVE_RESULTS_TO_DISK') then
 			EXPORT.exportData()
 		end
+		-- make sure we do one last update
+		STATE.NEEDS_UPDATE = true
 	end
 
 	if STATE.IS_IN_QUEST or STATE.IS_POST_QUEST then
