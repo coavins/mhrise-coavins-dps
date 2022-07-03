@@ -402,8 +402,9 @@ this.DrawWindowSettings = function()
 			DATA.initializeTestData()
 		else
 			DATA.clearTestData()
-			STATE.NEEDS_UPDATE = true
 		end
+
+		STATE.NEEDS_UPDATE = true
 	end
 
 	imgui.same_line()
