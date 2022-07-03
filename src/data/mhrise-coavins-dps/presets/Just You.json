@@ -90,7 +90,7 @@
 			},
 			"HIDE_COMBINED_OTHERS": {
 				"TEXT": "Only show your damage",
-				"VALUE": false
+				"VALUE": true
 		},
 			"HIDE_OVERLAY_IN_VILLAGE": {
 					"TEXT": "Hide the overlay when in the village",
