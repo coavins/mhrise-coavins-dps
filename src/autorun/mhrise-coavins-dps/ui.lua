@@ -242,9 +242,18 @@ this.showFilterSection = function()
 	if imgui.tree_node('Attack type') then
 		if imgui.tree_node('General') then
 			this.showCheckboxForAttackerType('PlayerWeapon')
-			this.showCheckboxForAttackerType('Otomo')
 			this.showCheckboxForAttackerType('Invalid') -- Monster
 			this.showCheckboxForAttackerType('marionette')
+
+			imgui.new_line()
+
+			imgui.tree_pop()
+		end
+
+		if imgui.tree_node('Buddy') then
+			this.showCheckboxForAttackerType('Otomo')
+			this.showCheckboxForAttackerType('OtAirouShell014')
+			this.showCheckboxForAttackerType('OtAirouShell102')
 
 			imgui.new_line()
 

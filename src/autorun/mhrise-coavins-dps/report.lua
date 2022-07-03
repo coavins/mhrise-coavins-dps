@@ -138,7 +138,8 @@ this.sumDamageCountersList = function(counters, attackerTypeFilter)
 		if not attackerTypeFilter or attackerTypeFilter[type] then
 			local counterTotal = DATA.getTotalDamageForDamageCounter(counter)
 
-			if type == 'Otomo' and CORE.CFG('COMBINE_OTOMO_WITH_HUNTER') then
+			if (type == 'Otomo' or type == 'OtAirouShell014' or type == 'OtAirouShell102')
+			and CORE.CFG('COMBINE_OTOMO_WITH_HUNTER') then
 				-- count otomo's condition damage here if necessary
 				if CORE.CFG('CONDITION_LIKE_DAMAGE') then
 					counterTotal = counterTotal + counter.condition

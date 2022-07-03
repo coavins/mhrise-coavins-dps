@@ -319,7 +319,7 @@ this.addDamageToBoss = function(boss, attackerId, attackerTypeId
 	local buildup = boss.ailment.buildup
 	local attackerType = ENUM.ATTACKER_TYPES[attackerTypeId]
 
-	local isOtomo   = (attackerType == 'Otomo')
+	local isOtomo   = (attackerTypeId >= 21 and attackerTypeId <= 23)
 
 	if isOtomo then
 		-- separate otomo from their master
