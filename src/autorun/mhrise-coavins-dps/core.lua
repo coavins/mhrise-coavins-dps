@@ -176,7 +176,7 @@ end
 this.mergeFiltersIntoLeft = function(filters1, filters2)
 	if filters2 then
 		for name,setting in pairs(filters2) do
-			if name == 'ATTACKER_TYPES' then
+			if name == 'DAMAGE_TYPES' then
 				for k,v in pairs(filters2[name]) do
 					filters1[name][k] = v
 				end
@@ -352,6 +352,7 @@ this.isSettingAllowedForPresets = function(name)
 	or name == 'UPDATE_RATE'
 	or name == 'DEBUG_SHOW_MISSING_DAMAGE'
 	or name == 'DEBUG_SHOW_ATTACKER_ID'
+	or name == 'LOCALE'
 	then
 		return false
 	else
@@ -399,13 +400,13 @@ this.resetReportMonsters = function()
 	end
 end
 
-this.AddAttackerTypeToReport = function(typeToAdd)
-	STATE._FILTERS.ATTACKER_TYPES[typeToAdd] = true
+this.AddDamageTypeToReport = function(typeToAdd)
+	STATE._FILTERS.DAMAGE_TYPES[typeToAdd] = true
 	this.log_debug(string.format('damage type %s added to report', typeToAdd))
 end
 
-this.RemoveAttackerTypeFromReport = function(typeToRemove)
-	STATE._FILTERS.ATTACKER_TYPES[typeToRemove] = false
+this.RemoveDamageTypeFromReport = function(typeToRemove)
+	STATE._FILTERS.DAMAGE_TYPES[typeToRemove] = false
 	this.log_debug(string.format('damage type %s removed from report', typeToRemove))
 end
 

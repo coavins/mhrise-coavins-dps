@@ -11,6 +11,7 @@ local HOTKEY = require 'mhrise-coavins-dps.hotkey'
 local UI     = require 'mhrise-coavins-dps.ui'
 local HOOK   = require 'mhrise-coavins-dps.hook'
 local EXPORT = require 'mhrise-coavins-dps.export'
+local LANG   = require 'mhrise-coavins-dps.lang'
 
 local function sanityCheck()
 	if not CORE.CFG('UPDATE_RATE') or tonumber(CORE.CFG('UPDATE_RATE')) == nil then
@@ -173,6 +174,10 @@ end
 
 ---@diagnostic disable-next-line: param-type-mismatch
 re.on_frame(function()
+	if STATE.IMGUI_FONT then
+		imgui.push_font(STATE.IMGUI_FONT)
+	end
+
 	if STATE.DRAW_WINDOW_SETTINGS then
 		UI.DrawWindowSettings()
 	end
@@ -195,6 +200,10 @@ re.on_frame(function()
 	end
 
 	STATE.ASSIGNED_HOTKEY_THIS_FRAME = false
+
+	if STATE.IMGUI_FONT then
+		imgui.pop_font()
+	end
 end)
 
 ---@diagnostic disable-next-line: param-type-mismatch
@@ -204,9 +213,9 @@ re.on_draw_ui(function()
 
 	imgui.same_line()
 
-	local buttonText = 'open settings'
+	local buttonText = LANG.MESSAGE('btn_open_settings')
 	if STATE.DRAW_WINDOW_SETTINGS then
-		buttonText = 'close settings'
+		buttonText = LANG.MESSAGE('btn_close_settings')
 	end
 	if imgui.button(buttonText) then
 		STATE.DRAW_WINDOW_SETTINGS = not STATE.DRAW_WINDOW_SETTINGS
@@ -243,12 +252,15 @@ if not CORE.loadDefaultConfig() then
 	return -- halt script
 end
 
--- load any saved settings
-CORE.loadSavedConfigIfExist()
-
 -- load presets into cache
 CORE.loadPresets()
 CORE.loadColorschemes()
+LANG.loadLocales()
+
+-- load any saved settings
+CORE.loadSavedConfigIfExist()
+-- apply saved language
+LANG.applySavedLanguage()
 
 -- perform sanity checks
 sanityCheck()
@@ -269,5 +281,8 @@ if STATE.USE_PLUGIN_D2D then
 else
 	CORE.log_info('reframework-d2d plugin is disabled')
 end
+
+-- load CJK font
+STATE.IMGUI_FONT = imgui.load_font(STATE.RE_FONT_NAME, STATE.RE_FONT_SIZE, STATE.CJK_GLYPH_RANGES)
 
 CORE.log_info('init complete')

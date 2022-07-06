@@ -33,9 +33,9 @@ describe("mhrise-coavins-dps", function()
 
 		CORE.SetQuestDuration(0.0)
 
-		-- all attacker types enabled
-		for _,type in pairs(ENUM.ATTACKER_TYPES) do
-			CORE.AddAttackerTypeToReport(type)
+		-- all damage types enabled
+		for _,type in pairs(ENUM.DAMAGE_TYPES) do
+			CORE.AddDamageTypeToReport(type)
 		end
 
 		CORE.SetCFG('CONDITION_LIKE_DAMAGE', false)

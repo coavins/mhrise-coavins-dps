@@ -1,111 +1,85 @@
 {
     "CFG": {
         "COMBINE_ALL_OTHERS": {
-            "TEXT": "Combine into one row all attackers who aren't you",
             "VALUE": false
         },
         "COMBINE_OTOMO_WITH_HUNTER": {
-            "TEXT": "Combine buddies with their hunters",
             "VALUE": true
         },
         "CONDITION_LIKE_DAMAGE": {
-            "TEXT": "Ailment buildup counts as damage",
             "VALUE": false
         },
         "DRAW_BAR_COLORBLOCK": {
-            "TEXT": "Show color block",
             "VALUE": true
         },
         "DRAW_BAR_OUTLINES": {
-            "TEXT": "Show row outline",
             "VALUE": false
         },
         "DRAW_BAR_RELATIVE_TO_PARTY": {
-            "TEXT": "Damage bars will represent share of overall party DPS",
             "VALUE": false
         },
         "DRAW_BAR_REVEAL_RANK": {
-            "TEXT": "Reveal player rank",
             "VALUE": 3.0
         },
         "DRAW_BAR_TEXT_NAME_USE_REAL_NAMES": {
-            "TEXT": "Reveal character names",
             "VALUE": true
         },
         "DRAW_BAR_TEXT_YOU": {
-            "TEXT": "Show \"YOU\" on your row",
             "VALUE": false
         },
         "DRAW_BAR_USE_PLAYER_COLORS": {
-            "TEXT": "Show player bars with their assigned color",
             "VALUE": true
         },
         "DRAW_BAR_USE_UNIQUE_COLORS": {
-            "TEXT": "Show each type of damage in a different color",
             "VALUE": true
         },
         "DRAW_HEADER": {
-            "TEXT": "Show header",
             "VALUE": false
         },
         "DRAW_HEADER_BACKGROUND": {
-            "TEXT": "Show header background",
             "VALUE": true
         },
         "DRAW_HEADER_HEIGHT": {
             "MAX": 100.0,
             "MIN": 0.0,
-            "TEXT": "Header height",
             "VALUE": 18.0
         },
         "DRAW_TABLE_BACKGROUND": {
-            "TEXT": "Show row background",
             "VALUE": false
         },
         "DRAW_TITLE": {
-            "TEXT": "Show title",
             "VALUE": true
         },
         "DRAW_TITLE_BACKGROUND": {
-            "TEXT": "Show title background",
             "VALUE": false
         },
         "DRAW_TITLE_HEIGHT": {
             "MAX": 100.0,
             "MIN": 0.0,
-            "TEXT": "Title height",
             "VALUE": 18.0
         },
         "DRAW_TITLE_MONSTER": {
-            "TEXT": "Show selected monsters in title",
             "VALUE": true
         },
         "DRAW_TITLE_TEXT": {
-            "TEXT": "Show title text",
             "VALUE": true
         },
         "FONT_FAMILY": {
-            "TEXT": "Font family",
             "VALUE": "Tahoma"
         },
         "HIDE_COMBINED_OTHERS": {
-            "TEXT": "Only show your damage",
             "VALUE": false
         },
         "HIDE_OVERLAY_IN_VILLAGE": {
-            "TEXT": "Hide the overlay when in the village",
             "VALUE": false
         },
         "MARIONETTE_IS_PLAYER_DMG": {
-            "TEXT": "Credit players with damage from Wyvern Riding",
             "VALUE": true
         },
         "PDPS_BASED_ON_FIRST_STRIKE": {
-            "TEXT": "pDPS starts counting from player's first attack",
             "VALUE": true
         },
         "SHOW_TEST_DATA_WHILE_MENU_IS_OPEN": {
-            "TEXT": "Show test data while menu is open",
             "VALUE": true
         },
         "TABLE_COLS": [
@@ -151,95 +125,78 @@
             30.0
         ],
         "TABLE_GROWS_UPWARD": {
-            "TEXT": "Table grows upward instead of down",
             "VALUE": false
         },
         "TABLE_HEADER_TEXT_OFFSET_X": {
             "MAX": 100.0,
             "MIN": -100.0,
-            "TEXT": "Title text offset X",
             "VALUE": 3.0
         },
         "TABLE_ROWH": {
             "MAX": 100.0,
             "MIN": 0.0,
-            "TEXT": "Row height",
             "VALUE": 18.0
         },
         "TABLE_ROW_PADDING": {
             "MAX": 150.0,
             "MIN": 0.0,
-            "TEXT": "Row padding",
             "VALUE": 0.0
         },
         "TABLE_ROW_TEXT_OFFSET_X": {
             "MAX": 100.0,
             "MIN": -100.0,
-            "TEXT": "Text offset X",
             "VALUE": 10.0
         },
         "TABLE_ROW_TEXT_OFFSET_Y": {
             "MAX": 100.0,
             "MIN": -100.0,
-            "TEXT": "Text offset Y",
             "VALUE": 0.0
         },
         "TABLE_SCALE": {
             "MAX": 10.0,
             "MIN": 0.0,
-            "TEXT": "Scaling factor",
             "VALUE": 1.0
         },
         "TABLE_SORT_ASC": {
-            "TEXT": "Reverse sort order",
             "VALUE": false
         },
         "TABLE_SORT_IN_ORDER": {
-            "TEXT": "Sort by player",
             "VALUE": false
         },
         "TABLE_WIDTH": {
             "MAX": 2000.0,
             "MIN": 30.0,
-            "TEXT": "Table width",
             "VALUE": 434.0
         },
         "TABLE_X": {
             "MAX": 1.0,
             "MIN": 0.0,
-            "TEXT": "Horizontal position",
             "VALUE": 0.6800000071525574
         },
         "TABLE_Y": {
             "MAX": 1.0,
             "MIN": 0.0,
-            "TEXT": "Vertical position",
             "VALUE": 0.019999999552965164
         },
         "TEXT_DRAW_SHADOWS": {
-            "TEXT": "Draw text shadows",
             "VALUE": true
         },
         "TEXT_SHADOW_OFFSET_X": {
             "MAX": 5.0,
             "MIN": -5.0,
-            "TEXT": "Text shadow offset X",
             "VALUE": 1.0
         },
         "TEXT_SHADOW_OFFSET_Y": {
             "MAX": 5.0,
             "MIN": -5.0,
-            "TEXT": "Text shadow offset Y",
             "VALUE": 1.0
         },
         "UPDATE_RATE": {
             "MAX": 10.0,
             "MIN": 0.01,
-            "TEXT": "Update frequency (in seconds)",
             "VALUE": 0.2
         },
         "USE_MINIMAL_BARS": {
-            "TEXT": "Use a minimalist style for the damage bars",
             "VALUE": true
         }
     },
@@ -283,7 +240,7 @@
         "YELLOW": 2952789810.0
     },
     "FILTERS": {
-        "ATTACKER_TYPES": {
+        "DAMAGE_TYPES": {
             "BallistaHate": true,
             "BarrelBombLarge": true,
             "BarrelBombSmall": true,

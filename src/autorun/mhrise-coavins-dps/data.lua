@@ -118,7 +118,7 @@ this.initializeDamageSource = function(attackerId)
 	s.id = attackerId
 
 	s.counters = {}
-	for _,type in pairs(ENUM.ATTACKER_TYPES) do
+	for _,type in pairs(ENUM.DAMAGE_TYPES) do
 		s.counters[type] = this.initializeDamageCounter()
 	end
 
@@ -292,7 +292,7 @@ this.initializeBossMonsterWithDummyData = function(bossKey, fakeName)
 	CORE.AddMonsterToReport(bossKey, boss)
 end
 
-this.addDamageToBoss = function(boss, attackerId, attackerTypeId
+this.addDamageToBoss = function(boss, attackerId, damageTypeId
 	, amtPhysical, amtElemental, amtCondition, typeCondition, amtAilment, typeAilment, criticalType, riderId)
 	amtPhysical = amtPhysical or 0
 	amtElemental = amtElemental or 0
@@ -325,13 +325,13 @@ this.addDamageToBoss = function(boss, attackerId, attackerTypeId
 
 	local sources = boss.damageSources
 	local buildup = boss.ailment.buildup
-	local attackerType = ENUM.ATTACKER_TYPES[attackerTypeId]
-	if not attackerType then
-		CORE.log_error('Could not find attacker type for id ' .. attackerTypeId)
+	local damageType = ENUM.DAMAGE_TYPES[damageTypeId]
+	if not damageType then
+		CORE.log_error('Could not find damage type for id ' .. damageTypeId)
 		return
 	end
 
-	local isOtomo   = (attackerTypeId >= 21 and attackerTypeId <= 23)
+	local isOtomo   = (damageTypeId >= 21 and damageTypeId <= 23)
 
 	if isOtomo then
 		-- separate otomo from their master
@@ -345,10 +345,10 @@ this.addDamageToBoss = function(boss, attackerId, attackerTypeId
 	local s = sources[attackerId]
 
 	-- get the damage counter for this type
-	if not s.counters[attackerType] then
-		s.counters[attackerType] = this.initializeDamageCounter()
+	if not s.counters[damageType] then
+		s.counters[damageType] = this.initializeDamageCounter()
 	end
-	local c = s.counters[attackerType]
+	local c = s.counters[damageType]
 
 	-- handle marionette attacks
 	if riderId then
@@ -363,7 +363,7 @@ this.addDamageToBoss = function(boss, attackerId, attackerTypeId
 		c.riders[riderId] = this.mergeDamageCounters(c.riders[riderId], amt)
 	else
 		-- add damage facts to counter
-		s.counters[attackerType] = this.mergeDamageCounters(c, amt)
+		s.counters[damageType] = this.mergeDamageCounters(c, amt)
 	end
 
 	-- accumulate buildup for certain ailment types

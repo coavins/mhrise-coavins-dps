@@ -3,6 +3,19 @@ local USER_OPTIONS = require 'mhrise-coavins-dps.user_options'
 local this = {}
 
 this.USE_PLUGIN_D2D = USER_OPTIONS.USE_PLUGIN_D2D
+this.RE_FONT_NAME = 'NotoSansJP-Regular.otf'
+this.RE_FONT_SIZE = 18
+this.CJK_GLYPH_RANGES = {
+	0x0020, 0x00FF, -- Basic Latin + Latin Supplement
+	0x2000, 0x206F, -- General Punctuation
+	0x3000, 0x30FF, -- CJK Symbols and Punctuations, Hiragana, Katakana
+	0x31F0, 0x31FF, -- Katakana Phonetic Extensions
+	0xFF00, 0xFFEF, -- Half-width characters
+	0x4e00, 0x9FAF, -- CJK Ideograms
+	0,
+}
+this.IMGUI_FONT = nil
+
 
 -- auto-detect missing plugin
 if not d2d then
@@ -11,7 +24,7 @@ end
 
 this.DPS_ENABLED = true
 this.HOOKS_ENABLED = true
-this.DPS_DEBUG = true
+this.DPS_DEBUG = false
 this.LAST_UPDATE_TIME = 0
 this.DRAW_OVERLAY = true
 this.DRAW_WINDOW_SETTINGS = false
@@ -45,6 +58,11 @@ this.PRESET_OPTIONS_SELECTED = 1
 this._COLORSCHEMES = {}
 this.COLORSCHEME_OPTIONS = {}
 this.COLORSCHEME_OPTIONS_SELECTED = 1
+this._LOCALES = {}
+this.LOCALE_OPTIONS = {}
+this.LOCALE_OPTIONS_SELECTED = 1
+this.LOCALE_OPTIONS_TXT2LOCALE = {}
+this.LOCALE = 'en-US'
 
 this.SCREEN_W = 0
 this.SCREEN_H = 0
@@ -55,7 +73,7 @@ this.FAKE_ATTACKER_ID = 10189 -- monsters with id=0 are treated as if they had t
 this.COMBINE_ALL_OTHERS_ATTACKER_ID = 10295 -- when this option is used, all attackers except for us use this id
 this.HIGH_NUMBER = 9999.0
 this.OTOMO_ATTACKER_TYPE_ID = 21
-this.MONSTER_ATTACKER_TYPE_ID = 34
+this.MONSTER_DAMAGE_TYPE_ID = 34
 
 this.LARGE_MONSTERS = {}
 this.TEST_MONSTERS = nil -- like LARGE_MONSTERS, but holds dummy/test data

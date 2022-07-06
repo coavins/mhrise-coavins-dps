@@ -1,7 +1,7 @@
 local STATE = require 'mhrise-coavins-dps.state'
 local CORE  = require 'mhrise-coavins-dps.core'
-local ENUM  = require 'mhrise-coavins-dps.enum'
 local DATA  = require 'mhrise-coavins-dps.data'
+local LANG  = require 'mhrise-coavins-dps.lang'
 
 local this = {}
 
@@ -118,7 +118,7 @@ this.drawRichDamageBar = function(item, x, y, maxWidth, h, colorPhysical, colorE
 end
 
 this.drawReportHeaderColumn = function(col, x, y)
-	local text = ENUM.TABLE_COLUMNS[col]
+	local text = LANG.HEADER(col)
 
 	this.drawRichText(text, x, y, CORE.COLOR('GRAY'), CORE.COLOR('BLACK'))
 end

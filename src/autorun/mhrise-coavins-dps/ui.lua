@@ -3,18 +3,20 @@ local CORE   = require 'mhrise-coavins-dps.core'
 local ENUM   = require 'mhrise-coavins-dps.enum'
 local DATA   = require 'mhrise-coavins-dps.data'
 local REPORT = require 'mhrise-coavins-dps.report'
+local LANG   = require 'mhrise-coavins-dps.lang'
 
 local this = {}
 
+-- Utility functions
 this.showTextboxForSetting = function(setting)
-	local changed, value = imgui.input_text(CORE.TXT(setting), CORE.CFG(setting))
+	local changed, value = imgui.input_text(LANG.OPTION(setting), CORE.CFG(setting))
 	if changed then
 		CORE.SetCFG(setting, value)
 	end
 end
 
 this.showCheckboxForSetting = function(setting)
-	local changed, value = imgui.checkbox(CORE.TXT(setting), CORE.CFG(setting))
+	local changed, value = imgui.checkbox(LANG.OPTION(setting), CORE.CFG(setting))
 	if changed then
 		CORE.SetCFG(setting, value)
 		STATE.NEEDS_UPDATE = true
@@ -23,7 +25,7 @@ end
 
 this.showSliderForFloatSetting = function(setting)
 	local changed, value = imgui.slider_float(
-		CORE.TXT(setting), CORE.CFG(setting), CORE.MIN(setting), CORE.MAX(setting), '%.2f'
+		LANG.OPTION(setting), CORE.CFG(setting), CORE.MIN(setting), CORE.MAX(setting), '%.2f'
 	)
 	if changed then
 		CORE.SetCFG(setting, value)
@@ -32,14 +34,15 @@ end
 
 this.showSliderForIntSetting = function(setting)
 	local changed, value = imgui.slider_int(
-		CORE.TXT(setting), CORE.CFG(setting), CORE.MIN(setting), CORE.MAX(setting), '%d'
+		LANG.OPTION(setting), CORE.CFG(setting), CORE.MIN(setting), CORE.MAX(setting), '%d'
 	)
 	if changed then
 		CORE.SetCFG(setting, value)
 	end
 end
 
-this.showColorPicker = function(text, setting)
+this.showColorPicker = function(setting)
+	local text = LANG.COLOR(setting)
 	if imgui.tree_node(text) then
 		local changed, value = imgui.color_picker_argb(text, CORE.COLOR(setting), STATE.PICKER_FLAGS)
 		if changed then
@@ -59,24 +62,280 @@ this.showColorPickerForUnique = function(text, setting, playerNumber)
 	end
 end
 
-this.showCheckboxForAttackerType = function(type)
-	local typeIsInReport = STATE._FILTERS.ATTACKER_TYPES[type]
-	local changed, wantsIt = imgui.checkbox(ENUM.ATTACKER_TYPE_TEXT[type], typeIsInReport)
+this.showCheckboxForDamageType = function(type)
+	local typeIsInReport = STATE._FILTERS.DAMAGE_TYPES[type]
+	local changed, wantsIt = imgui.checkbox(LANG.DAMAGETYPE(type), typeIsInReport)
 	if changed then
 		if wantsIt then
-			CORE.AddAttackerTypeToReport(type)
+			CORE.AddDamageTypeToReport(type)
 		else
-			CORE.RemoveAttackerTypeFromReport(type)
+			CORE.RemoveDamageTypeFromReport(type)
 		end
 		REPORT.generateReport(STATE.REPORT_MONSTERS)
 	end
 end
 
-this.showAppearanceSection = function()
-	if imgui.collapsing_header('Size and position') then
-		imgui.text('Scale Overlay')
+this.DrawWindowSettings = function()
+	local changed, wantsIt, value
+
+	wantsIt = imgui.begin_window('coavins dps meter - settings', STATE.DRAW_WINDOW_SETTINGS, STATE.WINDOW_FLAGS)
+	if STATE.DRAW_WINDOW_SETTINGS and not wantsIt then
+		STATE.DRAW_WINDOW_SETTINGS = false
+
+		if DATA.isInTestMode() then
+			DATA.clearTestData()
+			STATE.NEEDS_UPDATE = true
+		end
+
+		if CORE.CFG('AUTO_SAVE') then
+			-- save when the window is closed
+			CORE.saveCurrentConfig()
+		end
+	end
+
+	-- Enabled
+	changed, wantsIt = imgui.checkbox(LANG.MESSAGE('Enabled'), STATE.DPS_ENABLED)
+	if changed then
+		STATE.DPS_ENABLED = wantsIt
+	end
+
+	imgui.same_line()
+	if imgui.button(LANG.MESSAGE('btn_reset_default')) then
+		CORE.loadDefaultConfig()
+		if CORE.CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN') then
+			DATA.initializeTestData()
+		else
+			DATA.clearTestData()
+		end
+
+		STATE.NEEDS_UPDATE = true
+	end
+
+	imgui.same_line()
+	if imgui.button(LANG.MESSAGE('btn_clear_data')) then
+		if DATA.isInTestMode() then
+			-- reinitialize test data
+			DATA.initializeTestData()
+		else
+			CORE.cleanUpData('user clicked reset')
+		end
+
+		STATE.NEEDS_UPDATE = true
+	end
+
+	imgui.same_line()
+	if imgui.button(LANG.MESSAGE('btn_set_hotkeys')) then
+		STATE.DRAW_WINDOW_HOTKEYS = not STATE.DRAW_WINDOW_HOTKEYS
+	end
+
+	imgui.new_line()
+
+	if imgui.button(LANG.MESSAGE('btn_save_settings')) then
+		CORE.saveCurrentConfig()
+	end
+	imgui.same_line()
+	if imgui.button(LANG.MESSAGE('btn_load_settings')) then
+		CORE.loadSavedConfigIfExist()
+		LANG.applySavedLanguage()
+		if CORE.CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN') then
+			DATA.initializeTestData()
+		else
+			DATA.clearTestData()
+			STATE.NEEDS_UPDATE = true
+		end
+	end
+
+	if not STATE.USE_PLUGIN_D2D then
+		imgui.new_line()
+		imgui.text(LANG.MESSAGE('msg_plugin_missing1'))
+		imgui.text(LANG.MESSAGE('msg_plugin_missing2'))
+	end
+
+	imgui.new_line()
+
+	-- Languages
+	if imgui.button(LANG.MESSAGE('btn_apply_language')) then
+		LANG.applySelectedLanguage()
+	end
+	imgui.same_line()
+	changed, value = imgui.combo(LANG.MESSAGE('Languages'), STATE.LOCALE_OPTIONS_SELECTED, STATE.LOCALE_OPTIONS)
+	if changed then
+		STATE.LOCALE_OPTIONS_SELECTED = value
+	end
+
+	-- Presets
+	if imgui.button(LANG.MESSAGE('btn_apply_preset')) then
+		CORE.applySelectedPreset()
+		STATE.NEEDS_UPDATE = true
+	end
+	imgui.same_line()
+	changed, value = imgui.combo(LANG.MESSAGE('msg_presets'), STATE.PRESET_OPTIONS_SELECTED, STATE.PRESET_OPTIONS)
+	if changed then
+		STATE.PRESET_OPTIONS_SELECTED = value
+	end
+
+	imgui.new_line()
+
+	imgui.text(LANG.MESSAGE('Settings'))
+
+	-- Settings
+	if imgui.collapsing_header(LANG.MESSAGE('msg_general')) then
+		--showSliderForFloatSetting('UPDATE_RATE')
+		this.showCheckboxForSetting('HIDE_OVERLAY_IN_VILLAGE')
+
+		-- Show test data
+		changed, wantsIt = imgui.checkbox(LANG.OPTION('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'),
+		                                  CORE.CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'))
+		if changed then
+			CORE.SetCFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN', wantsIt)
+			if wantsIt then
+				DATA.initializeTestData()
+				STATE.NEEDS_UPDATE = true
+			else
+				DATA.clearTestData()
+				STATE.NEEDS_UPDATE = true
+			end
+		end
+
+		this.showCheckboxForSetting('AUTO_SAVE')
+		this.showCheckboxForSetting('SAVE_RESULTS_TO_DISK')
+
+		imgui.new_line()
+	end
+
+	if imgui.collapsing_header(LANG.MESSAGE('msg_report')) then
+		this.showCheckboxForSetting('COMBINE_OTOMO_WITH_HUNTER')
+		this.showCheckboxForSetting('COMBINE_ALL_OTHERS')
+		this.showCheckboxForSetting('HIDE_COMBINED_OTHERS')
+
+		imgui.new_line()
+
+		if imgui.tree_node(LANG.MESSAGE('msg_columns')) then
+			this.showSectionSelectColumns()
+
+			imgui.new_line()
+
+			imgui.tree_pop()
+		end
+
+		if imgui.tree_node(LANG.MESSAGE('msg_fighters')) then
+			changed, wantsIt = imgui.checkbox(LANG.MESSAGE('msg_fighter_player'), STATE._FILTERS.INCLUDE_PLAYER)
+			if changed then
+				CORE.SetReportPlayer(wantsIt)
+				REPORT.generateReport(STATE.REPORT_MONSTERS)
+			end
+
+			changed, wantsIt = imgui.checkbox(LANG.MESSAGE('msg_fighter_otomo'), STATE._FILTERS.INCLUDE_OTOMO)
+			if changed then
+				CORE.SetReportOtomo(wantsIt)
+				REPORT.generateReport(STATE.REPORT_MONSTERS)
+			end
+
+			changed, wantsIt = imgui.checkbox(LANG.MESSAGE('msg_fighter_servant'), STATE._FILTERS.INCLUDE_SERVANT)
+			if changed then
+				CORE.SetReportServant(wantsIt)
+				REPORT.generateReport(STATE.REPORT_MONSTERS)
+			end
+
+			changed, wantsIt = imgui.checkbox(LANG.MESSAGE('msg_fighter_servantotomo'), STATE._FILTERS.INCLUDE_SERVANTOTOMO)
+			if changed then
+				CORE.SetReportServantOtomo(wantsIt)
+				REPORT.generateReport(STATE.REPORT_MONSTERS)
+			end
+
+			changed, wantsIt = imgui.checkbox(LANG.MESSAGE('msg_fighter_boss'), STATE._FILTERS.INCLUDE_LARGE)
+			if changed then
+				CORE.SetReportLarge(wantsIt)
+				REPORT.generateReport(STATE.REPORT_MONSTERS)
+			end
+
+			changed, wantsIt = imgui.checkbox(LANG.MESSAGE('msg_fighter_other'), STATE._FILTERS.INCLUDE_OTHER)
+			if changed then
+				CORE.SetReportOther(wantsIt)
+				REPORT.generateReport(STATE.REPORT_MONSTERS)
+			end
+
+			imgui.new_line()
+
+			imgui.tree_pop()
+		end
+
+		-- draw buttons for each boss monster in the cache
+		if imgui.tree_node(LANG.MESSAGE('msg_target')) then
+			imgui.text(LANG.MESSAGE('msg_target_help'))
+			local monsterCollection = STATE.TEST_MONSTERS or STATE.LARGE_MONSTERS
+			local foundMonster = false
+			for enemy,boss in pairs(monsterCollection) do
+				foundMonster = true
+				local monsterIsInReport = STATE.REPORT_MONSTERS[enemy]
+				changed, wantsIt = imgui.checkbox(boss.name, monsterIsInReport)
+				if changed then
+					if wantsIt then
+						CORE.AddMonsterToReport(enemy, boss)
+					else
+						CORE.RemoveMonsterFromReport(enemy)
+					end
+					REPORT.generateReport(STATE.REPORT_MONSTERS)
+				end
+			end
+
+			if not foundMonster then
+				imgui.text('  ' .. LANG.MESSAGE('msg_target_none'))
+			end
+
+			imgui.new_line()
+
+			imgui.tree_pop()
+		end
+
+		-- Filter by damage types
+		if imgui.tree_node(LANG.MESSAGE('msg_damagetype')) then
+			this.showSectionFilterByDamageType()
+
+			imgui.new_line()
+
+			imgui.tree_pop()
+		end
+
+		imgui.new_line()
+	end
+
+	if imgui.collapsing_header(LANG.MESSAGE('msg_rules')) then
+		this.showCheckboxForSetting('CONDITION_LIKE_DAMAGE')
+		this.showCheckboxForSetting('PDPS_BASED_ON_FIRST_STRIKE')
+		this.showCheckboxForSetting('MARIONETTE_IS_PLAYER_DMG')
+
+		imgui.new_line()
+	end
+
+	if imgui.collapsing_header(LANG.MESSAGE('msg_privacy')) then
+		this.showCheckboxForSetting('DRAW_BAR_TEXT_YOU')
+		this.showCheckboxForSetting('DRAW_BAR_TEXT_NAME_USE_REAL_NAMES')
+
+		local options = {}
+		options[1] = LANG.OPTION('DRAW_BAR_REVEAL_RANK_1') -- Hide
+		options[2] = LANG.OPTION('DRAW_BAR_REVEAL_RANK_2') -- Show HR
+		options[3] = LANG.OPTION('DRAW_BAR_REVEAL_RANK_3') -- Show MR
+		changed, value = imgui.combo(LANG.OPTION('DRAW_BAR_REVEAL_RANK'), CORE.CFG('DRAW_BAR_REVEAL_RANK'), options)
+		if changed then
+			CORE.SetCFG('DRAW_BAR_REVEAL_RANK', value)
+			STATE.NEEDS_UPDATE = true
+		end
+
+
+		imgui.new_line()
+	end
+
+	imgui.new_line()
+
+	-- Appearance
+	imgui.text(LANG.MESSAGE('msg_appearance'))
+
+	-- Size and position
+	if imgui.collapsing_header(LANG.MESSAGE('msg_sizeandposition')) then
+		imgui.text(LANG.MESSAGE('msg_sizeandposition_help1'))
 		this.showSliderForFloatSetting('TABLE_SCALE')
-		imgui.text('Save changes and RESET SCRIPTS to apply scaling to text')
+		imgui.text(LANG.MESSAGE('msg_sizeandposition_help2'))
 
 		imgui.new_line()
 
@@ -91,12 +350,14 @@ this.showAppearanceSection = function()
 		imgui.new_line()
 	end
 
-	if imgui.collapsing_header('Color') then
-		this.showColorSection()
+	-- Color
+	if imgui.collapsing_header(LANG.MESSAGE('msg_color')) then
+		this.showSectionColor()
 		imgui.new_line()
 	end
 
-	if imgui.collapsing_header('Title') then
+	-- Title
+	if imgui.collapsing_header(LANG.MESSAGE('msg_title')) then
 		this.showCheckboxForSetting('DRAW_TITLE')
 		this.showCheckboxForSetting('DRAW_TITLE_TEXT')
 		this.showCheckboxForSetting('DRAW_TITLE_MONSTER')
@@ -106,7 +367,8 @@ this.showAppearanceSection = function()
 		imgui.new_line()
 	end
 
-	if imgui.collapsing_header('Header') then
+	-- Header
+	if imgui.collapsing_header(LANG.MESSAGE('msg_header')) then
 		this.showCheckboxForSetting('DRAW_HEADER')
 		this.showSliderForIntSetting('DRAW_HEADER_HEIGHT')
 		this.showCheckboxForSetting('DRAW_HEADER_BACKGROUND')
@@ -116,7 +378,8 @@ this.showAppearanceSection = function()
 		imgui.new_line()
 	end
 
-	if imgui.collapsing_header('Rows') then
+	-- Rows
+	if imgui.collapsing_header(LANG.MESSAGE('msg_rows')) then
 		this.showCheckboxForSetting('DRAW_TABLE_BACKGROUND')
 		this.showCheckboxForSetting('DRAW_BAR_OUTLINES')
 		this.showCheckboxForSetting('DRAW_BAR_COLORBLOCK')
@@ -143,21 +406,136 @@ this.showAppearanceSection = function()
 
 		imgui.new_line()
 	end
-end
 
-this.showTextSection = function()
-	this.showTextboxForSetting('FONT_FAMILY')
-	if not STATE.USE_PLUGIN_D2D then
-		imgui.text('Requires plugin: reframework-d2d')
-	else
-		imgui.text('Save changes and RESET SCRIPTS to apply changes to font')
+	-- Text
+	if imgui.collapsing_header(LANG.MESSAGE('msg_text')) then
+		this.showTextboxForSetting('FONT_FAMILY')
+		if not STATE.USE_PLUGIN_D2D then
+			imgui.text(LANG.MESSAGE('msg_text_help1'))
+		else
+			imgui.text(LANG.MESSAGE('msg_text_help2'))
+		end
+
+		imgui.new_line()
+
+		this.showCheckboxForSetting('TEXT_DRAW_SHADOWS')
+		this.showSliderForIntSetting('TEXT_SHADOW_OFFSET_X')
+		this.showSliderForIntSetting('TEXT_SHADOW_OFFSET_Y')
+
+		imgui.new_line()
+	end
+
+	-- Column width
+	if imgui.collapsing_header(LANG.MESSAGE('msg_width')) then
+		for i,currentWidth in ipairs(STATE._CFG['TABLE_COLS_WIDTH']) do
+			-- skip 'None'
+			if i > 1 then
+				-- show slider for width
+				local changedWidth, newWidth = imgui.slider_int(LANG.HEADER(i), currentWidth, 0, 250)
+				if changedWidth then
+					STATE._CFG['TABLE_COLS_WIDTH'][i] = newWidth
+				end
+			end
+		end
+		imgui.new_line()
 	end
 
 	imgui.new_line()
 
-	this.showCheckboxForSetting('TEXT_DRAW_SHADOWS')
-	this.showSliderForIntSetting('TEXT_SHADOW_OFFSET_X')
-	this.showSliderForIntSetting('TEXT_SHADOW_OFFSET_Y')
+	-- Debug
+	if imgui.collapsing_header(LANG.MESSAGE('msg_debug')) then
+		if imgui.button(LANG.MESSAGE('btn_open_debug')) then
+			STATE.DRAW_WINDOW_DEBUG = not STATE.DRAW_WINDOW_DEBUG
+		end
+
+		imgui.new_line()
+	end
+
+	imgui.new_line()
+
+	imgui.end_window()
+end
+
+this.showSectionFilterByDamageType = function()
+	-- draw buttons for damage types
+	if imgui.tree_node(LANG.MESSAGE('msg_damagetype_general')) then
+		this.showCheckboxForDamageType('PlayerWeapon')
+		this.showCheckboxForDamageType('Monster')
+		this.showCheckboxForDamageType('marionette')
+
+		imgui.new_line()
+
+		imgui.tree_pop()
+	end
+
+	if imgui.tree_node(LANG.MESSAGE('msg_damagetype_otomo')) then
+		this.showCheckboxForDamageType('Otomo')
+		this.showCheckboxForDamageType('OtAirouShell014')
+		this.showCheckboxForDamageType('OtAirouShell102')
+
+		imgui.new_line()
+
+		imgui.tree_pop()
+	end
+
+	if imgui.tree_node(LANG.MESSAGE('msg_damagetype_moves')) then
+		this.showCheckboxForDamageType('Kabutowari')
+
+		imgui.new_line()
+
+		imgui.tree_pop()
+	end
+
+	if imgui.tree_node(LANG.MESSAGE('msg_damagetype_items')) then
+		this.showCheckboxForDamageType('BarrelBombSmall')
+		this.showCheckboxForDamageType('BarrelBombLarge')
+		this.showCheckboxForDamageType('Nitro')
+		this.showCheckboxForDamageType('CaptureSmokeBomb')
+		this.showCheckboxForDamageType('CaptureBullet')
+		this.showCheckboxForDamageType('Kunai')
+
+		imgui.new_line()
+
+		imgui.tree_pop()
+	end
+
+	if imgui.tree_node(LANG.MESSAGE('msg_damagetype_huntinginstallations')) then
+		this.showCheckboxForDamageType('HmBallista')
+		this.showCheckboxForDamageType('HmCannon')
+		this.showCheckboxForDamageType('HmGatling')
+		this.showCheckboxForDamageType('HmTrap')
+		this.showCheckboxForDamageType('HmNpc')
+		this.showCheckboxForDamageType('HmFlameThrower')
+		this.showCheckboxForDamageType('HmDragnator')
+
+		imgui.new_line()
+
+		imgui.tree_pop()
+	end
+
+	if imgui.tree_node(LANG.MESSAGE('msg_damagetype_unknown')) then
+		imgui.text(LANG.MESSAGE('msg_damagetype_unknown_help'))
+		this.showCheckboxForDamageType('Makimushi')
+		this.showCheckboxForDamageType('OnibiMine')
+		this.showCheckboxForDamageType('BallistaHate')
+		this.showCheckboxForDamageType('WaterBeetle')
+		this.showCheckboxForDamageType('DetonationGrenade')
+		this.showCheckboxForDamageType('FlashBoll')
+		this.showCheckboxForDamageType('Fg005')
+		this.showCheckboxForDamageType('EcBatExplode')
+		this.showCheckboxForDamageType('EcWallTrapBugExplode')
+		this.showCheckboxForDamageType('EcPiranha')
+		this.showCheckboxForDamageType('EcFlash')
+		this.showCheckboxForDamageType('EcSandWallShooter')
+		this.showCheckboxForDamageType('EcForestWallShooter')
+		this.showCheckboxForDamageType('EcSwampLeech')
+		this.showCheckboxForDamageType('EcPenetrateFish')
+		this.showCheckboxForDamageType('Max')
+
+		imgui.new_line()
+
+		imgui.tree_pop()
+	end
 end
 
 this.showSectionSelectColumns = function()
@@ -171,444 +549,82 @@ this.showSectionSelectColumns = function()
 			end
 		end
 		-- show combo for choice
-		local changedCol, newCol = imgui.combo('Column ' .. i, selected, ENUM.TABLE_COLUMNS_OPTIONS_READABLE)
+		local changedCol, newCol = imgui.combo(LANG.MESSAGE('Column') .. ' ' .. i,
+		                                       selected, ENUM.TABLE_COLUMNS_OPTIONS_READABLE)
 		if changedCol then
 			STATE._CFG['TABLE_COLS'][i] = ENUM.TABLE_COLUMNS_OPTIONS_ID[newCol]
 		end
 	end
 end
 
-this.showSectionColumnWidth = function()
-	for i,currentWidth in ipairs(STATE._CFG['TABLE_COLS_WIDTH']) do
-		-- skip 'None'
-		if i > 1 then
-			-- show slider for width
-			local changedWidth, newWidth = imgui.slider_int(ENUM.TABLE_COLUMNS[i], currentWidth, 0, 250)
-			if changedWidth then
-				STATE._CFG['TABLE_COLS_WIDTH'][i] = newWidth
-			end
-		end
-	end
-end
-
-this.showSectionFilterByAttackType = function()
-	-- draw buttons for attacker types
-	if imgui.tree_node('General') then
-		this.showCheckboxForAttackerType('PlayerWeapon')
-		this.showCheckboxForAttackerType('Invalid') -- Monster
-		this.showCheckboxForAttackerType('marionette')
-
-		imgui.new_line()
-
-		imgui.tree_pop()
-	end
-
-	if imgui.tree_node('Buddy') then
-		this.showCheckboxForAttackerType('Otomo')
-		this.showCheckboxForAttackerType('OtAirouShell014')
-		this.showCheckboxForAttackerType('OtAirouShell102')
-
-		imgui.new_line()
-
-		imgui.tree_pop()
-	end
-
-	if imgui.tree_node('Moves') then
-		this.showCheckboxForAttackerType('Kabutowari')
-
-		imgui.new_line()
-
-		imgui.tree_pop()
-	end
-
-	if imgui.tree_node('Items') then
-		this.showCheckboxForAttackerType('BarrelBombSmall')
-		this.showCheckboxForAttackerType('BarrelBombLarge')
-		this.showCheckboxForAttackerType('Nitro')
-		this.showCheckboxForAttackerType('CaptureSmokeBomb')
-		this.showCheckboxForAttackerType('CaptureBullet')
-		this.showCheckboxForAttackerType('Kunai')
-
-		imgui.new_line()
-
-		imgui.tree_pop()
-	end
-
-	if imgui.tree_node('Installations') then
-		this.showCheckboxForAttackerType('HmBallista')
-		this.showCheckboxForAttackerType('HmCannon')
-		this.showCheckboxForAttackerType('HmGatling')
-		this.showCheckboxForAttackerType('HmTrap')
-		this.showCheckboxForAttackerType('HmNpc')
-		this.showCheckboxForAttackerType('HmFlameThrower')
-		this.showCheckboxForAttackerType('HmDragnator')
-
-		imgui.new_line()
-
-		imgui.tree_pop()
-	end
-
-	if imgui.tree_node('Unknown') then
-		imgui.text('Let me know if you figure out what these are used for!')
-		this.showCheckboxForAttackerType('Makimushi')
-		this.showCheckboxForAttackerType('OnibiMine')
-		this.showCheckboxForAttackerType('BallistaHate')
-		this.showCheckboxForAttackerType('WaterBeetle')
-		this.showCheckboxForAttackerType('DetonationGrenade')
-		this.showCheckboxForAttackerType('FlashBoll')
-		this.showCheckboxForAttackerType('Fg005')
-		this.showCheckboxForAttackerType('EcBatExplode')
-		this.showCheckboxForAttackerType('EcWallTrapBugExplode')
-		this.showCheckboxForAttackerType('EcPiranha')
-		this.showCheckboxForAttackerType('EcFlash')
-		this.showCheckboxForAttackerType('EcSandWallShooter')
-		this.showCheckboxForAttackerType('EcForestWallShooter')
-		this.showCheckboxForAttackerType('EcSwampLeech')
-		this.showCheckboxForAttackerType('EcPenetrateFish')
-		this.showCheckboxForAttackerType('Max')
-
-		imgui.new_line()
-
-		imgui.tree_pop()
-	end
-end
-
-this.showColorSection = function()
-	if imgui.button('Apply color scheme') then
+this.showSectionColor = function()
+	if imgui.button(LANG.MESSAGE('btn_apply_colorscheme')) then
 		CORE.applySelectedColorscheme()
 	end
 	imgui.same_line()
-	local changed, value = imgui.combo('Color Scheme', STATE.COLORSCHEME_OPTIONS_SELECTED, STATE.COLORSCHEME_OPTIONS)
+	local changed, value = imgui.combo(LANG.MESSAGE('Color_Scheme'),
+	                                   STATE.COLORSCHEME_OPTIONS_SELECTED, STATE.COLORSCHEME_OPTIONS)
 	if changed then
 		STATE.COLORSCHEME_OPTIONS_SELECTED = value
 	end
 
-	if imgui.button('Reset to default colors') then
+	if imgui.button(LANG.MESSAGE('btn_reset_default_colors')) then
 		CORE.loadDefaultColors()
 	end
 
-	if imgui.tree_node('Customize colors') then
-		this.showColorPicker('Title background', 'TITLE_BG')
-		this.showColorPicker('Title foreground', 'TITLE_FG')
-		this.showColorPicker('Bar background', 'BAR_BG')
-		this.showColorPicker('Bar outline', 'BAR_OUTLINE')
+	if imgui.tree_node(LANG.MESSAGE('msg_customize_colors')) then
+		this.showColorPicker('TITLE_BG')
+		this.showColorPicker('TITLE_FG')
+		this.showColorPicker('BAR_BG')
+		this.showColorPicker('BAR_OUTLINE')
 
 		imgui.new_line()
 
-		this.showColorPickerForUnique('Player 1', 'PLAYER', 1)
-		this.showColorPickerForUnique('Player 2', 'PLAYER', 2)
-		this.showColorPickerForUnique('Player 3', 'PLAYER', 3)
-		this.showColorPickerForUnique('Player 4', 'PLAYER', 4)
-		this.showColorPicker('Buddies', 'OTOMO')
-		this.showColorPicker('Followers', 'SERVANT')
+		this.showColorPickerForUnique(LANG.COLOR('PLAYER_1'), 'PLAYER', 1)
+		this.showColorPickerForUnique(LANG.COLOR('PLAYER_2'), 'PLAYER', 2)
+		this.showColorPickerForUnique(LANG.COLOR('PLAYER_3'), 'PLAYER', 3)
+		this.showColorPickerForUnique(LANG.COLOR('PLAYER_4'), 'PLAYER', 4)
+		this.showColorPicker('OTOMO')
+		this.showColorPicker('SERVANT')
 
 		imgui.new_line()
 
-		this.showColorPicker('Physical damage', 'BAR_DMG_PHYSICAL')
-		this.showColorPickerForUnique('P1 Physical Damage', 'BAR_DMG_PHYSICAL_UNIQUE', 1)
-		this.showColorPickerForUnique('P2 Physical Damage', 'BAR_DMG_PHYSICAL_UNIQUE', 2)
-		this.showColorPickerForUnique('P3 Physical Damage', 'BAR_DMG_PHYSICAL_UNIQUE', 3)
-		this.showColorPickerForUnique('P4 Physical Damage', 'BAR_DMG_PHYSICAL_UNIQUE', 4)
+		this.showColorPicker('BAR_DMG_PHYSICAL')
+		this.showColorPickerForUnique(LANG.COLOR('BAR_DMG_PHYSICAL_UNIQUE_1'), 'BAR_DMG_PHYSICAL_UNIQUE', 1)
+		this.showColorPickerForUnique(LANG.COLOR('BAR_DMG_PHYSICAL_UNIQUE_2'), 'BAR_DMG_PHYSICAL_UNIQUE', 2)
+		this.showColorPickerForUnique(LANG.COLOR('BAR_DMG_PHYSICAL_UNIQUE_3'), 'BAR_DMG_PHYSICAL_UNIQUE', 3)
+		this.showColorPickerForUnique(LANG.COLOR('BAR_DMG_PHYSICAL_UNIQUE_4'), 'BAR_DMG_PHYSICAL_UNIQUE', 4)
 
 		imgui.new_line()
 
-		this.showColorPicker('Element damage', 'BAR_DMG_ELEMENT')
-		this.showColorPickerForUnique('P1 Element Damage', 'BAR_DMG_ELEMENT_UNIQUE', 1)
-		this.showColorPickerForUnique('P2 Element Damage', 'BAR_DMG_ELEMENT_UNIQUE', 2)
-		this.showColorPickerForUnique('P3 Element Damage', 'BAR_DMG_ELEMENT_UNIQUE', 3)
-		this.showColorPickerForUnique('P4 Element Damage', 'BAR_DMG_ELEMENT_UNIQUE', 4)
+		this.showColorPicker('BAR_DMG_ELEMENT')
+		this.showColorPickerForUnique(LANG.COLOR('BAR_DMG_ELEMENT_UNIQUE_1'), 'BAR_DMG_ELEMENT_UNIQUE', 1)
+		this.showColorPickerForUnique(LANG.COLOR('BAR_DMG_ELEMENT_UNIQUE_2'), 'BAR_DMG_ELEMENT_UNIQUE', 2)
+		this.showColorPickerForUnique(LANG.COLOR('BAR_DMG_ELEMENT_UNIQUE_3'), 'BAR_DMG_ELEMENT_UNIQUE', 3)
+		this.showColorPickerForUnique(LANG.COLOR('BAR_DMG_ELEMENT_UNIQUE_4'), 'BAR_DMG_ELEMENT_UNIQUE', 4)
 
 		imgui.new_line()
 
-		this.showColorPicker('Buddy damage', 'BAR_DMG_OTOMO')
-		this.showColorPicker('Poison damage', 'BAR_DMG_POISON')
-		this.showColorPicker('Blast damage', 'BAR_DMG_BLAST')
-		this.showColorPicker('Other damage', 'BAR_DMG_OTHER')
-		this.showColorPicker('Ailment buildup', 'BAR_DMG_AILMENT')
+		this.showColorPicker('BAR_DMG_OTOMO')
+		this.showColorPicker('BAR_DMG_POISON')
+		this.showColorPicker('BAR_DMG_BLAST')
+		this.showColorPicker('BAR_DMG_OTHER')
+		this.showColorPicker('BAR_DMG_AILMENT')
 
 		imgui.tree_pop()
 	end
 end
 
-this.DrawWindowSettings = function()
-	local changed, wantsIt, value
-
-	wantsIt = imgui.begin_window('coavins dps meter - settings', STATE.DRAW_WINDOW_SETTINGS, STATE.WINDOW_FLAGS)
-	if STATE.DRAW_WINDOW_SETTINGS and not wantsIt then
-		STATE.DRAW_WINDOW_SETTINGS = false
-
-		if DATA.isInTestMode() then
-			DATA.clearTestData()
-			STATE.NEEDS_UPDATE = true
-		end
-
-		if CORE.CFG('AUTO_SAVE') then
-			-- save when the window is closed
-			CORE.saveCurrentConfig()
-		end
-	end
-
-	-- Enabled
-	changed, wantsIt = imgui.checkbox('Enabled', STATE.DPS_ENABLED)
-	if changed then
-		STATE.DPS_ENABLED = wantsIt
-	end
-
-	imgui.same_line()
-	if imgui.button('Reset to default') then
-		CORE.loadDefaultConfig()
-		if CORE.CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN') then
-			DATA.initializeTestData()
-		else
-			DATA.clearTestData()
-		end
-
-		STATE.NEEDS_UPDATE = true
-	end
-
-	imgui.same_line()
-	if imgui.button('Clear combat data') then
-		if DATA.isInTestMode() then
-			-- reinitialize test data
-			DATA.initializeTestData()
-		else
-			CORE.cleanUpData('user clicked reset')
-		end
-
-		STATE.NEEDS_UPDATE = true
-	end
-
-	imgui.same_line()
-	if imgui.button('Set Hotkeys') then
-		STATE.DRAW_WINDOW_HOTKEYS = not STATE.DRAW_WINDOW_HOTKEYS
-	end
-
-	imgui.new_line()
-
-	if imgui.button('Save settings') then
-		CORE.saveCurrentConfig()
-	end
-	imgui.same_line()
-	if imgui.button('Load settings') then
-		CORE.loadSavedConfigIfExist()
-		if CORE.CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN') then
-			DATA.initializeTestData()
-		else
-			DATA.clearTestData()
-			STATE.NEEDS_UPDATE = true
-		end
-	end
-
-	if not STATE.USE_PLUGIN_D2D then
-		imgui.new_line()
-		imgui.text('Missing plugin: reframework-d2d')
-		imgui.text('Some features are not available')
-	end
-
-	-- Presets
-	imgui.new_line()
-
-	if imgui.button('Apply preset') then
-		CORE.applySelectedPreset()
-		STATE.NEEDS_UPDATE = true
-	end
-	imgui.same_line()
-	changed, value = imgui.combo('Presets', STATE.PRESET_OPTIONS_SELECTED, STATE.PRESET_OPTIONS)
-	if changed then
-		STATE.PRESET_OPTIONS_SELECTED = value
-	end
-
-	imgui.new_line()
-
-	imgui.text('Settings')
-
-	-- Settings
-	if imgui.collapsing_header('General') then
-		--showSliderForFloatSetting('UPDATE_RATE')
-		this.showCheckboxForSetting('HIDE_OVERLAY_IN_VILLAGE')
-
-		-- Show test data
-		changed, wantsIt = imgui.checkbox('Show test data while menu is open', CORE.CFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'))
-		if changed then
-			CORE.SetCFG('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN', wantsIt)
-			if wantsIt then
-				DATA.initializeTestData()
-				STATE.NEEDS_UPDATE = true
-			else
-				DATA.clearTestData()
-				STATE.NEEDS_UPDATE = true
-			end
-		end
-
-		this.showCheckboxForSetting('AUTO_SAVE')
-		this.showCheckboxForSetting('SAVE_RESULTS_TO_DISK')
-
-		imgui.new_line()
-	end
-
-	if imgui.collapsing_header('Report') then
-		this.showCheckboxForSetting('COMBINE_OTOMO_WITH_HUNTER')
-		this.showCheckboxForSetting('COMBINE_ALL_OTHERS')
-		this.showCheckboxForSetting('HIDE_COMBINED_OTHERS')
-
-		imgui.new_line()
-
-		if imgui.tree_node('Select columns') then
-			this.showSectionSelectColumns()
-
-			imgui.new_line()
-
-			imgui.tree_pop()
-		end
-
-		if imgui.tree_node('Select fighters') then
-			changed, wantsIt = imgui.checkbox('Players', STATE._FILTERS.INCLUDE_PLAYER)
-			if changed then
-				CORE.SetReportPlayer(wantsIt)
-				REPORT.generateReport(STATE.REPORT_MONSTERS)
-			end
-
-			changed, wantsIt = imgui.checkbox('Player buddies (when not combined)', STATE._FILTERS.INCLUDE_OTOMO)
-			if changed then
-				CORE.SetReportOtomo(wantsIt)
-				REPORT.generateReport(STATE.REPORT_MONSTERS)
-			end
-
-			changed, wantsIt = imgui.checkbox('Followers', STATE._FILTERS.INCLUDE_SERVANT)
-			if changed then
-				CORE.SetReportServant(wantsIt)
-				REPORT.generateReport(STATE.REPORT_MONSTERS)
-			end
-
-			changed, wantsIt = imgui.checkbox('Follower buddies (when not combined)', STATE._FILTERS.INCLUDE_SERVANTOTOMO)
-			if changed then
-				CORE.SetReportServantOtomo(wantsIt)
-				REPORT.generateReport(STATE.REPORT_MONSTERS)
-			end
-
-			changed, wantsIt = imgui.checkbox('Large monsters', STATE._FILTERS.INCLUDE_LARGE)
-			if changed then
-				CORE.SetReportLarge(wantsIt)
-				REPORT.generateReport(STATE.REPORT_MONSTERS)
-			end
-
-			changed, wantsIt = imgui.checkbox('Small monsters, rampage villagers, etc', STATE._FILTERS.INCLUDE_OTHER)
-			if changed then
-				CORE.SetReportOther(wantsIt)
-				REPORT.generateReport(STATE.REPORT_MONSTERS)
-			end
-
-			imgui.new_line()
-
-			imgui.tree_pop()
-		end
-
-		-- draw buttons for each boss monster in the cache
-		if imgui.tree_node('Filter by target') then
-			imgui.text('Monsters you encounter during the quest will appear here.')
-			local monsterCollection = STATE.TEST_MONSTERS or STATE.LARGE_MONSTERS
-			local foundMonster = false
-			for enemy,boss in pairs(monsterCollection) do
-				foundMonster = true
-				local monsterIsInReport = STATE.REPORT_MONSTERS[enemy]
-				changed, wantsIt = imgui.checkbox(boss.name, monsterIsInReport)
-				if changed then
-					if wantsIt then
-						CORE.AddMonsterToReport(enemy, boss)
-					else
-						CORE.RemoveMonsterFromReport(enemy)
-					end
-					REPORT.generateReport(STATE.REPORT_MONSTERS)
-				end
-			end
-
-			if not foundMonster then
-				imgui.text('  (No monsters yet)')
-			end
-
-			imgui.new_line()
-
-			imgui.tree_pop()
-		end
-
-		if imgui.tree_node('Filter by type of attack (Advanced)') then
-			this.showSectionFilterByAttackType()
-
-			imgui.new_line()
-
-			imgui.tree_pop()
-		end
-
-		imgui.new_line()
-	end
-
-	if imgui.collapsing_header('Rules') then
-		this.showCheckboxForSetting('CONDITION_LIKE_DAMAGE')
-		this.showCheckboxForSetting('PDPS_BASED_ON_FIRST_STRIKE')
-		this.showCheckboxForSetting('MARIONETTE_IS_PLAYER_DMG')
-
-		imgui.new_line()
-	end
-
-	if imgui.collapsing_header('Privacy') then
-		this.showCheckboxForSetting('DRAW_BAR_TEXT_YOU')
-		this.showCheckboxForSetting('DRAW_BAR_TEXT_NAME_USE_REAL_NAMES')
-
-		local options = {}
-		options[1] = 'Hide'
-		options[2] = 'Show HR'
-		options[3] = 'Show MR'
-		changed, value = imgui.combo(CORE.TXT('DRAW_BAR_REVEAL_RANK'), CORE.CFG('DRAW_BAR_REVEAL_RANK'), options)
-		if changed then
-			CORE.SetCFG('DRAW_BAR_REVEAL_RANK', value)
-			STATE.NEEDS_UPDATE = true
-		end
-
-
-		imgui.new_line()
-	end
-
-	imgui.new_line()
-
-	imgui.text('Appearance')
-
-	this.showAppearanceSection()
-
-	if imgui.collapsing_header('Text') then
-		this.showTextSection()
-		imgui.new_line()
-	end
-
-	if imgui.collapsing_header('Column width') then
-		this.showSectionColumnWidth()
-		imgui.new_line()
-	end
-
-	imgui.new_line()
-
-	if imgui.collapsing_header('Debug') then
-		if imgui.button('open debug menu') then
-			STATE.DRAW_WINDOW_DEBUG = not STATE.DRAW_WINDOW_DEBUG
-		end
-
-		imgui.new_line()
-	end
-
-	imgui.new_line()
-
-	imgui.end_window()
-end
-
 this.drawHotkeyButton = function(name)
 	local hotkey = CORE.HOTKEY(name)
-	imgui.text(hotkey.TEXT .. ':')
+	imgui.text(LANG.HOTKEY(name) .. ':')
 
 	imgui.same_line()
 
 	-- make sure you don't have two buttons with the same text
-	local text = ENUM.ENUM_KEYBOARD_KEY[hotkey.KEY]
+	local text = LANG.KEY(hotkey.KEY)
 	if STATE.HOTKEY_WAITING_TO_REGISTER == name then
-		text = 'Press key...'
+		text = LANG.MESSAGE('msg_press_key')
 	end
 	if imgui.button(text) then
 		if STATE.HOTKEY_WAITING_TO_REGISTER == name then
@@ -667,7 +683,7 @@ this.DrawWindowDebug = function()
 	imgui.new_line()
 
 	-- Enabled
-	changed, wantsIt = imgui.checkbox('Do not use SDK hooks', not STATE.HOOKS_ENABLED)
+	changed, wantsIt = imgui.checkbox(LANG.MESSAGE('msg_not_use_hooks'), not STATE.HOOKS_ENABLED)
 	if changed then
 		STATE.HOOKS_ENABLED = not wantsIt
 	end
