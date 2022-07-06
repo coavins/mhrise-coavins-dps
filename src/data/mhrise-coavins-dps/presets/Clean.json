@@ -345,10 +345,11 @@
             "weapon": true
         },
 		"INCLUDE_PLAYER": true,
-        "INCLUDE_OTHER": false,
         "INCLUDE_OTOMO": false,
         "INCLUDE_SERVANT": true,
-        "INCLUDE_LARGE": false
+        "INCLUDE_SERVANTOTOMO": false,
+        "INCLUDE_LARGE": false,
+        "INCLUDE_OTHER": false
     },
     "HOTKEYS": {
         "MONSTER_NEXT": {

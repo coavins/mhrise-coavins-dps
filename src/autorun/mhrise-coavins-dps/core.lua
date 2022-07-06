@@ -421,6 +421,10 @@ this.SetReportServant = function(value)
 	STATE._FILTERS.INCLUDE_SERVANT = value
 end
 
+this.SetReportServantOtomo = function(value)
+	STATE._FILTERS.INCLUDE_SERVANTOTOMO = value
+end
+
 this.SetReportLarge = function(value)
 	STATE._FILTERS.INCLUDE_LARGE = value
 end

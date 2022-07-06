@@ -341,6 +341,7 @@
 		"INCLUDE_PLAYER": true,
 		"INCLUDE_OTOMO": true,
 		"INCLUDE_SERVANT": true,
+		"INCLUDE_SERVANTOTOMO": false,
 		"INCLUDE_LARGE": true,
 		"INCLUDE_OTHER": false
 	},

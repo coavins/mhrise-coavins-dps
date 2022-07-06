@@ -463,7 +463,7 @@ this.DrawWindowSettings = function()
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
 		end
 
-		changed, wantsIt = imgui.checkbox('Buddies (when not combined with hunter)', STATE._FILTERS.INCLUDE_OTOMO)
+		changed, wantsIt = imgui.checkbox('Player buddies (when not combined)', STATE._FILTERS.INCLUDE_OTOMO)
 		if changed then
 			CORE.SetReportOtomo(wantsIt)
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
@@ -472,6 +472,12 @@ this.DrawWindowSettings = function()
 		changed, wantsIt = imgui.checkbox('Followers', STATE._FILTERS.INCLUDE_SERVANT)
 		if changed then
 			CORE.SetReportServant(wantsIt)
+			REPORT.generateReport(STATE.REPORT_MONSTERS)
+		end
+
+		changed, wantsIt = imgui.checkbox('Follower buddies (when not combined)', STATE._FILTERS.INCLUDE_SERVANTOTOMO)
+		if changed then
+			CORE.SetReportServantOtomo(wantsIt)
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
 		end
 
