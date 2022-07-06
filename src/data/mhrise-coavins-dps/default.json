@@ -24,15 +24,15 @@
 		},
 		"COMBINE_OTOMO_WITH_HUNTER": {
 			"VALUE": true,
-			"TEXT": "Combine buddies with their hunters"
+			"TEXT": "Combine all buddies with their hunters"
 		},
 		"COMBINE_ALL_OTHERS": {
 			"VALUE": false,
-			"TEXT": "Combine into one row all attackers who aren't you"
+			"TEXT": "Combine everyone except for you"
 		},
 		"HIDE_COMBINED_OTHERS": {
 			"VALUE": false,
-			"TEXT": "Only show your damage"
+			"TEXT": "Only show you"
 		},
 		"CONDITION_LIKE_DAMAGE": {
 			"VALUE": false,
@@ -44,7 +44,7 @@
 		},
 		"MARIONETTE_IS_PLAYER_DMG": {
 			"VALUE": true,
-			"TEXT": "Credit players with damage from Wyvern Riding"
+			"TEXT": "Credit rider with damage from Wyvern Riding"
 		},
 		"DEBUG_SHOW_MISSING_DAMAGE": {
 			"VALUE": false,

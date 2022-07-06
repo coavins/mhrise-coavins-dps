@@ -91,6 +91,11 @@ this.showAppearanceSection = function()
 		imgui.new_line()
 	end
 
+	if imgui.collapsing_header('Color') then
+		this.showColorSection()
+		imgui.new_line()
+	end
+
 	if imgui.collapsing_header('Title') then
 		this.showCheckboxForSetting('DRAW_TITLE')
 		this.showCheckboxForSetting('DRAW_TITLE_TEXT')
@@ -155,7 +160,7 @@ this.showTextSection = function()
 	this.showSliderForIntSetting('TEXT_SHADOW_OFFSET_Y')
 end
 
-this.showSelectDataSection = function()
+this.showSectionSelectColumns = function()
 	-- draw combo and slider for each column
 	for i,currentCol in ipairs(STATE._CFG['TABLE_COLS']) do
 		local selected = 1
@@ -173,7 +178,7 @@ this.showSelectDataSection = function()
 	end
 end
 
-this.showColumnWidthSection = function()
+this.showSectionColumnWidth = function()
 	for i,currentWidth in ipairs(STATE._CFG['TABLE_COLS_WIDTH']) do
 		-- skip 'None'
 		if i > 1 then
@@ -186,88 +191,83 @@ this.showColumnWidthSection = function()
 	end
 end
 
-this.showFilterSection = function()
+this.showSectionFilterByAttackType = function()
 	-- draw buttons for attacker types
-	if imgui.tree_node('Attack type') then
-		imgui.text('Filter out attacks based on type:')
-		if imgui.tree_node('General') then
-			this.showCheckboxForAttackerType('PlayerWeapon')
-			this.showCheckboxForAttackerType('Invalid') -- Monster
-			this.showCheckboxForAttackerType('marionette')
+	if imgui.tree_node('General') then
+		this.showCheckboxForAttackerType('PlayerWeapon')
+		this.showCheckboxForAttackerType('Invalid') -- Monster
+		this.showCheckboxForAttackerType('marionette')
 
-			imgui.new_line()
+		imgui.new_line()
 
-			imgui.tree_pop()
-		end
+		imgui.tree_pop()
+	end
 
-		if imgui.tree_node('Buddy') then
-			this.showCheckboxForAttackerType('Otomo')
-			this.showCheckboxForAttackerType('OtAirouShell014')
-			this.showCheckboxForAttackerType('OtAirouShell102')
+	if imgui.tree_node('Buddy') then
+		this.showCheckboxForAttackerType('Otomo')
+		this.showCheckboxForAttackerType('OtAirouShell014')
+		this.showCheckboxForAttackerType('OtAirouShell102')
 
-			imgui.new_line()
+		imgui.new_line()
 
-			imgui.tree_pop()
-		end
+		imgui.tree_pop()
+	end
 
-		if imgui.tree_node('Moves') then
-			this.showCheckboxForAttackerType('Kabutowari')
+	if imgui.tree_node('Moves') then
+		this.showCheckboxForAttackerType('Kabutowari')
 
-			imgui.new_line()
+		imgui.new_line()
 
-			imgui.tree_pop()
-		end
+		imgui.tree_pop()
+	end
 
-		if imgui.tree_node('Items') then
-			this.showCheckboxForAttackerType('BarrelBombSmall')
-			this.showCheckboxForAttackerType('BarrelBombLarge')
-			this.showCheckboxForAttackerType('Nitro')
-			this.showCheckboxForAttackerType('CaptureSmokeBomb')
-			this.showCheckboxForAttackerType('CaptureBullet')
-			this.showCheckboxForAttackerType('Kunai')
+	if imgui.tree_node('Items') then
+		this.showCheckboxForAttackerType('BarrelBombSmall')
+		this.showCheckboxForAttackerType('BarrelBombLarge')
+		this.showCheckboxForAttackerType('Nitro')
+		this.showCheckboxForAttackerType('CaptureSmokeBomb')
+		this.showCheckboxForAttackerType('CaptureBullet')
+		this.showCheckboxForAttackerType('Kunai')
 
-			imgui.new_line()
+		imgui.new_line()
 
-			imgui.tree_pop()
-		end
+		imgui.tree_pop()
+	end
 
-		if imgui.tree_node('Installations') then
-			this.showCheckboxForAttackerType('HmBallista')
-			this.showCheckboxForAttackerType('HmCannon')
-			this.showCheckboxForAttackerType('HmGatling')
-			this.showCheckboxForAttackerType('HmTrap')
-			this.showCheckboxForAttackerType('HmNpc')
-			this.showCheckboxForAttackerType('HmFlameThrower')
-			this.showCheckboxForAttackerType('HmDragnator')
+	if imgui.tree_node('Installations') then
+		this.showCheckboxForAttackerType('HmBallista')
+		this.showCheckboxForAttackerType('HmCannon')
+		this.showCheckboxForAttackerType('HmGatling')
+		this.showCheckboxForAttackerType('HmTrap')
+		this.showCheckboxForAttackerType('HmNpc')
+		this.showCheckboxForAttackerType('HmFlameThrower')
+		this.showCheckboxForAttackerType('HmDragnator')
 
-			imgui.new_line()
+		imgui.new_line()
 
-			imgui.tree_pop()
-		end
+		imgui.tree_pop()
+	end
 
-		if imgui.tree_node('Unknown') then
-			imgui.text('Let me know if you figure out what these are used for!')
-			this.showCheckboxForAttackerType('Makimushi')
-			this.showCheckboxForAttackerType('OnibiMine')
-			this.showCheckboxForAttackerType('BallistaHate')
-			this.showCheckboxForAttackerType('WaterBeetle')
-			this.showCheckboxForAttackerType('DetonationGrenade')
-			this.showCheckboxForAttackerType('FlashBoll')
-			this.showCheckboxForAttackerType('Fg005')
-			this.showCheckboxForAttackerType('EcBatExplode')
-			this.showCheckboxForAttackerType('EcWallTrapBugExplode')
-			this.showCheckboxForAttackerType('EcPiranha')
-			this.showCheckboxForAttackerType('EcFlash')
-			this.showCheckboxForAttackerType('EcSandWallShooter')
-			this.showCheckboxForAttackerType('EcForestWallShooter')
-			this.showCheckboxForAttackerType('EcSwampLeech')
-			this.showCheckboxForAttackerType('EcPenetrateFish')
-			this.showCheckboxForAttackerType('Max')
+	if imgui.tree_node('Unknown') then
+		imgui.text('Let me know if you figure out what these are used for!')
+		this.showCheckboxForAttackerType('Makimushi')
+		this.showCheckboxForAttackerType('OnibiMine')
+		this.showCheckboxForAttackerType('BallistaHate')
+		this.showCheckboxForAttackerType('WaterBeetle')
+		this.showCheckboxForAttackerType('DetonationGrenade')
+		this.showCheckboxForAttackerType('FlashBoll')
+		this.showCheckboxForAttackerType('Fg005')
+		this.showCheckboxForAttackerType('EcBatExplode')
+		this.showCheckboxForAttackerType('EcWallTrapBugExplode')
+		this.showCheckboxForAttackerType('EcPiranha')
+		this.showCheckboxForAttackerType('EcFlash')
+		this.showCheckboxForAttackerType('EcSandWallShooter')
+		this.showCheckboxForAttackerType('EcForestWallShooter')
+		this.showCheckboxForAttackerType('EcSwampLeech')
+		this.showCheckboxForAttackerType('EcPenetrateFish')
+		this.showCheckboxForAttackerType('Max')
 
-			imgui.new_line()
-
-			imgui.tree_pop()
-		end
+		imgui.new_line()
 
 		imgui.tree_pop()
 	end
@@ -399,8 +399,6 @@ this.DrawWindowSettings = function()
 		end
 	end
 
-	this.showCheckboxForSetting('AUTO_SAVE')
-
 	if not STATE.USE_PLUGIN_D2D then
 		imgui.new_line()
 		imgui.text('Missing plugin: reframework-d2d')
@@ -422,6 +420,8 @@ this.DrawWindowSettings = function()
 
 	imgui.new_line()
 
+	imgui.text('Settings')
+
 	-- Settings
 	if imgui.collapsing_header('General') then
 		--showSliderForFloatSetting('UPDATE_RATE')
@@ -440,84 +440,112 @@ this.DrawWindowSettings = function()
 			end
 		end
 
+		this.showCheckboxForSetting('AUTO_SAVE')
 		this.showCheckboxForSetting('SAVE_RESULTS_TO_DISK')
 
 		imgui.new_line()
+	end
 
+	if imgui.collapsing_header('Report') then
 		this.showCheckboxForSetting('COMBINE_OTOMO_WITH_HUNTER')
 		this.showCheckboxForSetting('COMBINE_ALL_OTHERS')
 		this.showCheckboxForSetting('HIDE_COMBINED_OTHERS')
+
+		imgui.new_line()
+
+		if imgui.tree_node('Select columns') then
+			this.showSectionSelectColumns()
+			
+			imgui.new_line()
+	
+			imgui.tree_pop()
+		end
+
+		if imgui.tree_node('Select fighters') then
+			changed, wantsIt = imgui.checkbox('Players', STATE._FILTERS.INCLUDE_PLAYER)
+			if changed then
+				CORE.SetReportPlayer(wantsIt)
+				REPORT.generateReport(STATE.REPORT_MONSTERS)
+			end
+
+			changed, wantsIt = imgui.checkbox('Player buddies (when not combined)', STATE._FILTERS.INCLUDE_OTOMO)
+			if changed then
+				CORE.SetReportOtomo(wantsIt)
+				REPORT.generateReport(STATE.REPORT_MONSTERS)
+			end
+
+			changed, wantsIt = imgui.checkbox('Followers', STATE._FILTERS.INCLUDE_SERVANT)
+			if changed then
+				CORE.SetReportServant(wantsIt)
+				REPORT.generateReport(STATE.REPORT_MONSTERS)
+			end
+
+			changed, wantsIt = imgui.checkbox('Follower buddies (when not combined)', STATE._FILTERS.INCLUDE_SERVANTOTOMO)
+			if changed then
+				CORE.SetReportServantOtomo(wantsIt)
+				REPORT.generateReport(STATE.REPORT_MONSTERS)
+			end
+
+			changed, wantsIt = imgui.checkbox('Large monsters', STATE._FILTERS.INCLUDE_LARGE)
+			if changed then
+				CORE.SetReportLarge(wantsIt)
+				REPORT.generateReport(STATE.REPORT_MONSTERS)
+			end
+
+			changed, wantsIt = imgui.checkbox('Small monsters, rampage villagers, etc', STATE._FILTERS.INCLUDE_OTHER)
+			if changed then
+				CORE.SetReportOther(wantsIt)
+				REPORT.generateReport(STATE.REPORT_MONSTERS)
+			end
+
+			imgui.new_line()
+
+			imgui.tree_pop()
+		end
+
+		-- draw buttons for each boss monster in the cache
+		if imgui.tree_node('Filter by target') then
+			imgui.text('Monsters you encounter during the quest will appear here.')
+			local monsterCollection = STATE.TEST_MONSTERS or STATE.LARGE_MONSTERS
+			local foundMonster = false
+			for enemy,boss in pairs(monsterCollection) do
+				foundMonster = true
+				local monsterIsInReport = STATE.REPORT_MONSTERS[enemy]
+				changed, wantsIt = imgui.checkbox(boss.name, monsterIsInReport)
+				if changed then
+					if wantsIt then
+						CORE.AddMonsterToReport(enemy, boss)
+					else
+						CORE.RemoveMonsterFromReport(enemy)
+					end
+					REPORT.generateReport(STATE.REPORT_MONSTERS)
+				end
+			end
+
+			if not foundMonster then
+				imgui.text('  (No monsters yet)')
+			end
+
+			imgui.new_line()
+
+			imgui.tree_pop()
+		end
+
+		if imgui.tree_node('Filter by type of attack (Advanced)') then
+			this.showSectionFilterByAttackType()
+			
+			imgui.new_line()
+
+			imgui.tree_pop()
+		end
+
+		imgui.new_line()
+	end
+
+	if imgui.collapsing_header('Rules') then
 		this.showCheckboxForSetting('CONDITION_LIKE_DAMAGE')
 		this.showCheckboxForSetting('PDPS_BASED_ON_FIRST_STRIKE')
 		this.showCheckboxForSetting('MARIONETTE_IS_PLAYER_DMG')
-
-		imgui.new_line()
-	end
-
-	if imgui.collapsing_header('Select fighters') then
-		imgui.text('Only include attacks made by the selected fighters')
-
-		changed, wantsIt = imgui.checkbox('Players', STATE._FILTERS.INCLUDE_PLAYER)
-		if changed then
-			CORE.SetReportPlayer(wantsIt)
-			REPORT.generateReport(STATE.REPORT_MONSTERS)
-		end
-
-		changed, wantsIt = imgui.checkbox('Player buddies (when not combined)', STATE._FILTERS.INCLUDE_OTOMO)
-		if changed then
-			CORE.SetReportOtomo(wantsIt)
-			REPORT.generateReport(STATE.REPORT_MONSTERS)
-		end
-
-		changed, wantsIt = imgui.checkbox('Followers', STATE._FILTERS.INCLUDE_SERVANT)
-		if changed then
-			CORE.SetReportServant(wantsIt)
-			REPORT.generateReport(STATE.REPORT_MONSTERS)
-		end
-
-		changed, wantsIt = imgui.checkbox('Follower buddies (when not combined)', STATE._FILTERS.INCLUDE_SERVANTOTOMO)
-		if changed then
-			CORE.SetReportServantOtomo(wantsIt)
-			REPORT.generateReport(STATE.REPORT_MONSTERS)
-		end
-
-		changed, wantsIt = imgui.checkbox('Large monsters', STATE._FILTERS.INCLUDE_LARGE)
-		if changed then
-			CORE.SetReportLarge(wantsIt)
-			REPORT.generateReport(STATE.REPORT_MONSTERS)
-		end
-
-		changed, wantsIt = imgui.checkbox('Small monsters and villagers', STATE._FILTERS.INCLUDE_OTHER)
-		if changed then
-			CORE.SetReportOther(wantsIt)
-			REPORT.generateReport(STATE.REPORT_MONSTERS)
-		end
-
-		imgui.new_line()
-	end
-
-	-- draw buttons for each boss monster in the cache
-	if imgui.collapsing_header('Select targets') then
-		imgui.text('Only include attacks against the selected monsters')
-		local monsterCollection = STATE.TEST_MONSTERS or STATE.LARGE_MONSTERS
-		local foundMonster = false
-		for enemy,boss in pairs(monsterCollection) do
-			foundMonster = true
-			local monsterIsInReport = STATE.REPORT_MONSTERS[enemy]
-			changed, wantsIt = imgui.checkbox(boss.name, monsterIsInReport)
-			if changed then
-				if wantsIt then
-					CORE.AddMonsterToReport(enemy, boss)
-				else
-					CORE.RemoveMonsterFromReport(enemy)
-				end
-				REPORT.generateReport(STATE.REPORT_MONSTERS)
-			end
-		end
-
-		if not foundMonster then
-			imgui.text('  (No monsters yet)')
-		end
 
 		imgui.new_line()
 	end
@@ -542,24 +570,9 @@ this.DrawWindowSettings = function()
 
 	imgui.new_line()
 
-	if imgui.collapsing_header('Select columns') then
-		this.showSelectDataSection()
-		imgui.new_line()
-	end
-
-	if imgui.collapsing_header('Select filters') then
-		this.showFilterSection()
-		imgui.new_line()
-	end
-
-	imgui.new_line()
+	imgui.text('Appearance')
 
 	this.showAppearanceSection()
-
-	if imgui.collapsing_header('Colors') then
-		this.showColorSection()
-		imgui.new_line()
-	end
 
 	if imgui.collapsing_header('Text') then
 		this.showTextSection()
@@ -567,7 +580,7 @@ this.DrawWindowSettings = function()
 	end
 
 	if imgui.collapsing_header('Column width') then
-		this.showColumnWidthSection()
+		this.showSectionColumnWidth()
 		imgui.new_line()
 	end
 
