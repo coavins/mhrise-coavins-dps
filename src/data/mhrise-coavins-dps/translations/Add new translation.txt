@@ -1,0 +1,17 @@
+Instructions for adding a new translation
+
+1. Create a new json file in the translations directory:
+		(for example)
+	data/mhrise-coavins-dps/translations/fr-CA.json
+
+2. Copy whatever strings you want to translate from the default en-US.json file
+You don't have to translate everything; any keys that you skip will be displayed
+in English.
+
+3. Submit your translation file to the repository on Github.
+You can submit it as a pull request, or create an issue and attach your file.
+
+https://github.com/coavins/mhrise-coavins-dps/pulls
+https://github.com/coavins/mhrise-coavins-dps/issues
+
+You can also send the file to me on Nexus Mods if you don't have a Github account.

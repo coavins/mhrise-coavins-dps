@@ -137,7 +137,7 @@ this.read_AfterCalcInfo_DamageSide = function(args)
 	local info = sdk.to_managed_object(args[3]) -- snow.hit.EnemyCalcDamageInfo.AfterCalcInfo_DamageSide
 
 	local attackerId     = info:call("get_AttackerID")
-	local attackerTypeId = info:call("get_DamageAttackerType")
+	local damageTypeId = info:call("get_DamageAttackerType")
 	local riderId = nil
 
 	local physicalDamage  = tonumber(info:call("get_PhysicalDamage"))
@@ -150,16 +150,16 @@ this.read_AfterCalcInfo_DamageSide = function(args)
 	local isMarionetteAttack = info:call("get_IsMarionetteAttack")
 
 	CORE.log_debug(string.format('%.0f:%.0f = %.0f:%.0f:%.0f:%.0f'
-	, attackerId, attackerTypeId, physicalDamage, elementDamage, conditionDamage, conditionType))
+	, attackerId, damageTypeId, physicalDamage, elementDamage, conditionDamage, conditionType))
 
 	-- override attacker id for monster attacks when monster has id=0
-	if attackerId == 0 and attackerTypeId == STATE.MONSTER_ATTACKER_TYPE_ID then
+	if attackerId == 0 and damageTypeId == STATE.MONSTER_DAMAGE_TYPE_ID then
 		attackerId = STATE.FAKE_ATTACKER_ID
 	end
 
-	-- override attacker type for marionette attackers
+	-- override damage type for marionette attackers
 	if isMarionetteAttack then
-		attackerTypeId = 125
+		damageTypeId = 125
 		for _,b in pairs(STATE.LARGE_MONSTERS) do
 			if b.id == attackerId then
 				riderId = b.rider
@@ -171,17 +171,17 @@ this.read_AfterCalcInfo_DamageSide = function(args)
 
 	if attackerId == nil then
 		CORE.log_error('Attacker ID is nil: '.. string.format('%.0f:%.0f = %.0f:%.0f:%.0f:%.0f'
-		, attackerId, attackerTypeId, physicalDamage, elementDamage, conditionDamage, conditionType))
+		, attackerId, damageTypeId, physicalDamage, elementDamage, conditionDamage, conditionType))
 		return
 
-	elseif attackerTypeId == nil then
-		CORE.log_error('Attacker Type ID is nil: '.. string.format('%.0f:%.0f = %.0f:%.0f:%.0f:%.0f'
-		, attackerId, attackerTypeId, physicalDamage, elementDamage, conditionDamage, conditionType))
+	elseif damageTypeId == nil then
+		CORE.log_error('Damage Type ID is nil: '.. string.format('%.0f:%.0f = %.0f:%.0f:%.0f:%.0f'
+		, attackerId, damageTypeId, physicalDamage, elementDamage, conditionDamage, conditionType))
 		return
 
 	end
 
-	DATA.addDamageToBoss(boss, attackerId, attackerTypeId
+	DATA.addDamageToBoss(boss, attackerId, damageTypeId
 	, physicalDamage, elementDamage, conditionDamage, conditionType, 0, 0, criticalType, riderId)
 end
 

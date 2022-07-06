@@ -1,32 +1,7 @@
 local this = {}
 
--- list of available columns for the table
--- the values here will appear in the header, if enabled
--- only add new columns to the end of this table
--- add it to TABLE_COLUMNS_OPTIONS_ID too
-this.TABLE_COLUMNS = {}
-this.TABLE_COLUMNS[1] = 'None'
-this.TABLE_COLUMNS[2] = 'HR'
-this.TABLE_COLUMNS[3] = 'Name'
-this.TABLE_COLUMNS[4] = 'mDPS'
-this.TABLE_COLUMNS[5] = 'Damage'
-this.TABLE_COLUMNS[6] = 'Party%'
-this.TABLE_COLUMNS[7] = 'Best%'
-this.TABLE_COLUMNS[8] = 'Hits'
-this.TABLE_COLUMNS[9] = 'MaxHit'
-this.TABLE_COLUMNS[10] = 'qDPS'
-this.TABLE_COLUMNS[11] = 'Status'
-this.TABLE_COLUMNS[12] = 'Poison'
-this.TABLE_COLUMNS[13] = 'Blast'
-this.TABLE_COLUMNS[14] = 'Crit%'
-this.TABLE_COLUMNS[15] = 'Weak%'
-this.TABLE_COLUMNS[16] = 'pDPS'
-this.TABLE_COLUMNS[17] = 'Physical'
-this.TABLE_COLUMNS[18] = 'Element'
-this.TABLE_COLUMNS[19] = 'Carts'
-this.TABLE_COLUMNS[20] = 'MR'
-
 -- list of columns sorted for the combo box
+-- key is dropdown index, value is column id
 this.TABLE_COLUMNS_OPTIONS_ID = {}
 this.TABLE_COLUMNS_OPTIONS_ID[1] = 1
 this.TABLE_COLUMNS_OPTIONS_ID[2] = 2
@@ -49,10 +24,10 @@ this.TABLE_COLUMNS_OPTIONS_ID[18] = 8
 this.TABLE_COLUMNS_OPTIONS_ID[19] = 9
 this.TABLE_COLUMNS_OPTIONS_ID[20] = 19
 
-
+-- populated when locale is loaded
 this.TABLE_COLUMNS_OPTIONS_READABLE = {}
-for i,col in ipairs(this.TABLE_COLUMNS_OPTIONS_ID) do
-	this.TABLE_COLUMNS_OPTIONS_READABLE[i] = this.TABLE_COLUMNS[col]
+for i,_ in ipairs(this.TABLE_COLUMNS_OPTIONS_ID) do
+	this.TABLE_COLUMNS_OPTIONS_READABLE[i] = ''
 end
 
 -- via.hid.KeyboardKey
@@ -217,81 +192,47 @@ this.ENUM_KEYBOARD_MODIFIERS[164] = true -- left alt
 this.ENUM_KEYBOARD_MODIFIERS[165] = true -- right alt
 
 -- snow.enemy.EnemyDef.DamageAttackerType
-this.ATTACKER_TYPES = {}
-this.ATTACKER_TYPES[0] = 'PlayerWeapon'
-this.ATTACKER_TYPES[1] = 'BarrelBombLarge'
-this.ATTACKER_TYPES[2] = 'Makimushi'
-this.ATTACKER_TYPES[3] = 'Nitro'
-this.ATTACKER_TYPES[4] = 'OnibiMine'
-this.ATTACKER_TYPES[5] = 'BallistaHate'
-this.ATTACKER_TYPES[6] = 'CaptureSmokeBomb'
-this.ATTACKER_TYPES[7] = 'CaptureBullet'
-this.ATTACKER_TYPES[8] = 'BarrelBombSmall'
-this.ATTACKER_TYPES[9] = 'Kunai'
-this.ATTACKER_TYPES[10] = 'WaterBeetle'
-this.ATTACKER_TYPES[11] = 'DetonationGrenade'
-this.ATTACKER_TYPES[12] = 'Kabutowari'
-this.ATTACKER_TYPES[13] = 'FlashBoll'
-this.ATTACKER_TYPES[14] = 'HmBallista'
-this.ATTACKER_TYPES[15] = 'HmCannon'
-this.ATTACKER_TYPES[16] = 'HmGatling'
-this.ATTACKER_TYPES[17] = 'HmTrap'
-this.ATTACKER_TYPES[18] = 'HmNpc'
-this.ATTACKER_TYPES[19] = 'HmFlameThrower'
-this.ATTACKER_TYPES[20] = 'HmDragnator'
-this.ATTACKER_TYPES[21] = 'Otomo'
-this.ATTACKER_TYPES[22] = 'OtAirouShell014'
-this.ATTACKER_TYPES[23] = 'OtAirouShell102'
-this.ATTACKER_TYPES[24] = 'Fg005'
-this.ATTACKER_TYPES[25] = 'EcBatExplode'
-this.ATTACKER_TYPES[26] = 'EcWallTrapBugExplode'
-this.ATTACKER_TYPES[27] = 'EcPiranha'
-this.ATTACKER_TYPES[28] = 'EcFlash'
-this.ATTACKER_TYPES[29] = 'EcSandWallShooter'
-this.ATTACKER_TYPES[30] = 'EcForestWallShooter'
-this.ATTACKER_TYPES[31] = 'EcSwampLeech'
-this.ATTACKER_TYPES[32] = 'EcPenetrateFish'
-this.ATTACKER_TYPES[33] = 'Max'
-this.ATTACKER_TYPES[34] = 'Invalid'
+this.DAMAGE_TYPES = {}
+this.DAMAGE_TYPES[0] = 'PlayerWeapon'
+this.DAMAGE_TYPES[1] = 'BarrelBombLarge'
+this.DAMAGE_TYPES[2] = 'Makimushi'
+this.DAMAGE_TYPES[3] = 'Nitro'
+this.DAMAGE_TYPES[4] = 'OnibiMine'
+this.DAMAGE_TYPES[5] = 'BallistaHate'
+this.DAMAGE_TYPES[6] = 'CaptureSmokeBomb'
+this.DAMAGE_TYPES[7] = 'CaptureBullet'
+this.DAMAGE_TYPES[8] = 'BarrelBombSmall'
+this.DAMAGE_TYPES[9] = 'Kunai'
+this.DAMAGE_TYPES[10] = 'WaterBeetle'
+this.DAMAGE_TYPES[11] = 'DetonationGrenade'
+this.DAMAGE_TYPES[12] = 'Kabutowari'
+this.DAMAGE_TYPES[13] = 'FlashBoll'
+this.DAMAGE_TYPES[14] = 'HmBallista'
+this.DAMAGE_TYPES[15] = 'HmCannon'
+this.DAMAGE_TYPES[16] = 'HmGatling'
+this.DAMAGE_TYPES[17] = 'HmTrap'
+this.DAMAGE_TYPES[18] = 'HmNpc'
+this.DAMAGE_TYPES[19] = 'HmFlameThrower'
+this.DAMAGE_TYPES[20] = 'HmDragnator'
+this.DAMAGE_TYPES[21] = 'Otomo'
+this.DAMAGE_TYPES[22] = 'OtAirouShell014'
+this.DAMAGE_TYPES[23] = 'OtAirouShell102'
+this.DAMAGE_TYPES[24] = 'Fg005'
+this.DAMAGE_TYPES[25] = 'EcBatExplode'
+this.DAMAGE_TYPES[26] = 'EcWallTrapBugExplode'
+this.DAMAGE_TYPES[27] = 'EcPiranha'
+this.DAMAGE_TYPES[28] = 'EcFlash'
+this.DAMAGE_TYPES[29] = 'EcSandWallShooter'
+this.DAMAGE_TYPES[30] = 'EcForestWallShooter'
+this.DAMAGE_TYPES[31] = 'EcSwampLeech'
+this.DAMAGE_TYPES[32] = 'EcPenetrateFish'
+this.DAMAGE_TYPES[33] = 'Max'
+this.DAMAGE_TYPES[34] = 'Monster' -- is actually "Invalid" in game
 -- defined here for convenience, but is not really in the game
-this.ATTACKER_TYPES[125] = 'marionette'
+this.DAMAGE_TYPES[125] = 'marionette'
 
-this.ATTACKER_TYPE_TEXT = {}
-this.ATTACKER_TYPE_TEXT['PlayerWeapon']      = 'Player Weapon'
-this.ATTACKER_TYPE_TEXT['BarrelBombLarge']   = 'Large Barrel Bomb'
-this.ATTACKER_TYPE_TEXT['Makimushi']         = 'makimushi'
-this.ATTACKER_TYPE_TEXT['Nitro']             = 'nitro'
-this.ATTACKER_TYPE_TEXT['OnibiMine']         = 'onibimine'
-this.ATTACKER_TYPE_TEXT['BallistaHate']      = 'ballistahate'
-this.ATTACKER_TYPE_TEXT['CaptureSmokeBomb']  = 'Tranq Bomb'
-this.ATTACKER_TYPE_TEXT['CaptureBullet']     = 'Tranq Ammo'
-this.ATTACKER_TYPE_TEXT['BarrelBombSmall']   = 'Barrel Bomb'
-this.ATTACKER_TYPE_TEXT['Kunai']             = 'Kunai'
-this.ATTACKER_TYPE_TEXT['WaterBeetle']       = 'waterbeetle'
-this.ATTACKER_TYPE_TEXT['DetonationGrenade'] = 'detonationgrenade'
-this.ATTACKER_TYPE_TEXT['Kabutowari']        = 'Spirit Helm Breaker'
-this.ATTACKER_TYPE_TEXT['FlashBoll']         = 'FlashBoll'
-this.ATTACKER_TYPE_TEXT['HmBallista']        = 'Ballista'
-this.ATTACKER_TYPE_TEXT['HmCannon']          = 'Cannon'
-this.ATTACKER_TYPE_TEXT['HmGatling']         = 'Machine Cannon'
-this.ATTACKER_TYPE_TEXT['HmTrap']            = 'Bamboo Bomb'
-this.ATTACKER_TYPE_TEXT['HmNpc']             = 'Defenders'
-this.ATTACKER_TYPE_TEXT['HmFlameThrower']    = 'Wyvernfire'
-this.ATTACKER_TYPE_TEXT['HmDragnator']       = 'Dragonator'
-this.ATTACKER_TYPE_TEXT['Otomo']             = 'Buddy'
-this.ATTACKER_TYPE_TEXT['OtAirouShell014']   = 'OtAirouShell014'
-this.ATTACKER_TYPE_TEXT['OtAirouShell102']   = 'Felyne Fireworks'
-this.ATTACKER_TYPE_TEXT['Fg005']             = 'Fg005'
-this.ATTACKER_TYPE_TEXT['EcBatExplode']      = 'EcBatExplode'
-this.ATTACKER_TYPE_TEXT['EcWallTrapBugExplode'] = 'EcWallTrapBugExplode'
-this.ATTACKER_TYPE_TEXT['EcPiranha']            = 'EcPiranha'
-this.ATTACKER_TYPE_TEXT['EcFlash']              = 'EcFlash'
-this.ATTACKER_TYPE_TEXT['EcSandWallShooter']    = 'EcSandWallShooter'
-this.ATTACKER_TYPE_TEXT['EcForestWallShooter']  = 'EcForestWallShooter'
-this.ATTACKER_TYPE_TEXT['EcSwampLeech']         = 'EcSwampLeech'
-this.ATTACKER_TYPE_TEXT['EcPenetrateFish']      = 'EcPenetrateFish'
-this.ATTACKER_TYPE_TEXT['Max']                  = 'Unknown'
-this.ATTACKER_TYPE_TEXT['Invalid']              = 'Monster'
-this.ATTACKER_TYPE_TEXT['marionette']           = 'Wyvern Riding'
+this.LANGUAGES = {}
+this.LANGUAGES['en'] = 'English'
+this.LANGUAGES['ja'] = '日本語'
 
 return this

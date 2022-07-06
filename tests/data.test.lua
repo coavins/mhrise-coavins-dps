@@ -31,9 +31,9 @@ describe("data:", function()
 
 		CORE.SetQuestDuration(0.0)
 
-		-- all attacker types enabled
-		for _,type in pairs(ENUM.ATTACKER_TYPES) do
-			CORE.AddAttackerTypeToReport(type)
+		-- all damage types enabled
+		for _,type in pairs(ENUM.DAMAGE_TYPES) do
+			CORE.AddDamageTypeToReport(type)
 		end
 	end)
 
@@ -99,8 +99,8 @@ describe("data:", function()
 			CORE.SetCFG('MARIONETTE_IS_PLAYER_DMG', true)
 
 			local monsterAttackerId = 300
-			local marionetteAttackerTypeId = 125
-			DATA.addDamageToBoss(boss, monsterAttackerId, marionetteAttackerTypeId
+			local marionetteDamageTypeId = 125
+			DATA.addDamageToBoss(boss, monsterAttackerId, marionetteDamageTypeId
 			, 100, 0, nil, nil, nil, nil, nil, 1)
 
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
@@ -123,8 +123,8 @@ describe("data:", function()
 			CORE.SetCFG('MARIONETTE_IS_PLAYER_DMG', false)
 
 			local monsterAttackerId = 300
-			local marionetteAttackerTypeId = 125
-			DATA.addDamageToBoss(boss, monsterAttackerId, marionetteAttackerTypeId
+			local marionetteDamageTypeId = 125
+			DATA.addDamageToBoss(boss, monsterAttackerId, marionetteDamageTypeId
 			, 100, 0, nil, nil, nil, nil, nil, 1)
 
 			REPORT.generateReport(STATE.REPORT_MONSTERS)

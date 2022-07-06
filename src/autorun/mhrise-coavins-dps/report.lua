@@ -121,7 +121,7 @@ this.getOrInsertReportItem = function(report, id)
 	return item
 end
 
-this.sumDamageCountersList = function(counters, attackerTypeFilter)
+this.sumDamageCountersList = function(counters, damageTypeFilter)
 	local sum = {}
 	sum.total = 0.0
 	sum.physical = 0.0
@@ -139,7 +139,7 @@ this.sumDamageCountersList = function(counters, attackerTypeFilter)
 
 	-- get totals from counters
 	for type,counter in pairs(counters) do
-		if not attackerTypeFilter or attackerTypeFilter[type] then
+		if not damageTypeFilter or damageTypeFilter[type] then
 			local counterTotal = DATA.getTotalDamageForDamageCounter(counter)
 
 			if (type == 'Otomo' or type == 'OtAirouShell014' or type == 'OtAirouShell102')
@@ -212,7 +212,7 @@ end
 
 this.mergeReportItemCounters = function(a, b)
 	local counters = {}
-	for _,type in pairs(ENUM.ATTACKER_TYPES) do
+	for _,type in pairs(ENUM.DAMAGE_TYPES) do
 		counters[type] = DATA.mergeDamageCounters(a[type], b[type])
 	end
 	return counters
@@ -407,7 +407,7 @@ this.mergeBossIntoReport = function(report, boss)
 	-- now loop all report items and update the totals after adding this boss
 	for _,item in ipairs(report.items) do
 		-- calculate the item's own total damage
-		local sum = this.sumDamageCountersList(item.counters, STATE._FILTERS.ATTACKER_TYPES)
+		local sum = this.sumDamageCountersList(item.counters, STATE._FILTERS.DAMAGE_TYPES)
 		item.totalPhysical  = sum.physical
 		item.totalElemental = sum.elemental
 		item.totalCondition = sum.condition
