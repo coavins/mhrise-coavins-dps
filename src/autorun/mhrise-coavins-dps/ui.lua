@@ -187,69 +187,6 @@ this.showColumnWidthSection = function()
 end
 
 this.showFilterSection = function()
-	if imgui.tree_node('Combatants') then
-		imgui.text('Include attacks from the following sources:')
-		local changed, wantsIt
-
-		imgui.checkbox('Players (required)', true)
-
-		changed, wantsIt = imgui.checkbox('Buddies (when not combined with hunters)', STATE._FILTERS.INCLUDE_OTOMO)
-		if changed then
-			STATE._FILTERS.INCLUDE_OTOMO = wantsIt
-			REPORT.generateReport(STATE.REPORT_MONSTERS)
-		end
-
-		changed, wantsIt = imgui.checkbox('Followers', STATE._FILTERS.INCLUDE_SERVANT)
-		if changed then
-			CORE.SetReportServant(wantsIt)
-			REPORT.generateReport(STATE.REPORT_MONSTERS)
-		end
-
-		changed, wantsIt = imgui.checkbox('Large monsters', STATE._FILTERS.INCLUDE_LARGE)
-		if changed then
-			CORE.SetReportLarge(wantsIt)
-			REPORT.generateReport(STATE.REPORT_MONSTERS)
-		end
-
-		changed, wantsIt = imgui.checkbox('Small monsters and villagers', STATE._FILTERS.INCLUDE_OTHER)
-		if changed then
-			CORE.SetReportOther(wantsIt)
-			REPORT.generateReport(STATE.REPORT_MONSTERS)
-		end
-
-		imgui.new_line()
-
-		imgui.tree_pop()
-	end
-
-	-- draw buttons for each boss monster in the cache
-	if imgui.tree_node('Targets') then
-		imgui.text('Include attacks against the following monsters:')
-		local monsterCollection = STATE.TEST_MONSTERS or STATE.LARGE_MONSTERS
-		local foundMonster = false
-		for enemy,boss in pairs(monsterCollection) do
-			foundMonster = true
-			local monsterIsInReport = STATE.REPORT_MONSTERS[enemy]
-			local changed, wantsIt = imgui.checkbox(boss.name, monsterIsInReport)
-			if changed then
-				if wantsIt then
-					CORE.AddMonsterToReport(enemy, boss)
-				else
-					CORE.RemoveMonsterFromReport(enemy)
-				end
-				REPORT.generateReport(STATE.REPORT_MONSTERS)
-			end
-		end
-
-		if not foundMonster then
-			imgui.text('(No monsters yet)')
-		end
-
-		imgui.new_line()
-
-		imgui.tree_pop()
-	end
-
 	-- draw buttons for attacker types
 	if imgui.tree_node('Attack type') then
 		imgui.text('Filter out attacks based on type:')
@@ -517,8 +454,65 @@ this.DrawWindowSettings = function()
 		imgui.new_line()
 	end
 
-	if imgui.collapsing_header('Colors') then
-		this.showColorSection()
+	if imgui.collapsing_header('Select fighters') then
+		imgui.text('Only include attacks made by the selected fighters')
+
+		changed, wantsIt = imgui.checkbox('Players', STATE._FILTERS.INCLUDE_PLAYER)
+		if changed then
+			CORE.SetReportPlayer(wantsIt)
+			REPORT.generateReport(STATE.REPORT_MONSTERS)
+		end
+
+		changed, wantsIt = imgui.checkbox('Buddies (when not combined with hunter)', STATE._FILTERS.INCLUDE_OTOMO)
+		if changed then
+			CORE.SetReportOtomo(wantsIt)
+			REPORT.generateReport(STATE.REPORT_MONSTERS)
+		end
+
+		changed, wantsIt = imgui.checkbox('Followers', STATE._FILTERS.INCLUDE_SERVANT)
+		if changed then
+			CORE.SetReportServant(wantsIt)
+			REPORT.generateReport(STATE.REPORT_MONSTERS)
+		end
+
+		changed, wantsIt = imgui.checkbox('Large monsters', STATE._FILTERS.INCLUDE_LARGE)
+		if changed then
+			CORE.SetReportLarge(wantsIt)
+			REPORT.generateReport(STATE.REPORT_MONSTERS)
+		end
+
+		changed, wantsIt = imgui.checkbox('Small monsters and villagers', STATE._FILTERS.INCLUDE_OTHER)
+		if changed then
+			CORE.SetReportOther(wantsIt)
+			REPORT.generateReport(STATE.REPORT_MONSTERS)
+		end
+
+		imgui.new_line()
+	end
+
+	-- draw buttons for each boss monster in the cache
+	if imgui.collapsing_header('Select targets') then
+		imgui.text('Only include attacks against the selected monsters')
+		local monsterCollection = STATE.TEST_MONSTERS or STATE.LARGE_MONSTERS
+		local foundMonster = false
+		for enemy,boss in pairs(monsterCollection) do
+			foundMonster = true
+			local monsterIsInReport = STATE.REPORT_MONSTERS[enemy]
+			local changed, wantsIt = imgui.checkbox(boss.name, monsterIsInReport)
+			if changed then
+				if wantsIt then
+					CORE.AddMonsterToReport(enemy, boss)
+				else
+					CORE.RemoveMonsterFromReport(enemy)
+				end
+				REPORT.generateReport(STATE.REPORT_MONSTERS)
+			end
+		end
+
+		if not foundMonster then
+			imgui.text('  (No monsters yet)')
+		end
+
 		imgui.new_line()
 	end
 
@@ -555,6 +549,11 @@ this.DrawWindowSettings = function()
 	imgui.new_line()
 
 	this.showAppearanceSection()
+
+	if imgui.collapsing_header('Colors') then
+		this.showColorSection()
+		imgui.new_line()
+	end
 
 	if imgui.collapsing_header('Text') then
 		this.showTextSection()
