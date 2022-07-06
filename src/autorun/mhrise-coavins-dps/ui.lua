@@ -455,9 +455,9 @@ this.DrawWindowSettings = function()
 
 		if imgui.tree_node('Select columns') then
 			this.showSectionSelectColumns()
-			
+
 			imgui.new_line()
-	
+
 			imgui.tree_pop()
 		end
 
@@ -533,7 +533,7 @@ this.DrawWindowSettings = function()
 
 		if imgui.tree_node('Filter by type of attack (Advanced)') then
 			this.showSectionFilterByAttackType()
-			
+
 			imgui.new_line()
 
 			imgui.tree_pop()
