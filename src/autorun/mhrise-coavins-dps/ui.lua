@@ -504,7 +504,7 @@ this.DrawWindowSettings = function()
 		for enemy,boss in pairs(monsterCollection) do
 			foundMonster = true
 			local monsterIsInReport = STATE.REPORT_MONSTERS[enemy]
-			local changed, wantsIt = imgui.checkbox(boss.name, monsterIsInReport)
+			changed, wantsIt = imgui.checkbox(boss.name, monsterIsInReport)
 			if changed then
 				if wantsIt then
 					CORE.AddMonsterToReport(enemy, boss)

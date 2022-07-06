@@ -309,7 +309,8 @@ this.filterAllowsAttacker = function(attackerId)
 	if STATE._FILTERS.INCLUDE_PLAYER and CORE.attackerIdIsPlayer(attackerId) then
 		return true
 	-- Show player buddies
-	elseif (STATE._FILTERS.INCLUDE_OTOMO and CORE.attackerIdIsOtomo(attackerId) and not CORE.attackerIdIsServantOtomo(attackerId)) then
+	elseif (STATE._FILTERS.INCLUDE_OTOMO and CORE.attackerIdIsOtomo(attackerId)
+			and not CORE.attackerIdIsServantOtomo(attackerId)) then
 		return true
 	-- Show servants
 	elseif (STATE._FILTERS.INCLUDE_SERVANT and CORE.attackerIdIsServant(attackerId)) then
