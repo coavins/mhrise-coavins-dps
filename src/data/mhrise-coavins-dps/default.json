@@ -338,6 +338,7 @@
 			"Invalid": true,
 			"marionette": true
 		},
+		"INCLUDE_PLAYER": true,
 		"INCLUDE_OTOMO": true,
 		"INCLUDE_SERVANT": true,
 		"INCLUDE_LARGE": true,

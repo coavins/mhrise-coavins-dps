@@ -305,8 +305,8 @@ this.calculateReportTime = function(report)
 end
 
 this.filterAllowsAttacker = function(attackerId)
-	-- Always show players
-	if CORE.attackerIdIsPlayer(attackerId) then
+	-- Show players
+	if STATE._FILTERS.INCLUDE_PLAYER and CORE.attackerIdIsPlayer(attackerId) then
 		return true
 	-- Show buddies
 	elseif (STATE._FILTERS.INCLUDE_OTOMO and CORE.attackerIdIsOtomo(attackerId)) then

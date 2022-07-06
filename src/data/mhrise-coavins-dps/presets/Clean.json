@@ -344,6 +344,7 @@
             "waterbeetle": true,
             "weapon": true
         },
+		"INCLUDE_PLAYER": true,
         "INCLUDE_OTHER": false,
         "INCLUDE_OTOMO": false,
         "INCLUDE_SERVANT": true,

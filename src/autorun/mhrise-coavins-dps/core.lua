@@ -409,6 +409,10 @@ this.RemoveAttackerTypeFromReport = function(typeToRemove)
 	this.log_debug(string.format('damage type %s removed from report', typeToRemove))
 end
 
+this.SetReportPlayer = function(value)
+	STATE._FILTERS.INCLUDE_PLAYER = value
+end
+
 this.SetReportOtomo = function(value)
 	STATE._FILTERS.INCLUDE_OTOMO = value
 end
