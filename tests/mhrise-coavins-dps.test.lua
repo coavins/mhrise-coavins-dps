@@ -21,6 +21,7 @@ end
 describe("mhrise-coavins-dps", function()
 	setup(function()
 		STATE.MANAGER.MESSAGE = MockMessageManager:create()
+		STATE.MANAGER.QUEST = MockQuestManager:create()
 	end)
 
 	before_each(function()
@@ -39,6 +40,8 @@ describe("mhrise-coavins-dps", function()
 		end
 
 		CORE.SetCFG('CONDITION_LIKE_DAMAGE', false)
+		CORE.SetCFG('SHOW_MISSING_DAMAGE', false)
+		CORE.SetCFG('ADD_TARGETS_TO_REPORT', false)
 	end)
 
 	describe("report", function()

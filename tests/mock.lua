@@ -32,7 +32,27 @@ end
 
 function MockMessageManager:call(what)
 	if what == 'getEnemyNameMessage' then
-		return 'MockEnemy';
+		return 'MockEnemy'
+	end
+end
+
+--#endregion
+
+--#region MockQuestManager
+
+MockQuestManager = {}
+MockQuestManager.__index = MockQuestManager
+
+function MockQuestManager:create()
+	local manager = {}
+	setmetatable(manager, MockQuestManager)
+
+	return manager
+end
+
+function MockQuestManager:call(what)
+	if what == 'getQuestTargetEmTypeList' then
+		return nil
 	end
 end
 
