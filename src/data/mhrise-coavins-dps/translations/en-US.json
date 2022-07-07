@@ -273,7 +273,7 @@
 		"msg_fighter_player": "Players",
 		"msg_fighter_servant": "Followers",
 		"msg_fighter_servantotomo": "Follower buddies (when not combined)",
-		"msg_fighters": "Select fighters",
+		"msg_fighters": "Include fighters",
 		"msg_general": "General",
 		"msg_header": "Header",
 		"msg_not_use_hooks": "Do not use SDK hooks",
@@ -293,7 +293,7 @@
 		"msg_target": "Filter by target",
 		"msg_text_help1": "Requires plugin: reframework-d2d",
 		"msg_text_help2": "Save changes and RESET SCRIPTS to apply changes to font",
-		"msg_text": "Text",
+		"msg_text": "Font",
 		"msg_title": "Title",
 		"msg_width": "Column width",
 		"Settings": "Settings"

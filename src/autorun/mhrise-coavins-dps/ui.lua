@@ -204,12 +204,6 @@ this.DrawWindowSettings = function()
 	end
 
 	if imgui.collapsing_header(LANG.MESSAGE('msg_report')) then
-		this.showCheckboxForSetting('COMBINE_OTOMO_WITH_HUNTER')
-		this.showCheckboxForSetting('COMBINE_ALL_OTHERS')
-		this.showCheckboxForSetting('HIDE_COMBINED_OTHERS')
-
-		imgui.new_line()
-
 		if imgui.tree_node(LANG.MESSAGE('msg_columns')) then
 			this.showSectionSelectColumns()
 
@@ -298,6 +292,18 @@ this.DrawWindowSettings = function()
 		end
 
 		imgui.new_line()
+
+		-- Report settings
+		this.showCheckboxForSetting('COMBINE_OTOMO_WITH_HUNTER')
+		this.showCheckboxForSetting('COMBINE_ALL_OTHERS')
+		this.showCheckboxForSetting('HIDE_COMBINED_OTHERS')
+
+		imgui.new_line()
+
+		this.showCheckboxForSetting('TABLE_SORT_IN_ORDER')
+		this.showCheckboxForSetting('TABLE_SORT_ASC')
+
+		imgui.new_line()
 	end
 
 	if imgui.collapsing_header(LANG.MESSAGE('msg_rules')) then
@@ -350,6 +356,24 @@ this.DrawWindowSettings = function()
 		imgui.new_line()
 	end
 
+		-- Text
+		if imgui.collapsing_header(LANG.MESSAGE('msg_text')) then
+			this.showTextboxForSetting('FONT_FAMILY')
+			if not STATE.USE_PLUGIN_D2D then
+				imgui.text(LANG.MESSAGE('msg_text_help1'))
+			else
+				imgui.text(LANG.MESSAGE('msg_text_help2'))
+			end
+
+			imgui.new_line()
+
+			this.showCheckboxForSetting('TEXT_DRAW_SHADOWS')
+			this.showSliderForIntSetting('TEXT_SHADOW_OFFSET_X')
+			this.showSliderForIntSetting('TEXT_SHADOW_OFFSET_Y')
+
+			imgui.new_line()
+		end
+
 	-- Color
 	if imgui.collapsing_header(LANG.MESSAGE('msg_color')) then
 		this.showSectionColor()
@@ -393,34 +417,11 @@ this.DrawWindowSettings = function()
 
 		imgui.new_line()
 
-		this.showCheckboxForSetting('TABLE_SORT_ASC')
-		this.showCheckboxForSetting('TABLE_SORT_IN_ORDER')
-
-		imgui.new_line()
-
 		this.showSliderForIntSetting('TABLE_ROWH')
 		this.showSliderForIntSetting('TABLE_ROW_PADDING')
 
 		this.showSliderForIntSetting('TABLE_ROW_TEXT_OFFSET_X')
 		this.showSliderForIntSetting('TABLE_ROW_TEXT_OFFSET_Y')
-
-		imgui.new_line()
-	end
-
-	-- Text
-	if imgui.collapsing_header(LANG.MESSAGE('msg_text')) then
-		this.showTextboxForSetting('FONT_FAMILY')
-		if not STATE.USE_PLUGIN_D2D then
-			imgui.text(LANG.MESSAGE('msg_text_help1'))
-		else
-			imgui.text(LANG.MESSAGE('msg_text_help2'))
-		end
-
-		imgui.new_line()
-
-		this.showCheckboxForSetting('TEXT_DRAW_SHADOWS')
-		this.showSliderForIntSetting('TEXT_SHADOW_OFFSET_X')
-		this.showSliderForIntSetting('TEXT_SHADOW_OFFSET_Y')
 
 		imgui.new_line()
 	end
