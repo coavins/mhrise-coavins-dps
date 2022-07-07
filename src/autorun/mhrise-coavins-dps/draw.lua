@@ -352,7 +352,7 @@ this.drawReport = function(index)
 	local titleHeight = CORE.CFG('DRAW_TITLE_HEIGHT') * scale
 	local headerHeight = CORE.CFG('DRAW_HEADER_HEIGHT') * scale
 	local rowHeight = CORE.CFG('TABLE_ROWH') * scale
-	local growDistance = rowHeight + CORE.CFG('TABLE_ROW_PADDING') * dir
+	local growDistance = (rowHeight + CORE.CFG('TABLE_ROW_PADDING')) * dir
 
 	if CORE.CFG('TABLE_GROWS_UPWARD') then
 		origin_y = origin_y - rowHeight
