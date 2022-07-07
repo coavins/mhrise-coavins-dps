@@ -76,6 +76,12 @@
 			"DRAW_TITLE_TEXT": {
 					"VALUE": true
 			},
+			"DRAW_TOTAL": {
+					"VALUE": true
+			},
+			"DRAW_TOTAL_BACKGROUND": {
+					"VALUE": false
+			},
 			"FONT_FAMILY": {
 					"VALUE": "Tahoma"
 			},
@@ -184,6 +190,11 @@
 			"TABLE_SORT_IN_ORDER": {
 					"VALUE": true
 			},
+			"TABLE_TOTAL_TEXT_OFFSET_X": {
+				"MAX": 200.0,
+				"MIN": -200.0,
+				"VALUE": 117.0
+		},
 			"TABLE_WIDTH": {
 					"MAX": 2000.0,
 					"MIN": 30.0,

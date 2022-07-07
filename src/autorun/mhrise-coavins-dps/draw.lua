@@ -475,22 +475,34 @@ this.drawReport = function(index)
 		end
 
 		this.draw_text('No data', x, y, CORE.COLOR('GRAY'))
-	end
+	else
+		-- draw report items
+		local item_y = origin_y
+		if CORE.CFG('DRAW_TITLE') then
+			item_y = item_y + (titleHeight * dir) -- skip title row
+		end
+		if CORE.CFG('DRAW_HEADER') then
+			item_y = item_y + (headerHeight * dir) -- skip header row
+		end
 
-	-- draw report items
-	local item_y = origin_y
-	if CORE.CFG('DRAW_TITLE') then
-		item_y = item_y + (titleHeight * dir) -- skip title row
-	end
-	if CORE.CFG('DRAW_HEADER') then
-		item_y = item_y + (headerHeight * dir) -- skip header row
-	end
+		for _,item in ipairs(report.items) do
+			-- Draw this report item if it's not hidden by this setting
+			if not (CORE.CFG('HIDE_COMBINED_OTHERS') and item.id == STATE.COMBINE_ALL_OTHERS_ATTACKER_ID) then
+				this.drawReportItem(item, origin_x, item_y, tableWidth, rowHeight)
+				item_y = item_y + growDistance
+			end
+		end
 
-	for _,item in ipairs(report.items) do
-		-- Draw this report item if it's not hidden by this setting
-		if not (CORE.CFG('HIDE_COMBINED_OTHERS') and item.id == STATE.COMBINE_ALL_OTHERS_ATTACKER_ID) then
-			this.drawReportItem(item, origin_x, item_y, tableWidth, rowHeight)
-			item_y = item_y + growDistance
+		-- draw total
+		if CORE.CFG('DRAW_TOTAL') then
+			-- background
+			if CORE.CFG('DRAW_TOTAL_BACKGROUND') then
+				this.draw_filled_rect(origin_x, item_y, tableWidth, rowHeight, CORE.COLOR('TITLE_BG'))
+			end
+
+			local totalText = 'Total damage: ' .. report.totalDamage
+			local offsetX = CORE.CFG('TABLE_TOTAL_TEXT_OFFSET_X')
+			this.drawRichText(totalText, origin_x + offsetX, item_y, CORE.COLOR('TITLE_FG'), CORE.COLOR('BLACK'))
 		end
 	end
 end

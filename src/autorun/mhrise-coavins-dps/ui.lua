@@ -394,6 +394,7 @@ this.DrawWindowSettings = function()
 		this.showCheckboxForSetting('DRAW_TITLE_MONSTER')
 		this.showSliderForIntSetting('DRAW_TITLE_HEIGHT')
 		this.showCheckboxForSetting('DRAW_TITLE_BACKGROUND')
+		this.showSliderForIntSetting('TABLE_HEADER_TEXT_OFFSET_X')
 
 		imgui.new_line()
 	end
@@ -403,8 +404,6 @@ this.DrawWindowSettings = function()
 		this.showCheckboxForSetting('DRAW_HEADER')
 		this.showSliderForIntSetting('DRAW_HEADER_HEIGHT')
 		this.showCheckboxForSetting('DRAW_HEADER_BACKGROUND')
-
-		this.showSliderForIntSetting('TABLE_HEADER_TEXT_OFFSET_X')
 
 		imgui.new_line()
 	end
@@ -431,6 +430,13 @@ this.DrawWindowSettings = function()
 		this.showSliderForIntSetting('TABLE_ROW_TEXT_OFFSET_Y')
 
 		imgui.new_line()
+	end
+
+	-- Total
+	if imgui.collapsing_header(LANG.MESSAGE('msg_total')) then
+		this.showCheckboxForSetting('DRAW_TOTAL')
+		this.showCheckboxForSetting('DRAW_TOTAL_BACKGROUND')
+		this.showSliderForIntSetting('TABLE_TOTAL_TEXT_OFFSET_X')
 	end
 
 	-- Column width
