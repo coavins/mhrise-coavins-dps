@@ -235,7 +235,7 @@ this.initializeBossMonster = function(bossEnemy)
 	-- automatically add monster to report if we have all monsters selected
 	if STATE.ORDERED_MONSTERS_SELECTED == 0
 	-- and we don't want targets only, or it's a target
-	and (not CORE.CFG('ADD_TARGETS_TO_REPORT') or boss.isQuestTarget) then
+	and (not CORE.CFG('ADD_TARGETS_TO_REPORT') or boss.isQuestTarget or STATE.IS_IN_TRAININGHALL) then
 		CORE.AddMonsterToReport(bossEnemy, boss)
 	end
 

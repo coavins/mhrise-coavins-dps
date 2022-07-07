@@ -396,7 +396,7 @@ this.resetReportMonsters = function()
 	this.makeTableEmpty(STATE.REPORT_MONSTERS)
 	for enemy, boss in pairs(STATE.LARGE_MONSTERS) do
 		-- add boss if we don't want targets only, or if it is a target
-		if not this.CFG('ADD_TARGETS_TO_REPORT') or boss.isQuestTarget then
+		if not this.CFG('ADD_TARGETS_TO_REPORT') or boss.isQuestTarget or STATE.IS_IN_TRAININGHALL then
 			this.AddMonsterToReport(enemy, boss)
 		end
 	end
