@@ -76,7 +76,7 @@ this.showCheckboxForDamageType = function(type)
 end
 
 this.DrawWindowSettings = function()
-	local changed, wantsIt, value
+	local changed, wantsIt
 
 	wantsIt = imgui.begin_window('coavins dps meter - settings', STATE.DRAW_WINDOW_SETTINGS, STATE.WINDOW_FLAGS)
 	if STATE.DRAW_WINDOW_SETTINGS and not wantsIt then
@@ -158,9 +158,9 @@ this.DrawWindowSettings = function()
 		LANG.applySelectedLanguage()
 	end
 	imgui.same_line()
-	changed, value = imgui.combo(LANG.MESSAGE('Languages'), STATE.LOCALE_OPTIONS_SELECTED, STATE.LOCALE_OPTIONS)
+	changed, wantsIt = imgui.combo(LANG.MESSAGE('Languages'), STATE.LOCALE_OPTIONS_SELECTED, STATE.LOCALE_OPTIONS)
 	if changed then
-		STATE.LOCALE_OPTIONS_SELECTED = value
+		STATE.LOCALE_OPTIONS_SELECTED = wantsIt
 	end
 
 	-- Presets
@@ -169,9 +169,9 @@ this.DrawWindowSettings = function()
 		STATE.NEEDS_UPDATE = true
 	end
 	imgui.same_line()
-	changed, value = imgui.combo(LANG.MESSAGE('msg_presets'), STATE.PRESET_OPTIONS_SELECTED, STATE.PRESET_OPTIONS)
+	changed, wantsIt = imgui.combo(LANG.MESSAGE('msg_presets'), STATE.PRESET_OPTIONS_SELECTED, STATE.PRESET_OPTIONS)
 	if changed then
-		STATE.PRESET_OPTIONS_SELECTED = value
+		STATE.PRESET_OPTIONS_SELECTED = wantsIt
 	end
 
 	imgui.new_line()
@@ -329,9 +329,9 @@ this.DrawWindowSettings = function()
 		options[1] = LANG.OPTION('DRAW_BAR_REVEAL_RANK_1') -- Hide
 		options[2] = LANG.OPTION('DRAW_BAR_REVEAL_RANK_2') -- Show HR
 		options[3] = LANG.OPTION('DRAW_BAR_REVEAL_RANK_3') -- Show MR
-		changed, value = imgui.combo(LANG.OPTION('DRAW_BAR_REVEAL_RANK'), CORE.CFG('DRAW_BAR_REVEAL_RANK'), options)
+		changed, wantsIt = imgui.combo(LANG.OPTION('DRAW_BAR_REVEAL_RANK'), CORE.CFG('DRAW_BAR_REVEAL_RANK'), options)
 		if changed then
-			CORE.SetCFG('DRAW_BAR_REVEAL_RANK', value)
+			CORE.SetCFG('DRAW_BAR_REVEAL_RANK', wantsIt)
 			STATE.NEEDS_UPDATE = true
 		end
 
