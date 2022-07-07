@@ -123,13 +123,6 @@ this.DrawWindowSettings = function()
 		STATE.NEEDS_UPDATE = true
 	end
 
-	imgui.same_line()
-	if imgui.button(LANG.MESSAGE('btn_set_hotkeys')) then
-		STATE.DRAW_WINDOW_HOTKEYS = not STATE.DRAW_WINDOW_HOTKEYS
-	end
-
-	imgui.new_line()
-
 	if imgui.button(LANG.MESSAGE('btn_save_settings')) then
 		CORE.saveCurrentConfig()
 	end
@@ -151,8 +144,6 @@ this.DrawWindowSettings = function()
 		imgui.text(LANG.MESSAGE('msg_plugin_missing2'))
 	end
 
-	imgui.new_line()
-
 	-- Languages
 	if imgui.button(LANG.MESSAGE('btn_apply_language')) then
 		LANG.applySelectedLanguage()
@@ -172,6 +163,10 @@ this.DrawWindowSettings = function()
 	changed, wantsIt = imgui.combo(LANG.MESSAGE('msg_presets'), STATE.PRESET_OPTIONS_SELECTED, STATE.PRESET_OPTIONS)
 	if changed then
 		STATE.PRESET_OPTIONS_SELECTED = wantsIt
+	end
+
+	if imgui.button(LANG.MESSAGE('btn_set_hotkeys')) then
+		STATE.DRAW_WINDOW_HOTKEYS = not STATE.DRAW_WINDOW_HOTKEYS
 	end
 
 	imgui.new_line()
