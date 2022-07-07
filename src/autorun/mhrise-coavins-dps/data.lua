@@ -435,9 +435,9 @@ this.initializeTestData = function()
 	STATE.TEST_MONSTERS = {}
 	CORE.makeTableEmpty(STATE.REPORT_MONSTERS)
 
-	this.initializeBossMonsterWithDummyData(111, 'Rathian')
-	this.initializeBossMonsterWithDummyData(222, 'Tigrex')
-	this.initializeBossMonsterWithDummyData(333, 'Qurupeco')
+	this.initializeBossMonsterWithDummyData(111, 'Monster A')
+	this.initializeBossMonsterWithDummyData(222, 'Monster B')
+	this.initializeBossMonsterWithDummyData(333, 'Monster C')
 end
 
 this.isInTestMode = function()
