@@ -160,9 +160,22 @@ this.initializeBossMonster = function(bossEnemy)
 	boss.species = bossEnemy:call("get_EnemySpecies")
 	boss.genus   = bossEnemy:call("get_BossEnemyGenus")
 
-	-- get name
-	local enemyType = bossEnemy:get_field("<EnemyType>k__BackingField")
-	boss.name = STATE.MANAGER.MESSAGE:call("getEnemyNameMessage", enemyType)
+	-- get type and name
+	boss.enemyType = bossEnemy:get_field("<EnemyType>k__BackingField")
+	boss.name = STATE.MANAGER.MESSAGE:call("getEnemyNameMessage", boss.enemyType)
+	boss.isQuestTarget = false
+
+	-- figure out if it's a quest target
+	local targetTypes = STATE.MANAGER.QUEST:call("getQuestTargetEmTypeList")
+	if targetTypes then
+		local targetCount = targetTypes:call("get_Count")
+		for i = 0, targetCount-1 do
+			local targetType = targetTypes:call("get_Item", i)
+			if targetType ~= 0 and targetType == boss.enemyType then
+				boss.isQuestTarget = true
+			end
+		end
+	end
 
 	boss.damageSources = {}
 
@@ -220,7 +233,9 @@ this.initializeBossMonster = function(bossEnemy)
 	table.insert(STATE.ORDERED_MONSTERS, bossEnemy)
 
 	-- automatically add monster to report if we have all monsters selected
-	if STATE.ORDERED_MONSTERS_SELECTED == 0 then
+	if STATE.ORDERED_MONSTERS_SELECTED == 0
+	-- and we don't want targets only, or it's a target
+	and (not CORE.CFG('ADD_TARGETS_TO_REPORT') or boss.isQuestTarget) then
 		CORE.AddMonsterToReport(bossEnemy, boss)
 	end
 

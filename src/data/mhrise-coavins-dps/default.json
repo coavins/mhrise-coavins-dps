@@ -1,5 +1,8 @@
 {
 	"CFG": {
+			"ADD_TARGETS_TO_REPORT": {
+					"VALUE": true
+			},
 			"AUTO_SAVE": {
 					"VALUE": true
 			},

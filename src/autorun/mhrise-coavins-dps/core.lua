@@ -392,11 +392,13 @@ this.RemoveMonsterFromReport = function(enemyToRemove)
 	end
 end
 
--- include all monsters in the report
 this.resetReportMonsters = function()
 	this.makeTableEmpty(STATE.REPORT_MONSTERS)
 	for enemy, boss in pairs(STATE.LARGE_MONSTERS) do
-		this.AddMonsterToReport(enemy, boss)
+		-- add boss if we don't want targets only, or if it is a target
+		if not this.CFG('ADD_TARGETS_TO_REPORT') or boss.isQuestTarget then
+			this.AddMonsterToReport(enemy, boss)
+		end
 	end
 end
 

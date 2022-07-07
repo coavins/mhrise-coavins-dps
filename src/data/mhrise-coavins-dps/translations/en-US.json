@@ -299,6 +299,7 @@
 		"Settings": "Settings"
 	},
 	"options": {
+		"ADD_TARGETS_TO_REPORT": "Automatically filter on quest objectives",
 		"AUTO_SAVE": "Automatically save all settings",
 		"COMBINE_ALL_OTHERS": "Combine everyone except for you",
 		"COMBINE_OTOMO_WITH_HUNTER": "Combine all buddies with their hunters",

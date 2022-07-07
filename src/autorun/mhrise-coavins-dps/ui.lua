@@ -256,6 +256,12 @@ this.DrawWindowSettings = function()
 
 		-- draw buttons for each boss monster in the cache
 		if imgui.tree_node(LANG.MESSAGE('msg_target')) then
+			changed, wantsIt = imgui.checkbox(LANG.OPTION('ADD_TARGETS_TO_REPORT'), CORE.CFG('ADD_TARGETS_TO_REPORT'))
+			if changed then
+				CORE.SetCFG('ADD_TARGETS_TO_REPORT', wantsIt)
+				STATE.NEEDS_UPDATE = true
+				CORE.resetReportMonsters()
+			end
 			imgui.text(LANG.MESSAGE('msg_target_help'))
 			local monsterCollection = STATE.TEST_MONSTERS or STATE.LARGE_MONSTERS
 			local foundMonster = false
