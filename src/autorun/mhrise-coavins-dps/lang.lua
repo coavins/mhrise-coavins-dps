@@ -67,6 +67,14 @@ this.applySavedLanguage = function()
 	CORE.log_error('Couldn\'t find default locale en-US')
 end
 
+this.loadFontForLanguage = function(locale)
+	if locale == 'zh-CN' then
+		STATE.CHANGE_IMGUI_FONT = imgui.load_font(STATE.RE_FONT_NAME_SC, STATE.RE_FONT_SIZE, STATE.CJK_GLYPH_RANGES)
+	else
+		STATE.CHANGE_IMGUI_FONT = imgui.load_font(STATE.RE_FONT_NAME_JP, STATE.RE_FONT_SIZE, STATE.CJK_GLYPH_RANGES)
+	end
+end
+
 this.applySelectedLanguage = function()
 	local locale = STATE.LOCALE_OPTIONS[STATE.LOCALE_OPTIONS_SELECTED]
 
@@ -76,6 +84,7 @@ this.applySelectedLanguage = function()
 	if STATE._LOCALES[locale] then
 		CORE.SetCFG('LOCALE', locale)
 		STATE.LOCALE = locale
+		this.loadFontForLanguage(locale)
 
 		-- update table columns combobox
 		for i,col in ipairs(ENUM.TABLE_COLUMNS_OPTIONS_ID) do
