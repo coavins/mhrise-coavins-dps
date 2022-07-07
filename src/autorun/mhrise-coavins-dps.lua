@@ -204,6 +204,10 @@ re.on_frame(function()
 	if STATE.IMGUI_FONT then
 		imgui.pop_font()
 	end
+	if STATE.CHANGE_IMGUI_FONT then
+		STATE.IMGUI_FONT = STATE.CHANGE_IMGUI_FONT
+		STATE.CHANGE_IMGUI_FONT = nil
+	end
 end)
 
 ---@diagnostic disable-next-line: param-type-mismatch
@@ -282,7 +286,7 @@ else
 	CORE.log_info('reframework-d2d plugin is disabled')
 end
 
--- load CJK font
-STATE.IMGUI_FONT = imgui.load_font(STATE.RE_FONT_NAME, STATE.RE_FONT_SIZE, STATE.CJK_GLYPH_RANGES)
+STATE.IMGUI_FONT = STATE.CHANGE_IMGUI_FONT
+STATE.CHANGE_IMGUI_FONT = nil
 
 CORE.log_info('init complete')

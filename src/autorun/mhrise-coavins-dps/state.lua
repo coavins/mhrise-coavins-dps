@@ -3,7 +3,8 @@ local USER_OPTIONS = require 'mhrise-coavins-dps.user_options'
 local this = {}
 
 this.USE_PLUGIN_D2D = USER_OPTIONS.USE_PLUGIN_D2D
-this.RE_FONT_NAME = 'NotoSansJP-Regular.otf'
+this.RE_FONT_NAME_JP = 'NotoSansJP-Regular.otf'
+this.RE_FONT_NAME_SC = 'NotoSansSC-Regular.otf'
 this.RE_FONT_SIZE = 18
 this.CJK_GLYPH_RANGES = {
 	0x0020, 0x00FF, -- Basic Latin + Latin Supplement
@@ -15,7 +16,7 @@ this.CJK_GLYPH_RANGES = {
 	0,
 }
 this.IMGUI_FONT = nil
-
+this.CHANGE_IMGUI_FONT = nil
 
 -- auto-detect missing plugin
 if not d2d then
