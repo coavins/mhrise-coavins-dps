@@ -64,6 +64,9 @@
         "DRAW_TITLE_TEXT": {
             "VALUE": true
         },
+        "DRAW_TOTAL": {
+            "VALUE": true
+        },
         "FONT_FAMILY": {
             "VALUE": "Tahoma"
         },
