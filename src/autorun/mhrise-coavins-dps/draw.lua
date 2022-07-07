@@ -58,6 +58,7 @@ this.drawRichDamageBar = function(item, x, y, maxWidth, h, colorPhysical, colorE
 	if CORE.CFG('DRAW_BAR_USE_UNIQUE_COLORS') then
 		local colorCondition = CORE.COLOR('BAR_DMG_AILMENT')
 		local colorOtomo     = CORE.COLOR('BAR_DMG_OTOMO')
+		local colorStun		 = CORE.COLOR('BAR_DMG_STUN')
 		local colorPoison    = CORE.COLOR('BAR_DMG_POISON')
 		local colorBlast     = CORE.COLOR('BAR_DMG_BLAST')
 		local colorOther     = CORE.COLOR('BAR_DMG_OTHER')
@@ -119,7 +120,6 @@ end
 
 this.drawReportHeaderColumn = function(col, x, y)
 	local text = LANG.HEADER(col)
-
 	this.drawRichText(text, x, y, CORE.COLOR('GRAY'), CORE.COLOR('BLACK'))
 end
 
@@ -195,6 +195,8 @@ this.drawReportItemColumn = function(item, col, x, y)
 		if item.rank2 then
 			text = string.format('%s', item.rank2)
 		end
+	elseif col == 21 then --stun
+		text = string.format('%.0f', item.totalStun)
 	end
 
 	this.drawRichText(text, x, y, CORE.COLOR('WHITE'), CORE.COLOR('BLACK'))
@@ -451,7 +453,6 @@ this.drawReport = function(index)
 		for _, value in ipairs(STATE._CFG['TABLE_COLS']) do
 			if value > 1 then
 				this.drawReportHeaderColumn(value, x, y)
-
 				local colWidth = STATE._CFG['TABLE_COLS_WIDTH'][value] * scale
 				x = x + colWidth
 			end
