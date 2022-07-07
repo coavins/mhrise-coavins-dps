@@ -459,16 +459,35 @@ this.mergeBossIntoReport = function(report, boss)
 		end
 
 		-- accumulate total overall damage
+		-- don't include the fake report item inserted to represent missing damage
+		if item.id ~= STATE.MISSING_ATTACKER_ID then
+			totalDamage = totalDamage + item.total
+		end
+	end
+
+	report.missingHealth = report.missingHealth + boss.hp.missing
+
+	-- show missing damage as a fake report item
+	local missingDamage = report.missingHealth - totalDamage
+	if CORE.CFG('SHOW_MISSING_DAMAGE') and missingDamage > 0 then
+		local item = this.getOrInsertReportItem(report, STATE.MISSING_ATTACKER_ID)
+		item.name = 'Not shown'
+
+		item.totalPhysical = missingDamage
+		item.total = missingDamage
+
+		if item.total > bestDamage then
+			bestDamage = item.total
+		end
 		totalDamage = totalDamage + item.total
 	end
 
-	-- remove report items that have no damage
-	CORE.arrayRemove(report.items, CORE.reportItemHasDamage)
-
+	report.missingDamage = missingDamage
 	report.totalDamage = totalDamage
 	report.topDamage = bestDamage
-	report.missingHealth = report.missingHealth + boss.hp.missing
-	report.missingDamage = report.missingHealth - totalDamage
+
+	-- remove report items that have no damage
+	CORE.arrayRemove(report.items, CORE.reportItemHasDamage)
 
 	-- loop again to calculate percents using the totals we got before
 	for _,item in ipairs(report.items) do

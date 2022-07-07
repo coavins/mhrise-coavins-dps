@@ -94,6 +94,9 @@
 			"SAVE_RESULTS_TO_DISK": {
 					"VALUE": false
 			},
+			"SHOW_MISSING_DAMAGE": {
+					"VALUE": false
+			},
 			"SHOW_TEST_DATA_WHILE_MENU_IS_OPEN": {
 					"VALUE": true
 			},

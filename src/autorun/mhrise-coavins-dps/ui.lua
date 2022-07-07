@@ -297,6 +297,7 @@ this.DrawWindowSettings = function()
 		this.showCheckboxForSetting('COMBINE_OTOMO_WITH_HUNTER')
 		this.showCheckboxForSetting('COMBINE_ALL_OTHERS')
 		this.showCheckboxForSetting('HIDE_COMBINED_OTHERS')
+		this.showCheckboxForSetting('SHOW_MISSING_DAMAGE')
 
 		imgui.new_line()
 

@@ -71,6 +71,7 @@ this.DEBUG_Y = 0
 this.FAKE_OTOMO_RANGE_START = 9990 -- it is important that attacker ids near this are never used by the game
 this.FAKE_ATTACKER_ID = 10189 -- monsters with id=0 are treated as if they had this attacker id
 this.COMBINE_ALL_OTHERS_ATTACKER_ID = 10295 -- when this option is used, all attackers except for us use this id
+this.MISSING_ATTACKER_ID = 10304 -- a report item can be created with this attacker id to represent missing damage
 this.HIGH_NUMBER = 9999.0
 this.OTOMO_ATTACKER_TYPE_ID = 21
 this.MONSTER_DAMAGE_TYPE_ID = 34

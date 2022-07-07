@@ -279,7 +279,7 @@ this.initializeBossMonsterWithDummyData = function(bossKey, fakeName)
 	boss.hp = {}
 	boss.hp.current = 0.0
 	boss.hp.max     = 0.0
-	boss.hp.missing = 0.0
+	boss.hp.missing = math.random(5000,8000)
 	boss.hp.percent = 0.0
 
 	boss.timeline = {}
