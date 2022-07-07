@@ -1,339 +1,339 @@
 {
 	"CFG": {
-		"LOCALE": {
-			"VALUE": "en-US"
-		},
-		"UPDATE_RATE": {
-			"VALUE": 0.20,
-			"MIN": 0.01,
-			"MAX": 10.00
-		},
-		"AUTO_SAVE": {
-			"VALUE": true
-		},
-		"SHOW_TEST_DATA_WHILE_MENU_IS_OPEN": {
-			"VALUE": true
-		},
-		"SAVE_RESULTS_TO_DISK": {
-			"VALUE": false
-		},
-		"HIDE_OVERLAY_IN_VILLAGE": {
-			"VALUE": false
-		},
-		"COMBINE_OTOMO_WITH_HUNTER": {
-			"VALUE": true
-		},
-		"COMBINE_ALL_OTHERS": {
-			"VALUE": false
-		},
-		"HIDE_COMBINED_OTHERS": {
-			"VALUE": false
-		},
-		"CONDITION_LIKE_DAMAGE": {
-			"VALUE": false
-		},
-		"PDPS_BASED_ON_FIRST_STRIKE": {
-			"VALUE": true
-		},
-		"MARIONETTE_IS_PLAYER_DMG": {
-			"VALUE": true
-		},
-		"DEBUG_SHOW_MISSING_DAMAGE": {
-			"VALUE": false
-		},
-		"DEBUG_SHOW_ATTACKER_ID": {
-			"VALUE": false
-		},
-		"DRAW_BAR_RELATIVE_TO_PARTY": {
-			"VALUE": false
-		},
-		"DRAW_TITLE": {
-			"VALUE": true
-		},
-		"DRAW_TITLE_TEXT": {
-			"VALUE": true
-		},
-		"DRAW_TITLE_MONSTER": {
-			"VALUE": true
-		},
-		"DRAW_TITLE_BACKGROUND": {
-			"VALUE": true
-		},
-		"DRAW_TITLE_HEIGHT": {
-			"VALUE": 18,
-			"MIN": 0,
-			"MAX": 100
-		},
-		"DRAW_HEADER": {
-			"VALUE": true
-		},
-		"DRAW_HEADER_BACKGROUND": {
-			"VALUE": true
-		},
-		"DRAW_HEADER_HEIGHT": {
-			"VALUE": 18,
-			"MIN": 0,
-			"MAX": 100
-		},
-		"DRAW_TABLE_BACKGROUND": {
-			"VALUE": true
-		},
-		"DRAW_BAR_OUTLINES": {
-			"VALUE": false
-		},
-		"DRAW_BAR_COLORBLOCK": {
-			"VALUE": true
-		},
-		"DRAW_BAR_USE_PLAYER_COLORS": {
-			"VALUE": true
-		},
-		"DRAW_BAR_USE_UNIQUE_COLORS": {
-			"VALUE": true
-		},
-		"TABLE_COLS": [
-			3.0,
-			16.0,
-			1.0,
-			6.0,
-			1.0,
-			5.0,
-			9.0,
-			1.0,
-			1.0,
-			1.0,
-			1.0,
-			1.0,
-			1.0,
-			1.0,
-			1.0,
-			1.0,
-			1.0,
-			1.0
-	],
-		"TABLE_COLS_WIDTH": [
-			0,
-			30,
-			110,
-			39,
-			58,
-			53,
-			53,
-			37,
-			50,
-			39,
-			58,
-			58,
-			58,
-			53,
-			53,
-			39,
-			58,
-			58,
-			30,
-			30
-		],
-		"DRAW_BAR_TEXT_YOU": {
-			"VALUE": false
-		},
-		"DRAW_BAR_TEXT_NAME_USE_REAL_NAMES": {
-			"VALUE": true
-		},
-		"DRAW_BAR_REVEAL_RANK": {
-			"VALUE": 3
-		},
-		"USE_MINIMAL_BARS": {
-			"VALUE": false
-		},
-		"TABLE_GROWS_UPWARD": {
-			"VALUE": false
-		},
-		"TABLE_SORT_ASC": {
-			"VALUE": false
-		},
-		"TABLE_SORT_IN_ORDER": {
-			"VALUE": false
-		},
-		"TABLE_X": {
-			"VALUE": 0.65,
-			"MIN": 0.0,
-			"MAX": 1.0
-		},
-		"TABLE_Y": {
-			"VALUE": 0.0,
-			"MIN": 0.0,
-			"MAX": 1.0
-		},
-		"TABLE_SCALE": {
-			"VALUE": 1.0,
-			"MIN": 0.0,
-			"MAX": 10.0
-		},
-		"TABLE_HEADER_TEXT_OFFSET_X": {
-			"VALUE": 3,
-			"MIN": -100,
-			"MAX": 100
-		},
-		"TABLE_WIDTH": {
-			"VALUE": 380,
-			"MIN": 30,
-			"MAX": 2000
-		},
-		"TABLE_ROWH": {
-			"VALUE": 18,
-			"MIN": 0,
-			"MAX": 100
-		},
-		"TABLE_ROW_PADDING": {
-			"VALUE": 0,
-			"MIN": 0,
-			"MAX": 150
-		},
-		"TABLE_ROW_TEXT_OFFSET_X": {
-			"VALUE": 4,
-			"MIN": -100,
-			"MAX": 100
-		},
-		"TABLE_ROW_TEXT_OFFSET_Y": {
-			"VALUE": 0,
-			"MIN": -100,
-			"MAX": 100
-		},
-		"TEXT_DRAW_SHADOWS": {
-			"VALUE": true
-		},
-		"TEXT_SHADOW_OFFSET_X": {
-			"VALUE": 1,
-			"MIN": -5,
-			"MAX": 5
-		},
-		"TEXT_SHADOW_OFFSET_Y": {
-			"VALUE": 1,
-			"MIN": -5,
-			"MAX": 5
-		},
-		"FONT_FAMILY": {
-			"VALUE": "Tahoma"
-		}
+			"AUTO_SAVE": {
+					"VALUE": true
+			},
+			"COMBINE_ALL_OTHERS": {
+					"VALUE": false
+			},
+			"COMBINE_OTOMO_WITH_HUNTER": {
+					"VALUE": true
+			},
+			"CONDITION_LIKE_DAMAGE": {
+					"VALUE": false
+			},
+			"DEBUG_SHOW_ATTACKER_ID": {
+					"VALUE": false
+			},
+			"DEBUG_SHOW_MISSING_DAMAGE": {
+					"VALUE": false
+			},
+			"DRAW_BAR_COLORBLOCK": {
+					"VALUE": true
+			},
+			"DRAW_BAR_OUTLINES": {
+					"VALUE": false
+			},
+			"DRAW_BAR_RELATIVE_TO_PARTY": {
+					"VALUE": false
+			},
+			"DRAW_BAR_REVEAL_RANK": {
+					"VALUE": 3.0
+			},
+			"DRAW_BAR_TEXT_NAME_USE_REAL_NAMES": {
+					"VALUE": true
+			},
+			"DRAW_BAR_TEXT_YOU": {
+					"VALUE": false
+			},
+			"DRAW_BAR_USE_PLAYER_COLORS": {
+					"VALUE": true
+			},
+			"DRAW_BAR_USE_UNIQUE_COLORS": {
+					"VALUE": false
+			},
+			"DRAW_HEADER": {
+					"VALUE": true
+			},
+			"DRAW_HEADER_BACKGROUND": {
+					"VALUE": true
+			},
+			"DRAW_HEADER_HEIGHT": {
+					"MAX": 100.0,
+					"MIN": 0.0,
+					"VALUE": 18.0
+			},
+			"DRAW_TABLE_BACKGROUND": {
+					"VALUE": true
+			},
+			"DRAW_TITLE": {
+					"VALUE": true
+			},
+			"DRAW_TITLE_BACKGROUND": {
+					"VALUE": true
+			},
+			"DRAW_TITLE_HEIGHT": {
+					"MAX": 100.0,
+					"MIN": 0.0,
+					"VALUE": 18.0
+			},
+			"DRAW_TITLE_MONSTER": {
+					"VALUE": true
+			},
+			"DRAW_TITLE_TEXT": {
+					"VALUE": true
+			},
+			"FONT_FAMILY": {
+					"VALUE": "Tahoma"
+			},
+			"HIDE_COMBINED_OTHERS": {
+					"VALUE": false
+			},
+			"HIDE_OVERLAY_IN_VILLAGE": {
+					"VALUE": false
+			},
+			"LOCALE": {
+					"VALUE": "en-US"
+			},
+			"MARIONETTE_IS_PLAYER_DMG": {
+					"VALUE": true
+			},
+			"PDPS_BASED_ON_FIRST_STRIKE": {
+					"VALUE": true
+			},
+			"SAVE_RESULTS_TO_DISK": {
+					"VALUE": false
+			},
+			"SHOW_TEST_DATA_WHILE_MENU_IS_OPEN": {
+					"VALUE": true
+			},
+			"TABLE_COLS": [
+					3.0,
+					1.0,
+					1.0,
+					6.0,
+					1.0,
+					5.0,
+					9.0,
+					19.0,
+					1.0,
+					1.0,
+					1.0,
+					1.0,
+					1.0,
+					1.0,
+					1.0,
+					1.0,
+					1.0,
+					1.0
+			],
+			"TABLE_COLS_WIDTH": [
+					0.0,
+					30.0,
+					124.0,
+					39.0,
+					58.0,
+					53.0,
+					53.0,
+					37.0,
+					50.0,
+					39.0,
+					58.0,
+					58.0,
+					58.0,
+					53.0,
+					53.0,
+					39.0,
+					58.0,
+					58.0,
+					30.0,
+					30.0
+			],
+			"TABLE_GROWS_UPWARD": {
+					"VALUE": false
+			},
+			"TABLE_HEADER_TEXT_OFFSET_X": {
+					"MAX": 100.0,
+					"MIN": -100.0,
+					"VALUE": 3.0
+			},
+			"TABLE_ROWH": {
+					"MAX": 100.0,
+					"MIN": 0.0,
+					"VALUE": 18.0
+			},
+			"TABLE_ROW_PADDING": {
+					"MAX": 150.0,
+					"MIN": 0.0,
+					"VALUE": 0.0
+			},
+			"TABLE_ROW_TEXT_OFFSET_X": {
+					"MAX": 100.0,
+					"MIN": -100.0,
+					"VALUE": 4.0
+			},
+			"TABLE_ROW_TEXT_OFFSET_Y": {
+					"MAX": 100.0,
+					"MIN": -100.0,
+					"VALUE": 0.0
+			},
+			"TABLE_SCALE": {
+					"MAX": 10.0,
+					"MIN": 0.0,
+					"VALUE": 1.0
+			},
+			"TABLE_SORT_ASC": {
+					"VALUE": false
+			},
+			"TABLE_SORT_IN_ORDER": {
+					"VALUE": true
+			},
+			"TABLE_WIDTH": {
+					"MAX": 2000.0,
+					"MIN": 30.0,
+					"VALUE": 356.0
+			},
+			"TABLE_X": {
+					"MAX": 1.0,
+					"MIN": 0.0,
+					"VALUE": 0.6200000047683716
+			},
+			"TABLE_Y": {
+					"MAX": 1.0,
+					"MIN": 0.0,
+					"VALUE": 0.009999999776482582
+			},
+			"TEXT_DRAW_SHADOWS": {
+					"VALUE": true
+			},
+			"TEXT_SHADOW_OFFSET_X": {
+					"MAX": 5.0,
+					"MIN": -5.0,
+					"VALUE": 1.0
+			},
+			"TEXT_SHADOW_OFFSET_Y": {
+					"MAX": 5.0,
+					"MIN": -5.0,
+					"VALUE": 1.0
+			},
+			"UPDATE_RATE": {
+					"MAX": 10.0,
+					"MIN": 0.01,
+					"VALUE": 0.2
+			},
+			"USE_MINIMAL_BARS": {
+					"VALUE": false
+			}
 	},
 	"COLORS": {
-		"WHITE": 4294967295,
-		"GRAY": 4289703855,
-		"BLACK": 4278190080,
-		"RED": 2952737330,
-		"BLUE": 2939302655,
-		"YELLOW": 2952789810,
-		"GREEN": 2939354930,
-		"PLAYER": [
-			2952737330,
-			2939302655,
-			2952789810,
-			2939354930
-		],
-		"OTOMO": 2939343100,
-		"SERVANT": 2947251444,
-		"TITLE_BG": 2281701376,
-		"TITLE_FG": 4292532954,
-		"BAR_BG": 1140850688,
-		"BAR_OUTLINE": 1140850688,
-		"BAR_DMG_PHYSICAL": 2941804902,
-		"BAR_DMG_PHYSICAL_UNIQUE": [
-			2949392424,
-			2938644684,
-			2949434408,
-			2938686504
-		],
-		"BAR_DMG_ELEMENT": 2944702865,
-		"BAR_DMG_ELEMENT_UNIQUE": [
-			2945195036,
-			2937855116,
-			2945223708,
-			2937883676
-		],
-		"BAR_DMG_AILMENT": 2946709310,
-		"BAR_DMG_OTOMO": 2936060912,
-		"BAR_DMG_POISON": 2949461981,
-		"BAR_DMG_BLAST": 2950726402,
-		"BAR_DMG_OTHER": 2941804902
+			"BAR_BG": 1140850688.0,
+			"BAR_DMG_AILMENT": 2946709310.0,
+			"BAR_DMG_BLAST": 2950726402.0,
+			"BAR_DMG_ELEMENT": 2944702865.0,
+			"BAR_DMG_ELEMENT_UNIQUE": [
+					2945195036.0,
+					2937855116.0,
+					2945223708.0,
+					2937883676.0
+			],
+			"BAR_DMG_OTHER": 2941804902.0,
+			"BAR_DMG_OTOMO": 2936060912.0,
+			"BAR_DMG_PHYSICAL": 2941804902.0,
+			"BAR_DMG_PHYSICAL_UNIQUE": [
+					2949392424.0,
+					2938644684.0,
+					2949434408.0,
+					2938686504.0
+			],
+			"BAR_DMG_POISON": 2949461981.0,
+			"BAR_OUTLINE": 1140850688.0,
+			"BLACK": 4278190080.0,
+			"BLUE": 2939302655.0,
+			"GRAY": 4289703855.0,
+			"GREEN": 2939354930.0,
+			"OTOMO": 2939343100.0,
+			"PLAYER": [
+					2952737330.0,
+					2939302655.0,
+					2952789810.0,
+					2939354930.0
+			],
+			"RED": 2952737330.0,
+			"SERVANT": 2947251444.0,
+			"TITLE_BG": 2281701376.0,
+			"TITLE_FG": 4292532954.0,
+			"WHITE": 4294967295.0,
+			"YELLOW": 2952789810.0
 	},
 	"FILTERS": {
-		"DAMAGE_TYPES": {
-			"PlayerWeapon": true,
-			"BarrelBombLarge": true,
-			"Makimushi": true,
-			"Nitro": true,
-			"OnibiMine": true,
-			"BallistaHate": true,
-			"CaptureSmokeBomb": true,
-			"CaptureBullet": true,
-			"BarrelBombSmall": true,
-			"Kunai": true,
-			"WaterBeetle": true,
-			"DetonationGrenade": true,
-			"Kabutowari": true,
-			"FlashBoll": true,
-			"HmBallista": true,
-			"HmCannon": true,
-			"HmGatling": true,
-			"HmTrap": true,
-			"HmNpc": true,
-			"HmFlameThrower": true,
-			"HmDragnator": true,
-			"Otomo": true,
-			"OtAirouShell014": true,
-			"OtAirouShell102": true,
-			"Fg005": true,
-			"EcBatExplode": true,
-			"EcWallTrapBugExplode": true,
-			"EcPiranha": true,
-			"EcFlash": true,
-			"EcSandWallShooter": true,
-			"EcForestWallShooter": true,
-			"EcSwampLeech": true,
-			"EcPenetrateFish": true,
-			"Max": true,
-			"Monster": true,
-			"marionette": true
-		},
-		"INCLUDE_PLAYER": true,
-		"INCLUDE_OTOMO": true,
-		"INCLUDE_SERVANT": true,
-		"INCLUDE_SERVANTOTOMO": false,
-		"INCLUDE_LARGE": true,
-		"INCLUDE_OTHER": false
+			"DAMAGE_TYPES": {
+					"BallistaHate": true,
+					"BarrelBombLarge": true,
+					"BarrelBombSmall": true,
+					"CaptureBullet": true,
+					"CaptureSmokeBomb": true,
+					"DetonationGrenade": true,
+					"EcBatExplode": true,
+					"EcFlash": true,
+					"EcForestWallShooter": true,
+					"EcPenetrateFish": true,
+					"EcPiranha": true,
+					"EcSandWallShooter": true,
+					"EcSwampLeech": true,
+					"EcWallTrapBugExplode": true,
+					"Fg005": true,
+					"FlashBoll": true,
+					"HmBallista": true,
+					"HmCannon": true,
+					"HmDragnator": true,
+					"HmFlameThrower": true,
+					"HmGatling": true,
+					"HmNpc": true,
+					"HmTrap": true,
+					"Kabutowari": true,
+					"Kunai": true,
+					"Makimushi": true,
+					"Max": true,
+					"Monster": true,
+					"Nitro": true,
+					"OnibiMine": true,
+					"OtAirouShell014": true,
+					"OtAirouShell102": true,
+					"Otomo": true,
+					"PlayerWeapon": true,
+					"WaterBeetle": true,
+					"marionette": true
+			},
+			"INCLUDE_LARGE": false,
+			"INCLUDE_OTHER": false,
+			"INCLUDE_OTOMO": true,
+			"INCLUDE_PLAYER": true,
+			"INCLUDE_SERVANT": false,
+			"INCLUDE_SERVANTOTOMO": false
 	},
 	"HOTKEYS": {
-		"TOGGLE_OVERLAY": {
-			"KEY": "109",
-			"MODIFIERS": {
-				"160": false,
-				"161": false,
-				"162": false,
-				"163": false,
-				"164": false,
-				"165": false
+			"MONSTER_NEXT": {
+					"KEY": "33",
+					"MODIFIERS": {
+							"160": false,
+							"161": false,
+							"162": false,
+							"163": false,
+							"164": false,
+							"165": false
+					}
+			},
+			"MONSTER_PREV": {
+					"KEY": "34",
+					"MODIFIERS": {
+							"160": false,
+							"161": false,
+							"162": false,
+							"163": false,
+							"164": false,
+							"165": false
+					}
+			},
+			"TOGGLE_OVERLAY": {
+					"KEY": "109",
+					"MODIFIERS": {
+							"160": false,
+							"161": false,
+							"162": false,
+							"163": false,
+							"164": false,
+							"165": false
+					}
 			}
-		},
-		"MONSTER_NEXT": {
-			"KEY": "33",
-			"MODIFIERS": {
-				"160": false,
-				"161": false,
-				"162": false,
-				"163": false,
-				"164": false,
-				"165": false
-			}
-		},
-		"MONSTER_PREV": {
-			"KEY": "34",
-			"MODIFIERS": {
-				"160": false,
-				"161": false,
-				"162": false,
-				"163": false,
-				"164": false,
-				"165": false
-			}
-		}
 	}
 }
