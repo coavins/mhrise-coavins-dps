@@ -235,5 +235,6 @@ this.LANGUAGES = {}
 this.LANGUAGES['en'] = 'English'
 this.LANGUAGES['es'] = 'Español'
 this.LANGUAGES['ja'] = '日本語'
+this.LANGUAGES['zh'] = '汉语'
 
 return this
