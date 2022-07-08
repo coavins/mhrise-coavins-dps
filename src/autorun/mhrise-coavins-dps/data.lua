@@ -358,8 +358,8 @@ this.addDamageToBoss = function(boss, attackerId, damageTypeId, info)
 
 	amt.firstStrike = STATE.QUEST_DURATION
 
-	--log.info(string.format('%.0f/%.0f %.0f:%.0f:%.0f:%.0f'
-	--, attackerId, attackerTypeId, amtPhysical, amtElemental, amtCondition, amtAilment))
+	--CORE.log_debug(string.format('%.0f/%.0f %.0f:%.0f:%.0f:%.0f'
+	--, attackerId, damageTypeId, amtPhysical, amtElemental, amtCondition, amtAilment))
 
 	local sources = boss.damageSources
 	local buildup = boss.ailment.buildup
@@ -413,10 +413,12 @@ this.addDamageToBoss = function(boss, attackerId, damageTypeId, info)
 		local b = buildup[typeCondition]
 		-- accumulate this buildup for this attacker
 		b[attackerId] = (b[attackerId] or 0.0) + amtCondition
+		CORE.log_debug(string.format('set buildup for id %.0f to %.0f', attackerId, b[attackerId]))
 	end
 end
 
 this.addAilmentDamageToBoss = function(boss, ailmentType, ailmentDamage)
+	CORE.log_debug('addAilmentDamageToBoss')
 	-- we only track poison and blast for now
 	if not ailmentType or (ailmentType ~= 4 and ailmentType ~= 5) then
 		return
@@ -424,12 +426,12 @@ this.addAilmentDamageToBoss = function(boss, ailmentType, ailmentDamage)
 
 	local damage = ailmentDamage or 0.0
 
-	--log.info(string.format("ailment dmg %.0f, %.0f", ailmentType, ailmentDamage))
-
 	-- split up damage according to ratio of buildup on boss for this type
 	local shares = boss.ailment.share[ailmentType]
 	for attackerId, pct in pairs(shares) do
+		--CORE.log_debug('reward share for id ' .. attackerId)
 		local portion = damage * pct
+		CORE.log_debug(string.format('reward %.0f for %.0f damage of type %.0f', attackerId, portion, ailmentType))
 		local info = this.initializeDamageInfo()
 		info.ailmentAmt = portion
 		info.ailmentType = ailmentType
@@ -451,6 +453,9 @@ this.calculateAilmentContrib = function(boss, type)
 	for key, value in pairs(b) do
 		-- update ratio for this attacker
 		s[key] = value / total
+
+		CORE.log_debug(string.format('%.0f earned %.0f for %.0f buildup', key, s[key], b[key]))
+
 		-- clear accumulated buildup for this attacker
 		-- they have to start over to earn a share of next ailment trigger
 		b[key] = 0.0

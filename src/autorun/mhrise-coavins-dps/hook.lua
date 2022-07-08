@@ -66,40 +66,6 @@ this.updateBossEnemy = function(args)
 		end
 	end
 
-	-- get poison and blast damage
-	local damageParam = enemy:get_field("<DamageParam>k__BackingField")
-	if damageParam then
-		local blastParam = damageParam:get_field("_BlastParam")
-		if blastParam then
-			-- if applied, then calculate share for blast and apply damage
-			local activateCnt = blastParam:call("get_ActivateCount"):get_element(0):get_field("mValue")
-			if activateCnt > boss.ailment.count[5] then
-				boss.ailment.count[5] = activateCnt
-				DATA.calculateAilmentContrib(boss, 5)
-
-				local blastDamage = blastParam:call("get_BlastDamage")
-				DATA.addAilmentDamageToBoss(boss, 5, blastDamage)
-			end
-		end
-
-		local poisonParam = damageParam:get_field("_PoisonParam")
-		if poisonParam then
-			-- if applied, then calculate share for poison
-			local activateCnt = poisonParam:call("get_ActivateCount"):get_element(0):get_field("mValue")
-			if activateCnt > boss.ailment.count[4] then
-				boss.ailment.count[4] = activateCnt
-				DATA.calculateAilmentContrib(boss, 4)
-			end
-
-			-- if poison tick, apply damage
-			local poisonDamage = poisonParam:get_field("<Damage>k__BackingField")
-			local isDamage = poisonParam:call("get_IsDamage")
-			if isDamage then
-				DATA.addAilmentDamageToBoss(boss, 4, poisonDamage)
-			end
-		end
-	end
-
 	-- get marionette rider
 	local marioParam = enemy:get_field("<MarioParam>k__BackingField")
 	if marioParam then
@@ -191,6 +157,86 @@ this.read_AfterCalcInfo_DamageSide = function(args)
 	DATA.addDamageToBoss(boss, attackerId, damageTypeId, damageInfo)
 end
 
+-- called when poison is triggered
+this.onPoisonProc = function(args)
+	if not STATE.HOOKS_ENABLED then
+		return
+	end
+
+	local param = sdk.to_managed_object(args[2])
+	if not param then
+		return
+	end
+
+	local enemy = param:call("get_Em")
+	if not enemy then
+		return
+	end
+
+	local boss = STATE.LARGE_MONSTERS[enemy]
+	if not boss then
+		return
+	end
+
+	if boss.hp.current == 0 then
+		return
+	end
+
+	CORE.log_debug('Proc poison')
+
+	-- calculate total poison damage
+	local damage = param:call("get_Damage")
+	local interval = param:call("get_DamageInterval")
+	local time = param:call("get_ActiveTime")
+	local totalPoisonDamage = damage * (time / interval)
+	CORE.log_debug(string.format('%.0f = %.0f * (%.0f / %.0f)', totalPoisonDamage, damage, interval, time))
+
+	-- update contribution share for this boss
+	DATA.calculateAilmentContrib(boss, 4)
+
+	-- add poison damage
+	DATA.addAilmentDamageToBoss(boss, 4, totalPoisonDamage)
+end
+
+-- called when blast is triggered
+this.onBlastProc = function(args)
+	if not STATE.HOOKS_ENABLED then
+		return
+	end
+
+	local param = sdk.to_managed_object(args[2])
+	if not param then
+		return
+	end
+
+	local enemy = param:call("get_Em")
+	if not enemy then
+		return
+	end
+
+	local boss = STATE.LARGE_MONSTERS[enemy]
+	if not boss then
+		return
+	end
+
+	if boss.hp.current == 0 then
+		return
+	end
+
+	CORE.log_debug('Proc blast')
+
+	-- calculate actual damage inflicted
+	local damage = param:call("get_BlastDamage")
+	local multiplier = param:call("get_BlastDamageAdjustRateByEnemyLv")
+	damage = damage * multiplier
+
+	-- update contribution share for this boss
+	DATA.calculateAilmentContrib(boss, 5)
+
+	-- add blast damage
+	DATA.addAilmentDamageToBoss(boss, 5, damage)
+end
+
 this.tryHookSdk = function()
 	if not STATE.SCENE_MANAGER_TYPE then
 		STATE.SCENE_MANAGER_TYPE = sdk.find_type_definition("via.SceneManager")
@@ -222,6 +268,36 @@ this.tryHookSdk = function()
 			CORE.log_debug('Hooked snow.enemy.EnemyCharacterBase:afterCalcDamage_DamageSide()')
 		else
 			CORE.log_error('Failed to find snow.enemy.EnemyCharacterBase')
+		end
+
+		if not STATE.SNOW_ENEMY_ENEMYPOISONDAMAGEPARAM then
+			STATE.SNOW_ENEMY_ENEMYPOISONDAMAGEPARAM = sdk.find_type_definition("snow.enemy.EnemyPoisonDamageParam")
+			if STATE.SNOW_ENEMY_ENEMYPOISONDAMAGEPARAM then
+				STATE.SNOW_ENEMY_ENEMYPOISONDAMAGEPARAM_ONACTIVATEPROC =
+				STATE.SNOW_ENEMY_ENEMYPOISONDAMAGEPARAM:get_method("onActivateProc")
+				-- register function hook
+				sdk.hook(STATE.SNOW_ENEMY_ENEMYPOISONDAMAGEPARAM_ONACTIVATEPROC,
+					function(args) this.onPoisonProc(args) end,
+					function(retval) return retval end)
+					CORE.log_debug('Hooked snow.enemy.EnemyPoisonDamageParam:onActivateProc()')
+			else
+				CORE.log_error('Failed to find snow.enemy.EnemyPoisonDamageParam')
+			end
+		end
+
+		if not STATE.SNOW_ENEMY_ENEMYBLASTDAMAGEPARAM then
+			STATE.SNOW_ENEMY_ENEMYBLASTDAMAGEPARAM = sdk.find_type_definition("snow.enemy.EnemyBlastDamageParam")
+			if STATE.SNOW_ENEMY_ENEMYBLASTDAMAGEPARAM then
+				STATE.SNOW_ENEMY_ENEMYBLASTDAMAGEPARAM_ONACTIVATEPROC =
+				STATE.SNOW_ENEMY_ENEMYBLASTDAMAGEPARAM:get_method("onActivateProc")
+				-- register function hook
+				sdk.hook(STATE.SNOW_ENEMY_ENEMYBLASTDAMAGEPARAM_ONACTIVATEPROC,
+					function(args) this.onBlastProc(args) end,
+					function(retval) return retval end)
+					CORE.log_debug('Hooked snow.enemy.EnemyBlastDamageParam:onActivateProc()')
+			else
+				CORE.log_error('Failed to find snow.enemy.EnemyBlastDamageParam')
+			end
 		end
 	end
 
