@@ -336,6 +336,18 @@ this.addDamageToBoss = function(boss, attackerId, damageTypeId, info)
 	local typeAilment   = info.ailmentType
 	local riderId       = info.riderId
 
+	if amtPhysical ~= amtPhysical
+	or amtElemental ~= amtElemental
+	or amtCondition ~= amtCondition
+	or typeCondition ~= typeCondition
+	or amtStun ~= amtStun
+	or criticalType ~= criticalType
+	or amtAilment ~= amtAilment
+	then
+		CORE.log_error('Failed to add damage due to NaN: ' ..
+		string.format('%.0f/%.0f %.0f:%.0f:%.0f:%.0f'
+		, attackerId, damageTypeId, amtPhysical, amtElemental, amtCondition, amtAilment) )
+	end
 
 	local amt = this.initializeDamageCounter()
 	amt.physical  = amtPhysical
