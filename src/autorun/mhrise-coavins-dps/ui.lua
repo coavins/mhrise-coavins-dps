@@ -615,7 +615,6 @@ this.showSectionColor = function()
 		imgui.new_line()
 
 		this.showColorPicker('BAR_DMG_OTOMO')
-		this.showColorPicker('BAR_DMG_STUN')
 		this.showColorPicker('BAR_DMG_POISON')
 		this.showColorPicker('BAR_DMG_BLAST')
 		this.showColorPicker('BAR_DMG_OTHER')
