@@ -298,6 +298,8 @@
 		"msg_text": "Font",
 		"msg_title": "Title",
 		"msg_total": "Total",
+		"msg_visibility": "Visibility",
+		"msg_visibility_help": "The overlay will always appear when this window is open.",
 		"msg_width": "Column width",
 		"Settings": "Settings"
 	},
