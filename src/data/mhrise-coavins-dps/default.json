@@ -91,6 +91,9 @@
 			"HIDE_COMBINED_OTHERS": {
 					"VALUE": false
 			},
+			"HIDE_OVERLAY_IN_QUEST": {
+					"VALUE": false
+			},
 			"HIDE_OVERLAY_IN_VILLAGE": {
 					"VALUE": false
 			},

@@ -130,6 +130,10 @@ local function dpsFrame()
 	elseif STATE.IS_IN_QUEST and not wasInQuest then
 		CORE.cleanUpData('entered a quest')
 
+		if CORE.CFG('HIDE_OVERLAY_IN_QUEST') then
+			STATE.DRAW_OVERLAY = false
+		end
+
 	elseif STATE.IS_POST_QUEST and not wasPostQuest then
 		-- quest complete, export combat data to disk
 		CORE.log_info('quest complete')
