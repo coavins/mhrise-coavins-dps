@@ -611,7 +611,7 @@ end
 this.dpsDraw = function()
 	local drawIt = false
 
-	if STATE.DRAW_OVERLAY then
+	if STATE.DRAW_OVERLAY or STATE.DRAW_WINDOW_SETTINGS then
 		-- show it in quest, training hall, and when settings window is open
 		if (STATE.IS_IN_QUEST or STATE.IS_POST_QUEST or STATE.IS_IN_TRAININGHALL or STATE.DRAW_WINDOW_SETTINGS) then
 			drawIt = true
