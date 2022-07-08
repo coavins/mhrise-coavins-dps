@@ -126,14 +126,24 @@ local function dpsFrame()
 	-- if we changed places, clear all data
 	if STATE.IS_IN_TRAININGHALL and not wasInTraininghall then
 		CORE.cleanUpData('entered training hall')
+
 	elseif STATE.IS_IN_QUEST and not wasInQuest then
 		CORE.cleanUpData('entered a quest')
+
 	elseif STATE.IS_POST_QUEST and not wasPostQuest then
 		-- quest complete, export combat data to disk
 		CORE.log_info('quest complete')
+
+		-- show the overlay
+		if CORE.CFG('SHOW_OVERLAY_POST_QUEST') then
+			STATE.DRAW_OVERLAY = true
+		end
+
+		-- export data
 		if CORE.CFG('SAVE_RESULTS_TO_DISK') then
 			EXPORT.exportData()
 		end
+
 		-- make sure we do one last update
 		STATE.NEEDS_UPDATE = true
 	end

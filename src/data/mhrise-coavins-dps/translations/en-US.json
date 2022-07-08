@@ -339,6 +339,7 @@
 		"PDPS_BASED_ON_FIRST_STRIKE": "pDPS starts counting from player's first attack",
 		"SAVE_RESULTS_TO_DISK": "Save results to disk on quest complete",
 		"SHOW_MISSING_DAMAGE": "Reveal how much damage isn't shown",
+		"SHOW_OVERLAY_POST_QUEST": "Show the overlay after quest",
 		"SHOW_TEST_DATA_WHILE_MENU_IS_OPEN": "Show test data while menu is open",
 		"TABLE_GROWS_UPWARD": "Table grows upward instead of down",
 		"TABLE_HEADER_TEXT_OFFSET_X": "Title text offset X",

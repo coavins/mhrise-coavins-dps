@@ -177,6 +177,7 @@ this.DrawWindowSettings = function()
 	if imgui.collapsing_header(LANG.MESSAGE('msg_general')) then
 		--showSliderForFloatSetting('UPDATE_RATE')
 		this.showCheckboxForSetting('HIDE_OVERLAY_IN_VILLAGE')
+		this.showCheckboxForSetting('SHOW_OVERLAY_POST_QUEST')
 
 		-- Show test data
 		changed, wantsIt = imgui.checkbox(LANG.OPTION('SHOW_TEST_DATA_WHILE_MENU_IS_OPEN'),
