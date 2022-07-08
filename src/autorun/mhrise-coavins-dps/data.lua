@@ -307,13 +307,30 @@ this.initializeBossMonsterWithDummyData = function(bossKey, fakeName)
 	CORE.AddMonsterToReport(bossKey, boss)
 end
 
-this.addDamageToBoss = function(boss, attackerId, damageTypeId
-	, amtPhysical, amtElemental, amtCondition, typeCondition, amtAilment, typeAilment, criticalType, riderId)
-	amtPhysical = amtPhysical or 0
-	amtElemental = amtElemental or 0
-	amtCondition = amtCondition or 0
-	amtAilment = amtAilment or 0
-	criticalType = criticalType or 0
+-- used for addDamageToBoss
+this.initializeDamageInfo = function()
+	local info = {}
+	info.physicalAmt = 0
+	info.elementalAmt = 0
+	info.conditionAmt = 0
+	info.conditionType = 0
+	info.ailmentAmt = 0
+	info.ailmentType = nil
+	info.criticalType = 0
+	info.riderId = nil
+
+	return info
+end
+
+this.addDamageToBoss = function(boss, attackerId, damageTypeId, info)
+	local amtPhysical   = info.physicalAmt
+	local amtElemental  = info.elementalAmt
+	local amtCondition  = info.conditionAmt
+	local typeCondition = info.conditionType
+	local criticalType  = info.criticalType
+	local amtAilment    = info.ailmentAmt
+	local typeAilment   = info.ailmentType
+	local riderId       = info.riderId
 
 	local amt = this.initializeDamageCounter()
 	amt.physical  = amtPhysical
@@ -407,7 +424,10 @@ this.addAilmentDamageToBoss = function(boss, ailmentType, ailmentDamage)
 	local shares = boss.ailment.share[ailmentType]
 	for attackerId, pct in pairs(shares) do
 		local portion = damage * pct
-		this.addDamageToBoss(boss, attackerId, 0, 0, 0, 0, 0, portion, ailmentType)
+		local info = this.initializeDamageInfo()
+		info.ailmentAmt = portion
+		info.ailmentType = ailmentType
+		this.addDamageToBoss(boss, attackerId, 0, info)
 	end
 end
 

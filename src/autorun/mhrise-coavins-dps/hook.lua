@@ -140,17 +140,21 @@ this.read_AfterCalcInfo_DamageSide = function(args)
 	local damageTypeId = info:call("get_DamageAttackerType")
 	local riderId = nil
 
-	local physicalDamage  = tonumber(info:call("get_PhysicalDamage"))
-	local elementDamage   = tonumber(info:call("get_ElementDamage"))
-	local conditionDamage = tonumber(info:call("get_ConditionDamage"))
-	local conditionType   = tonumber(info:call("get_ConditionDamageType")) -- snow.enemy.EnemyDef.ConditionDamageType
+	local damageInfo = DATA.initializeDamageInfo()
 
-	local criticalType = tonumber(info:call("get_CriticalResult")) -- snow.hit.CriticalType (0: not, 1: crit, 2: bad crit)
+	damageInfo.physicalAmt   = tonumber(info:call("get_PhysicalDamage"))
+	damageInfo.elementalAmt  = tonumber(info:call("get_ElementDamage"))
+	damageInfo.conditionAmt  = tonumber(info:call("get_ConditionDamage"))
+	damageInfo.conditionType = tonumber(info:call("get_ConditionDamageType")) -- snow.enemy.EnemyDef.ConditionDamageType
+
+	-- snow.hit.CriticalType (0: not, 1: crit, 2: bad crit)
+	damageInfo.criticalType = tonumber(info:call("get_CriticalResult"))
 
 	local isMarionetteAttack = info:call("get_IsMarionetteAttack")
 
 	CORE.log_debug(string.format('%.0f:%.0f = %.0f:%.0f:%.0f:%.0f'
-	, attackerId, damageTypeId, physicalDamage, elementDamage, conditionDamage, conditionType))
+	, attackerId, damageTypeId, damageInfo.physicalAmt, damageInfo.elementalAmt
+	, damageInfo.conditionAmt, damageInfo.conditionType))
 
 	-- override attacker id for monster attacks when monster has id=0
 	if attackerId == 0 and damageTypeId == STATE.MONSTER_DAMAGE_TYPE_ID then
@@ -171,18 +175,19 @@ this.read_AfterCalcInfo_DamageSide = function(args)
 
 	if attackerId == nil then
 		CORE.log_error('Attacker ID is nil: '.. string.format('%.0f:%.0f = %.0f:%.0f:%.0f:%.0f'
-		, attackerId, damageTypeId, physicalDamage, elementDamage, conditionDamage, conditionType))
+		, attackerId, damageTypeId, damageInfo.physicalAmt, damageInfo.elementalAmt
+		, damageInfo.conditionAmt, damageInfo.conditionType))
 		return
 
 	elseif damageTypeId == nil then
 		CORE.log_error('Damage Type ID is nil: '.. string.format('%.0f:%.0f = %.0f:%.0f:%.0f:%.0f'
-		, attackerId, damageTypeId, physicalDamage, elementDamage, conditionDamage, conditionType))
+		, attackerId, damageTypeId, damageInfo.physicalAmt, damageInfo.elementalAmt
+		, damageInfo.conditionAmt, damageInfo.conditionType))
 		return
 
 	end
 
-	DATA.addDamageToBoss(boss, attackerId, damageTypeId
-	, physicalDamage, elementDamage, conditionDamage, conditionType, 0, 0, criticalType, riderId)
+	DATA.addDamageToBoss(boss, attackerId, damageTypeId, damageInfo)
 end
 
 this.tryHookSdk = function()

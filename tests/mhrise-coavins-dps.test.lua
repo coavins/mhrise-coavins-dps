@@ -195,8 +195,16 @@ describe("mhrise-coavins-dps", function()
 
 			CORE.SetCFG('CONDITION_LIKE_DAMAGE', false)
 
-			DATA.addDamageToBoss(boss, 1, 0, 100, 200, 400)
-			DATA.addDamageToBoss(boss, 2, 0, 0, 800, 0)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.elementalAmt = 200
+			info.conditionAmt = 400
+			DATA.addDamageToBoss(boss, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 0
+			info.elementalAmt = 800
+			info.conditionAmt = 0
+			DATA.addDamageToBoss(boss, 2, 0, info)
 
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
@@ -212,8 +220,16 @@ describe("mhrise-coavins-dps", function()
 			CORE.SetCFG('CONDITION_LIKE_DAMAGE', false)
 			CORE.SetCFG('COMBINE_OTOMO_WITH_HUNTER', true)
 
-			DATA.addDamageToBoss(boss, 1, 0, 1, 2, 4)
-			DATA.addDamageToBoss(boss, 1, STATE.OTOMO_ATTACKER_TYPE_ID, 8, 16, 32)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 1
+			info.elementalAmt = 2
+			info.conditionAmt = 4
+			DATA.addDamageToBoss(boss, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 8
+			info.elementalAmt = 16
+			info.conditionAmt = 32
+			DATA.addDamageToBoss(boss, 1, STATE.OTOMO_ATTACKER_TYPE_ID, info)
 
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
@@ -232,8 +248,16 @@ describe("mhrise-coavins-dps", function()
 			CORE.SetCFG('COMBINE_OTOMO_WITH_HUNTER', false)
 			CORE.SetReportOtomo(true)
 
-			DATA.addDamageToBoss(boss, 0, 0, 1, 2, 4)
-			DATA.addDamageToBoss(boss, 0, STATE.OTOMO_ATTACKER_TYPE_ID, 8, 16, 32)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 1
+			info.elementalAmt = 2
+			info.conditionAmt = 4
+			DATA.addDamageToBoss(boss, 0, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 8
+			info.elementalAmt = 16
+			info.conditionAmt = 32
+			DATA.addDamageToBoss(boss, 0, STATE.OTOMO_ATTACKER_TYPE_ID, info)
 
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
@@ -252,8 +276,14 @@ describe("mhrise-coavins-dps", function()
 
 			local boss = initializeMockBossMonster()
 
-			DATA.addDamageToBoss(boss, 0, 0, 1, 2)
-			DATA.addDamageToBoss(boss, 0, STATE.OTOMO_ATTACKER_TYPE_ID, 8, 16)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 1
+			info.elementalAmt = 2
+			DATA.addDamageToBoss(boss, 0, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 8
+			info.elementalAmt = 16
+			DATA.addDamageToBoss(boss, 0, STATE.OTOMO_ATTACKER_TYPE_ID, info)
 
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
@@ -300,22 +330,18 @@ describe("mhrise-coavins-dps", function()
 			-- 3825 including condition
 
 			for index,_ in ipairs(damagesPhysical) do
-				DATA.addDamageToBoss(boss, 0, 0,
-				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-				DATA.addDamageToBoss(boss, 1, 0,
-				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-				DATA.addDamageToBoss(boss, 2, 0,
-				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-				DATA.addDamageToBoss(boss, 3, 0,
-				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-				DATA.addDamageToBoss(boss, 0, STATE.OTOMO_ATTACKER_TYPE_ID,
-				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-				DATA.addDamageToBoss(boss, 1, STATE.OTOMO_ATTACKER_TYPE_ID,
-				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-				DATA.addDamageToBoss(boss, 2, STATE.OTOMO_ATTACKER_TYPE_ID,
-				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-				DATA.addDamageToBoss(boss, 3, STATE.OTOMO_ATTACKER_TYPE_ID,
-				damagesPhysical[index], damagesElemental[index], damagesCondition[index])
+				local info = DATA.initializeDamageInfo()
+				info.physicalAmt = damagesPhysical[index]
+				info.elementalAmt = damagesElemental[index]
+				info.conditionAmt = damagesCondition[index]
+				DATA.addDamageToBoss(boss, 0, 0, info)
+				DATA.addDamageToBoss(boss, 1, 0, info)
+				DATA.addDamageToBoss(boss, 2, 0, info)
+				DATA.addDamageToBoss(boss, 3, 0, info)
+				DATA.addDamageToBoss(boss, 0, STATE.OTOMO_ATTACKER_TYPE_ID, info)
+				DATA.addDamageToBoss(boss, 1, STATE.OTOMO_ATTACKER_TYPE_ID, info)
+				DATA.addDamageToBoss(boss, 2, STATE.OTOMO_ATTACKER_TYPE_ID, info)
+				DATA.addDamageToBoss(boss, 3, STATE.OTOMO_ATTACKER_TYPE_ID, info)
 			end
 
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
@@ -341,7 +367,9 @@ describe("mhrise-coavins-dps", function()
 	it("doesn't retain information from old reports", function()
 		local boss = initializeMockBossMonster()
 
-		DATA.addDamageToBoss(boss, 1, 0, 100)
+		local info = DATA.initializeDamageInfo()
+		info.physicalAmt = 100
+		DATA.addDamageToBoss(boss, 1, 0, info)
 
 		REPORT.generateReport(STATE.REPORT_MONSTERS)
 		local r = STATE.DAMAGE_REPORTS[1]
@@ -388,22 +416,18 @@ describe("mhrise-coavins-dps", function()
 		-- 3825 including condition
 
 		for index,_ in ipairs(damagesPhysical) do
-			DATA.addDamageToBoss(boss, 0, 0,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 1, 0,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 2, 0,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 3, 0,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 0, STATE.OTOMO_ATTACKER_TYPE_ID,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 1, STATE.OTOMO_ATTACKER_TYPE_ID,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 2, STATE.OTOMO_ATTACKER_TYPE_ID,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 3, STATE.OTOMO_ATTACKER_TYPE_ID,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = damagesPhysical[index]
+			info.elementalAmt = damagesElemental[index]
+			info.conditionAmt = damagesCondition[index]
+			DATA.addDamageToBoss(boss, 0, 0, info)
+			DATA.addDamageToBoss(boss, 1, 0, info)
+			DATA.addDamageToBoss(boss, 2, 0, info)
+			DATA.addDamageToBoss(boss, 3, 0, info)
+			DATA.addDamageToBoss(boss, 0, STATE.OTOMO_ATTACKER_TYPE_ID, info)
+			DATA.addDamageToBoss(boss, 1, STATE.OTOMO_ATTACKER_TYPE_ID, info)
+			DATA.addDamageToBoss(boss, 2, STATE.OTOMO_ATTACKER_TYPE_ID, info)
+			DATA.addDamageToBoss(boss, 3, STATE.OTOMO_ATTACKER_TYPE_ID, info)
 		end
 
 		CORE.SetCFG('CONDITION_LIKE_DAMAGE', false)
@@ -450,22 +474,18 @@ describe("mhrise-coavins-dps", function()
 		end
 
 		for index,_ in ipairs(damagesPhysical) do
-			DATA.addDamageToBoss(boss, 0, 0,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 1, 0,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 2, 0,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 3, 0,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 0, STATE.OTOMO_ATTACKER_TYPE_ID,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 1, STATE.OTOMO_ATTACKER_TYPE_ID,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 2, STATE.OTOMO_ATTACKER_TYPE_ID,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
-			DATA.addDamageToBoss(boss, 3, STATE.OTOMO_ATTACKER_TYPE_ID,
-			damagesPhysical[index], damagesElemental[index], damagesCondition[index])
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = damagesPhysical[index]
+			info.elementalAmt = damagesElemental[index]
+			info.conditionAmt = damagesCondition[index]
+			DATA.addDamageToBoss(boss, 0, 0, info)
+			DATA.addDamageToBoss(boss, 1, 0, info)
+			DATA.addDamageToBoss(boss, 2, 0, info)
+			DATA.addDamageToBoss(boss, 3, 0, info)
+			DATA.addDamageToBoss(boss, 0, STATE.OTOMO_ATTACKER_TYPE_ID, info)
+			DATA.addDamageToBoss(boss, 1, STATE.OTOMO_ATTACKER_TYPE_ID, info)
+			DATA.addDamageToBoss(boss, 2, STATE.OTOMO_ATTACKER_TYPE_ID, info)
+			DATA.addDamageToBoss(boss, 3, STATE.OTOMO_ATTACKER_TYPE_ID, info)
 		end
 
 		expected = expected * 8
@@ -495,7 +515,10 @@ describe("mhrise-coavins-dps", function()
 		it("is calculated correctly for one boss", function()
 			local boss = initializeMockBossMonster()
 
-			DATA.addDamageToBoss(boss, 1, 0, 750, 250, 0)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 750
+			info.elementalAmt = 250
+			DATA.addDamageToBoss(boss, 1, 0, info)
 
 			boss.timeline[0] = true
 			boss.timeline[100] = false
@@ -514,8 +537,14 @@ describe("mhrise-coavins-dps", function()
 			local boss1 = initializeMockBossMonster()
 			local boss2 = initializeMockBossMonster()
 
-			DATA.addDamageToBoss(boss1, 1, 0, 750, 250, 0)
-			DATA.addDamageToBoss(boss2, 1, 0, 250, 250, 0)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 750
+			info.elementalAmt = 250
+			DATA.addDamageToBoss(boss1, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 250
+			info.elementalAmt = 250
+			DATA.addDamageToBoss(boss2, 1, 0, info)
 
 			boss1.timeline[0] = true
 			boss1.timeline[100] = false
@@ -537,9 +566,18 @@ describe("mhrise-coavins-dps", function()
 			local boss2 = initializeMockBossMonster()
 			local boss3 = initializeMockBossMonster()
 
-			DATA.addDamageToBoss(boss1, 1, 0, 750, 250, 0)
-			DATA.addDamageToBoss(boss2, 1, 0, 250, 250, 0)
-			DATA.addDamageToBoss(boss3, 1, 0, 616, 19842, 0)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 750
+			info.elementalAmt = 250
+			DATA.addDamageToBoss(boss1, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 250
+			info.elementalAmt = 250
+			DATA.addDamageToBoss(boss2, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 616
+			info.elementalAmt = 19842
+			DATA.addDamageToBoss(boss3, 1, 0, info)
 
 			boss1.timeline[0] = true
 			boss1.timeline[100] = false
@@ -566,7 +604,9 @@ describe("mhrise-coavins-dps", function()
 
 			local boss1 = initializeMockBossMonster()
 
-			DATA.addDamageToBoss(boss1, 1, 0, 100, 0, 0)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			DATA.addDamageToBoss(boss1, 1, 0, info)
 
 			boss1.timeline[startTime] = true
 
@@ -587,8 +627,12 @@ describe("mhrise-coavins-dps", function()
 			local boss1 = initializeMockBossMonster()
 			local boss2 = initializeMockBossMonster()
 
-			DATA.addDamageToBoss(boss1, 1, 0, 100, 0, 0)
-			DATA.addDamageToBoss(boss1, 1, 0, 200, 0, 0)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			DATA.addDamageToBoss(boss1, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 200
+			DATA.addDamageToBoss(boss1, 1, 0, info)
 
 			boss1.timeline[60] = true
 			boss2.timeline[80] = true

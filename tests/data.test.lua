@@ -47,7 +47,11 @@ describe("data:", function()
 		it("works through damage hook with one attacker", function()
 			local boss = initializeMockBossMonster()
 
-			DATA.addDamageToBoss(boss, 1, 0, 100, 200, 400)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.elementalAmt = 200
+			info.conditionAmt = 400
+			DATA.addDamageToBoss(boss, 1, 0, info)
 
 			local sum = REPORT.sumDamageSourcesList(boss.damageSources)
 			assert.is_equal(100, sum.physical)
@@ -59,10 +63,26 @@ describe("data:", function()
 		it("works through damage hook with a full party of four", function()
 			local boss = initializeMockBossMonster()
 
-			DATA.addDamageToBoss(boss, 0, 0, 101, 202, 403)
-			DATA.addDamageToBoss(boss, 1, 0, 201, 402, 803)
-			DATA.addDamageToBoss(boss, 2, 0, 401, 802, 103)
-			DATA.addDamageToBoss(boss, 3, 0, 801, 102, 203)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 101
+			info.elementalAmt = 202
+			info.conditionAmt = 403
+			DATA.addDamageToBoss(boss, 0, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 201
+			info.elementalAmt = 402
+			info.conditionAmt = 803
+			DATA.addDamageToBoss(boss, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 401
+			info.elementalAmt = 802
+			info.conditionAmt = 103
+			DATA.addDamageToBoss(boss, 2, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 801
+			info.elementalAmt = 102
+			info.conditionAmt = 203
+			DATA.addDamageToBoss(boss, 3, 0, info)
 
 			local sum = REPORT.sumDamageSourcesList(boss.damageSources)
 
@@ -79,10 +99,18 @@ describe("data:", function()
 		it("counts correctly", function()
 			local boss = initializeMockBossMonster()
 
-			DATA.addDamageToBoss(boss, 1, 0, 500)
-			DATA.addDamageToBoss(boss, 1, 0, 400)
-			DATA.addDamageToBoss(boss, 1, 0, 300)
-			DATA.addDamageToBoss(boss, 1, 0, 200)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 500
+			DATA.addDamageToBoss(boss, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 400
+			DATA.addDamageToBoss(boss, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 300
+			DATA.addDamageToBoss(boss, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 200
+			DATA.addDamageToBoss(boss, 1, 0, info)
 
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
@@ -105,8 +133,10 @@ describe("data:", function()
 
 			local monsterAttackerId = 300
 			local marionetteDamageTypeId = 125
-			DATA.addDamageToBoss(boss, monsterAttackerId, marionetteDamageTypeId
-			, 100, 0, nil, nil, nil, nil, nil, 1)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.riderId = 1
+			DATA.addDamageToBoss(boss, monsterAttackerId, marionetteDamageTypeId, info)
 
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
@@ -129,8 +159,10 @@ describe("data:", function()
 
 			local monsterAttackerId = 300
 			local marionetteDamageTypeId = 125
-			DATA.addDamageToBoss(boss, monsterAttackerId, marionetteDamageTypeId
-			, 100, 0, nil, nil, nil, nil, nil, 1)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.riderId = 1
+			DATA.addDamageToBoss(boss, monsterAttackerId, marionetteDamageTypeId, info)
 
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
@@ -153,10 +185,18 @@ describe("data:", function()
 		it("counts correctly", function()
 			local boss = initializeMockBossMonster()
 
-			DATA.addDamageToBoss(boss, 1, 0, 500)
-			DATA.addDamageToBoss(boss, 1, 0, 400)
-			DATA.addDamageToBoss(boss, 1, 0, 300)
-			DATA.addDamageToBoss(boss, 1, 0, 200)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 500
+			DATA.addDamageToBoss(boss, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 400
+			DATA.addDamageToBoss(boss, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 300
+			DATA.addDamageToBoss(boss, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 200
+			DATA.addDamageToBoss(boss, 1, 0, info)
 
 			REPORT.generateReport(STATE.REPORT_MONSTERS)
 
@@ -175,7 +215,11 @@ describe("data:", function()
 		it("gets set on boss", function()
 			local boss = initializeMockBossMonster()
 
-			DATA.addDamageToBoss(boss, 1, 0, 100, 0, 50, 5)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.conditionAmt = 50
+			info.conditionType = 5
+			DATA.addDamageToBoss(boss, 1, 0, info)
 
 			local expected = 50
 			local actual = boss.ailment.buildup[5][1]
@@ -186,9 +230,21 @@ describe("data:", function()
 		it("accumulates on boss", function()
 			local boss = initializeMockBossMonster()
 
-			DATA.addDamageToBoss(boss, 1, 0, 100, 0, 1, 5)
-			DATA.addDamageToBoss(boss, 1, 0, 100, 0, 2, 5)
-			DATA.addDamageToBoss(boss, 1, 0, 100, 0, 4, 5)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.conditionAmt = 1
+			info.conditionType = 5
+			DATA.addDamageToBoss(boss, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.conditionAmt = 2
+			info.conditionType = 5
+			DATA.addDamageToBoss(boss, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.conditionAmt = 4
+			info.conditionType = 5
+			DATA.addDamageToBoss(boss, 1, 0, info)
 
 			local expected = 7
 			local actual = boss.ailment.buildup[5][1]
@@ -199,9 +255,21 @@ describe("data:", function()
 		it("accumulates on boss for multiple attackers", function()
 			local boss = initializeMockBossMonster()
 
-			DATA.addDamageToBoss(boss, 1, 0, 100, 0, 1, 5)
-			DATA.addDamageToBoss(boss, 2, 0, 100, 0, 2, 5)
-			DATA.addDamageToBoss(boss, 654, 0, 100, 0, 4, 5)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.conditionAmt = 1
+			info.conditionType = 5
+			DATA.addDamageToBoss(boss, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.conditionAmt = 2
+			info.conditionType = 5
+			DATA.addDamageToBoss(boss, 2, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.conditionAmt = 4
+			info.conditionType = 5
+			DATA.addDamageToBoss(boss, 654, 0, info)
 
 			assert.is_equal(1, boss.ailment.buildup[5][1])
 			assert.is_equal(2, boss.ailment.buildup[5][2])
@@ -215,8 +283,16 @@ describe("data:", function()
 		it("is distributed fairly", function()
 			local boss = initializeMockBossMonster()
 
-			DATA.addDamageToBoss(boss, 1, 0, 100, 0, 100, 5)
-			DATA.addDamageToBoss(boss, 2, 0, 100, 0, 100, 5)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.conditionAmt = 100
+			info.conditionType = 5
+			DATA.addDamageToBoss(boss, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.conditionAmt = 100
+			info.conditionType = 5
+			DATA.addDamageToBoss(boss, 2, 0, info)
 
 			DATA.calculateAilmentContrib(boss, 5)
 
@@ -227,8 +303,16 @@ describe("data:", function()
 		it("is distributed fairly", function()
 			local boss = initializeMockBossMonster()
 
-			DATA.addDamageToBoss(boss, 1, 0, 100, 0, 100, 4)
-			DATA.addDamageToBoss(boss, 2, 0, 100, 0, 100, 4)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.conditionAmt = 100
+			info.conditionType = 4
+			DATA.addDamageToBoss(boss, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.conditionAmt = 100
+			info.conditionType = 4
+			DATA.addDamageToBoss(boss, 2, 0, info)
 
 			DATA.calculateAilmentContrib(boss, 4)
 
@@ -239,9 +323,21 @@ describe("data:", function()
 		it("is distributed fairly", function()
 			local boss = initializeMockBossMonster()
 
-			DATA.addDamageToBoss(boss, 1, 0, 100, 0, 100, 5)
-			DATA.addDamageToBoss(boss, 2, 0, 100, 0, 100, 5)
-			DATA.addDamageToBoss(boss, 3, 0, 100, 0, 200, 5)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 23
+			info.conditionAmt = 100
+			info.conditionType = 5
+			DATA.addDamageToBoss(boss, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 23
+			info.conditionAmt = 100
+			info.conditionType = 5
+			DATA.addDamageToBoss(boss, 2, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 23
+			info.conditionAmt = 200
+			info.conditionType = 5
+			DATA.addDamageToBoss(boss, 3, 0, info)
 
 			DATA.calculateAilmentContrib(boss, 5)
 
@@ -255,10 +351,26 @@ describe("data:", function()
 
 			CORE.SetCFG('TABLE_SORT_IN_ORDER', true)
 
-			DATA.addDamageToBoss(boss, 0, 0, 100, 0, 100, 5)
-			DATA.addDamageToBoss(boss, 1, 0, 100, 0, 100, 5)
-			DATA.addDamageToBoss(boss, 2, 0, 100, 0, 200, 5)
-			DATA.addDamageToBoss(boss, 3, 0, 100, 0, 400, 5)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.conditionAmt = 100
+			info.conditionType = 5
+			DATA.addDamageToBoss(boss, 0, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.conditionAmt = 100
+			info.conditionType = 5
+			DATA.addDamageToBoss(boss, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.conditionAmt = 200
+			info.conditionType = 5
+			DATA.addDamageToBoss(boss, 2, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.conditionAmt = 400
+			info.conditionType = 5
+			DATA.addDamageToBoss(boss, 3, 0, info)
 
 			DATA.calculateAilmentContrib(boss, 5)
 
@@ -295,10 +407,26 @@ describe("data:", function()
 
 			CORE.SetCFG('TABLE_SORT_IN_ORDER', true)
 
-			DATA.addDamageToBoss(boss, 0, 0, 100, 0, 100, 4)
-			DATA.addDamageToBoss(boss, 1, 0, 100, 0, 100, 4)
-			DATA.addDamageToBoss(boss, 2, 0, 100, 0, 200, 4)
-			DATA.addDamageToBoss(boss, 3, 0, 100, 0, 400, 4)
+			local info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.conditionAmt = 100
+			info.conditionType = 4
+			DATA.addDamageToBoss(boss, 0, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.conditionAmt = 100
+			info.conditionType = 4
+			DATA.addDamageToBoss(boss, 1, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.conditionAmt = 200
+			info.conditionType = 4
+			DATA.addDamageToBoss(boss, 2, 0, info)
+			info = DATA.initializeDamageInfo()
+			info.physicalAmt = 100
+			info.conditionAmt = 400
+			info.conditionType = 4
+			DATA.addDamageToBoss(boss, 3, 0, info)
 
 			DATA.calculateAilmentContrib(boss, 4)
 
