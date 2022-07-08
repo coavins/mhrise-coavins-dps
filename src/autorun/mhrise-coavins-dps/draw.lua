@@ -195,6 +195,8 @@ this.drawReportItemColumn = function(item, col, x, y)
 		if item.rank2 then
 			text = string.format('%s', item.rank2)
 		end
+	elseif col == 21 then --stun
+		text = string.format('%.0f', item.totalStun)
 	end
 
 	this.drawRichText(text, x, y, CORE.COLOR('WHITE'), CORE.COLOR('BLACK'))

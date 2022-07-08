@@ -146,6 +146,7 @@ this.read_AfterCalcInfo_DamageSide = function(args)
 	damageInfo.elementalAmt  = tonumber(info:call("get_ElementDamage"))
 	damageInfo.conditionAmt  = tonumber(info:call("get_ConditionDamage"))
 	damageInfo.conditionType = tonumber(info:call("get_ConditionDamageType")) -- snow.enemy.EnemyDef.ConditionDamageType
+	damageInfo.stunAmt       = tonumber(info:call("get_StunDamage"))
 
 	-- snow.hit.CriticalType (0: not, 1: crit, 2: bad crit)
 	damageInfo.criticalType = tonumber(info:call("get_CriticalResult"))

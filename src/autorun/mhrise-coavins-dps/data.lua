@@ -10,6 +10,7 @@ this.initializeDamageCounter = function()
 	c.physical  = 0.0
 	c.elemental = 0.0
 	c.condition = 0.0 -- ailment buildup
+	c.stun      = 0.0 -- stun buildup
 
 	c.ailment = {} -- ailment damage
 	c.ailment[4] = 0.0 -- poison
@@ -77,6 +78,7 @@ this.mergeDamageCounters = function(a, b)
 	c.physical  = a.physical  + b.physical
 	c.elemental = a.elemental + b.elemental
 	c.condition = a.condition + b.condition
+	c.stun      = a.stun      + b.stun
 	c.ailment[4] = a.ailment[4] + b.ailment[4]
 	c.ailment[5] = a.ailment[5] + b.ailment[5]
 	c.numHit = a.numHit + b.numHit
@@ -314,6 +316,7 @@ this.initializeDamageInfo = function()
 	info.elementalAmt = 0
 	info.conditionAmt = 0
 	info.conditionType = 0
+	info.stunAmt = 0
 	info.ailmentAmt = 0
 	info.ailmentType = nil
 	info.criticalType = 0
@@ -327,14 +330,17 @@ this.addDamageToBoss = function(boss, attackerId, damageTypeId, info)
 	local amtElemental  = info.elementalAmt
 	local amtCondition  = info.conditionAmt
 	local typeCondition = info.conditionType
+	local amtStun       = info.stunAmt
 	local criticalType  = info.criticalType
 	local amtAilment    = info.ailmentAmt
 	local typeAilment   = info.ailmentType
 	local riderId       = info.riderId
 
+
 	local amt = this.initializeDamageCounter()
 	amt.physical  = amtPhysical
 	amt.elemental = amtElemental
+	amt.stun = amtStun
 	amt.condition = amtCondition
 	if typeAilment then
 		amt.ailment[typeAilment] = amtAilment

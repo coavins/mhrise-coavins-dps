@@ -46,7 +46,8 @@
 		"17": "Physical",
 		"18": "Element",
 		"19": "Carts",
-		"20": "MR"
+		"20": "MR",
+		"21": "Stun"
 	},
 	"damage_types": {
 		"BallistaHate": "BallistaHate",
