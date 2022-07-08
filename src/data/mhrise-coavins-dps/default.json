@@ -6,6 +6,9 @@
 			"AUTO_SAVE": {
 					"VALUE": true
 			},
+			"CHEAT_SHOW_MONSTER_HP": {
+					"VALUE": false
+			},
 			"COMBINE_ALL_OTHERS": {
 					"VALUE": false
 			},

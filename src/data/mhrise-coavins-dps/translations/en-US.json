@@ -256,6 +256,7 @@
 		"Enabled": "Enabled",
 		"Languages": "Languages",
 		"msg_appearance": "Appearance",
+		"msg_cheats": "Cheats",
 		"msg_color": "Color",
 		"msg_columns": "Select columns",
 		"msg_customize_colors": "Customize colors",
@@ -303,6 +304,7 @@
 	"options": {
 		"ADD_TARGETS_TO_REPORT": "Automatically filter on quest objectives",
 		"AUTO_SAVE": "Automatically save all settings",
+		"CHEAT_SHOW_MONSTER_HP": "Reveal remaining monster HP percentage",
 		"COMBINE_ALL_OTHERS": "Combine everyone except for you",
 		"COMBINE_OTOMO_WITH_HUNTER": "Combine all buddies with their hunters",
 		"CONDITION_LIKE_DAMAGE": "Ailment buildup counts as damage",

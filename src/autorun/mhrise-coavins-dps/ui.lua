@@ -451,6 +451,11 @@ this.DrawWindowSettings = function()
 
 	imgui.new_line()
 
+	-- Cheat
+	if imgui.collapsing_header(LANG.MESSAGE('msg_cheats')) then
+		this.showCheckboxForSetting('CHEAT_SHOW_MONSTER_HP')
+	end
+
 	-- Debug
 	if imgui.collapsing_header(LANG.MESSAGE('msg_debug')) then
 		if imgui.button(LANG.MESSAGE('btn_open_debug')) then

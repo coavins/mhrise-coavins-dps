@@ -392,6 +392,12 @@ this.drawReport = function(index)
 					if monsterCount < 3 then
 						if monsterCount > 0 then monsterText = monsterText .. ', ' end
 						monsterText = monsterText .. string.format('%s', boss.name)
+						if CORE.CFG('CHEAT_SHOW_MONSTER_HP') then
+							local fmt = '%.0f'
+							local pct = boss.hp.percent * 100
+							if pct > 0 and pct < 1 then fmt = '%.1f' end
+							monsterText = monsterText .. string.format(' (' .. fmt .. '%%)', pct)
+						end
 					end
 					monsterCount = monsterCount + 1
 				end
