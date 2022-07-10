@@ -4,6 +4,17 @@ local DATA   = require 'mhrise-coavins-dps.data'
 
 local this = {}
 
+-- cache sdk methods to be slightly more efficient
+local AfterCalcInfo_DamageSide = sdk.find_type_definition('snow.hit.EnemyCalcDamageInfo.AfterCalcInfo_DamageSide')
+local get_AttackerID          = AfterCalcInfo_DamageSide:get_method('get_AttackerID')
+local get_DamageAttackerType  = AfterCalcInfo_DamageSide:get_method('get_DamageAttackerType')
+local get_PhysicalDamage      = AfterCalcInfo_DamageSide:get_method('get_PhysicalDamage')
+local get_ElementDamage       = AfterCalcInfo_DamageSide:get_method('get_ElementDamage')
+local get_ConditionDamage     = AfterCalcInfo_DamageSide:get_method('get_ConditionDamage')
+local get_ConditionDamageType = AfterCalcInfo_DamageSide:get_method('get_ConditionDamageType')
+local get_StunDamage          = AfterCalcInfo_DamageSide:get_method('get_StunDamage')
+local get_CriticalResult      = AfterCalcInfo_DamageSide:get_method('get_CriticalResult')
+
 -- keep track of some things on monsters
 this.updateBossEnemy = function(args)
 	if not STATE.HOOKS_ENABLED then
@@ -102,19 +113,19 @@ this.read_AfterCalcInfo_DamageSide = function(args)
 
 	local info = sdk.to_managed_object(args[3]) -- snow.hit.EnemyCalcDamageInfo.AfterCalcInfo_DamageSide
 
-	local attackerId     = info:call("get_AttackerID")
-	local damageTypeId = info:call("get_DamageAttackerType")
+	local attackerId   = get_AttackerID:call(info)
+	local damageTypeId = get_DamageAttackerType:call(info)
 
 	local damageInfo = DATA.initializeDamageInfo()
 
-	damageInfo.physicalAmt   = tonumber(info:call("get_PhysicalDamage"))
-	damageInfo.elementalAmt  = tonumber(info:call("get_ElementDamage"))
-	damageInfo.conditionAmt  = tonumber(info:call("get_ConditionDamage"))
-	damageInfo.conditionType = tonumber(info:call("get_ConditionDamageType")) -- snow.enemy.EnemyDef.ConditionDamageType
-	damageInfo.stunAmt       = tonumber(info:call("get_StunDamage"))
+	damageInfo.physicalAmt   = tonumber(get_PhysicalDamage:call(info))
+	damageInfo.elementalAmt  = tonumber(get_ElementDamage:call(info))
+	damageInfo.conditionAmt  = tonumber(get_ConditionDamage:call(info))
+	damageInfo.conditionType = tonumber(get_ConditionDamageType:call(info)) -- snow.enemy.EnemyDef.ConditionDamageType
+	damageInfo.stunAmt       = tonumber(get_StunDamage:call(info))
 
 	-- snow.hit.CriticalType (0: not, 1: crit, 2: bad crit)
-	damageInfo.criticalType = tonumber(info:call("get_CriticalResult"))
+	damageInfo.criticalType = tonumber(get_CriticalResult:call(info))
 
 	local isMarionetteAttack = info:call("get_IsMarionetteAttack")
 
