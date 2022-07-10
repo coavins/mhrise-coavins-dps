@@ -486,6 +486,7 @@ this.attackerIdIsOther = function(attackerId)
 	if not this.attackerIdIsPlayer(attackerId)
 	and not this.attackerIdIsOtomo(attackerId)
 	and not this.attackerIdIsServant(attackerId)
+	and not this.attackerIdIsBoss(attackerId)
 	and attackerId ~= STATE.COMBINE_ALL_OTHERS_ATTACKER_ID
 	then return true
 	else return false

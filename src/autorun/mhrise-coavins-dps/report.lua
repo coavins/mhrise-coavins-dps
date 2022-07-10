@@ -383,7 +383,7 @@ this.mergeBossIntoReport = function(report, boss)
 
 		-- if this source is a monster, find marionette rider damage
 		-- add this damage to the appropriate report items
-		if CORE.attackerIdIsOther(source.id) then
+		if CORE.attackerIdIsBoss(source.id) then
 			local c = source.counters['marionette']
 			if c.riders then
 				for riderId,riderCounter in pairs(c.riders) do

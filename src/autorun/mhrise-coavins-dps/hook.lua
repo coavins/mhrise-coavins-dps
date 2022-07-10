@@ -104,7 +104,6 @@ this.read_AfterCalcInfo_DamageSide = function(args)
 
 	local attackerId     = info:call("get_AttackerID")
 	local damageTypeId = info:call("get_DamageAttackerType")
-	local riderId = nil
 
 	local damageInfo = DATA.initializeDamageInfo()
 
@@ -133,11 +132,11 @@ this.read_AfterCalcInfo_DamageSide = function(args)
 		damageTypeId = 125
 		for _,b in pairs(STATE.LARGE_MONSTERS) do
 			if b.id == attackerId then
-				riderId = b.rider
+				damageInfo.riderId = b.rider
 				break
 			end
 		end
-		CORE.log_debug('riderID is ' .. (riderId or 'nil'))
+		CORE.log_debug('riderID is ' .. (damageInfo.riderId or 'nil'))
 	end
 
 	if attackerId == nil then
