@@ -64,8 +64,8 @@ this.LOCALE_OPTIONS_SELECTED = 1
 this.LOCALE_OPTIONS_TXT2LOCALE = {}
 this.LOCALE = 'en-US'
 
-this.SCREEN_W = 0
-this.SCREEN_H = 0
+this.SCREEN_W = 0.0
+this.SCREEN_H = 0.0
 this.DEBUG_Y = 0
 
 this.FAKE_OTOMO_RANGE_START = 9990 -- it is important that attacker ids near this are never used by the game
