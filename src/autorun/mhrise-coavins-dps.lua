@@ -13,6 +13,20 @@ local HOOK   = require 'mhrise-coavins-dps.hook'
 local EXPORT = require 'mhrise-coavins-dps.export'
 local LANG   = require 'mhrise-coavins-dps.lang'
 
+-- try to load default settings
+if not CORE.loadDefaultConfig() then
+	-- if we failed, we are probably missing data files
+	---@diagnostic disable-next-line: param-type-mismatch
+	re.on_draw_ui(function()
+		imgui.begin_group()
+
+		imgui.text('coavins dps meter: Missing data files! Please reinstall.')
+
+		imgui.end_group()
+	end)
+	return -- halt script
+end
+
 local function sanityCheck()
 	if not CORE.CFG('UPDATE_RATE') or tonumber(CORE.CFG('UPDATE_RATE')) == nil then
 		CORE.SetCFG('UPDATE_RATE', 0.5)
@@ -264,11 +278,6 @@ end)
 --#endregion
 
 -- last minute initialization
-
--- load default settings
-if not CORE.loadDefaultConfig() then
-	return -- halt script
-end
 
 -- load presets into cache
 CORE.loadPresets()
