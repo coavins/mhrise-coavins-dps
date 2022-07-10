@@ -13,20 +13,6 @@ local HOOK   = require 'mhrise-coavins-dps.hook'
 local EXPORT = require 'mhrise-coavins-dps.export'
 local LANG   = require 'mhrise-coavins-dps.lang'
 
--- try to load default settings
-if not CORE.loadDefaultConfig() then
-	-- if we failed, we are probably missing data files
-	---@diagnostic disable-next-line: param-type-mismatch
-	re.on_draw_ui(function()
-		imgui.begin_group()
-
-		imgui.text('coavins dps meter: Missing data files! Please reinstall.')
-
-		imgui.end_group()
-	end)
-	return -- halt script
-end
-
 local function sanityCheck()
 	if not CORE.CFG('UPDATE_RATE') or tonumber(CORE.CFG('UPDATE_RATE')) == nil then
 		CORE.SetCFG('UPDATE_RATE', 0.5)
@@ -198,6 +184,51 @@ local function dpsFrame()
 	end
 end
 
+--#region Initialization
+
+-- make sure data files exist in the right place
+if not CORE.isProperlyInstalled() then
+	return -- halt script
+end
+
+-- load default settings
+CORE.loadDefaultConfig()
+
+-- load presets into cache
+CORE.loadPresets()
+CORE.loadColorschemes()
+LANG.loadLocales()
+
+-- load any saved settings
+CORE.loadSavedConfigIfExist()
+-- apply saved language
+LANG.applySavedLanguage()
+
+-- perform sanity checks
+sanityCheck()
+
+-- initialize an empty report
+REPORT.generateReport({})
+
+-- make sure this table has all modifiers in it
+for key,_ in pairs(ENUM.ENUM_KEYBOARD_MODIFIERS) do
+	STATE.CURRENTLY_HELD_MODIFIERS[key] = false
+end
+
+if STATE.USE_PLUGIN_D2D then
+	-- register font and draw method with d2d plugin
+	d2d.register(function()
+		STATE.FONT = d2d.create_font(CORE.CFG('FONT_FAMILY'), 14 * CORE.CFG('TABLE_SCALE'))
+	end, DRAW.dpsDraw)
+else
+	CORE.log_info('reframework-d2d plugin is disabled')
+end
+
+STATE.IMGUI_FONT = STATE.CHANGE_IMGUI_FONT
+STATE.CHANGE_IMGUI_FONT = nil
+
+--#endregion
+
 --#region REFramework
 
 ---@diagnostic disable-next-line: param-type-mismatch
@@ -276,40 +307,5 @@ re.on_config_save(function()
 end)
 
 --#endregion
-
--- last minute initialization
-
--- load presets into cache
-CORE.loadPresets()
-CORE.loadColorschemes()
-LANG.loadLocales()
-
--- load any saved settings
-CORE.loadSavedConfigIfExist()
--- apply saved language
-LANG.applySavedLanguage()
-
--- perform sanity checks
-sanityCheck()
-
--- initialize an empty report
-REPORT.generateReport({})
-
--- make sure this table has all modifiers in it
-for key,_ in pairs(ENUM.ENUM_KEYBOARD_MODIFIERS) do
-	STATE.CURRENTLY_HELD_MODIFIERS[key] = false
-end
-
-if STATE.USE_PLUGIN_D2D then
-	-- register font and draw method with d2d plugin
-	d2d.register(function()
-		STATE.FONT = d2d.create_font(CORE.CFG('FONT_FAMILY'), 14 * CORE.CFG('TABLE_SCALE'))
-	end, DRAW.dpsDraw)
-else
-	CORE.log_info('reframework-d2d plugin is disabled')
-end
-
-STATE.IMGUI_FONT = STATE.CHANGE_IMGUI_FONT
-STATE.CHANGE_IMGUI_FONT = nil
 
 CORE.log_info('init complete')

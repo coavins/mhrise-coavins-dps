@@ -20,6 +20,33 @@ this.log_debug = function(text)
 	end
 end
 
+this.showFatalError = function(msg)
+	this.log_error(msg)
+	---@diagnostic disable-next-line: param-type-mismatch
+	re.on_draw_ui(function()
+		imgui.begin_group()
+		imgui.text('coavins dps meter: Could not start')
+		imgui.text(msg)
+		imgui.end_group()
+	end)
+end
+
+this.isProperlyInstalled = function()
+	local file = this.readDataFile('default.json')
+	if not file then
+		this.showFatalError('Missing file: reframework/data/mhrise-coavins-dps/default.json')
+		return false
+	end
+
+	file = this.readDataFile('translations/en-US.json')
+	if not file then
+		this.showFatalError('Missing file: reframework/data/mhrise-coavins-dps/translations/en-US.json')
+		return false
+	end
+
+	return true
+end
+
 this.readScreenDimensions = function()
 	local size = STATE.SCENE_MANAGER_VIEW:call("get_Size")
 	if not size then
@@ -203,7 +230,7 @@ this.loadDefaultConfig = function()
 	local file = this.readDataFile('default.json')
 	if not file then
 		this.log_error('failed to load default.json (did you install the data files?)')
-		return false
+		return
 	end
 
 	STATE._CFG = file['CFG']
@@ -222,15 +249,13 @@ this.loadDefaultConfig = function()
 		end
 		hotkey.MODIFIERS = modifiers
 	end
-
-	return true
 end
 
 this.loadDefaultColors = function()
 	local file = this.readDataFile('default.json')
 	if not file then
 		this.log_error('failed to load default.json (did you install the data files?)')
-		return false
+		return
 	end
 
 	STATE._COLORS = file['COLORS']

@@ -26,9 +26,11 @@ describe("mhrise-coavins-dps", function()
 
 	before_each(function()
 		-- load default settings
-		if not CORE.loadDefaultConfig() then
+		if not CORE.isProperlyInstalled() then
 			return -- halt script
 		end
+
+		CORE.loadDefaultConfig()
 
 		CORE.cleanUpData('before test')
 
