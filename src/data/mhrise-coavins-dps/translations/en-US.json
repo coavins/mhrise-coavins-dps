@@ -47,7 +47,8 @@
 		"18": "Element",
 		"19": "Carts",
 		"20": "MR",
-		"21": "Stun"
+		"21": "Stun",
+		"22": "Last"
 	},
 	"damage_types": {
 		"BallistaHate": "BallistaHate",

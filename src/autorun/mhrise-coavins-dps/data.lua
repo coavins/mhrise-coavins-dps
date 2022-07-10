@@ -37,9 +37,11 @@ this.initializeDamageCounter = function()
 
 	c.numHit = 0 -- how many hits
 	c.maxHit = 0 -- biggest hit
+	c.lastHit = 0 -- last hit
 	c.numUpCrit = 0 -- how many crits
 	c.numDnCrit = 0 -- how many negative crits
 	c.firstStrike = STATE.HIGH_NUMBER -- time of first strike
+	c.lastStrike = 0 -- time of last strike
 
 	-- table of damage counters by attacker ID
 	-- used to track damage dealt via marionette riders
@@ -86,6 +88,12 @@ this.mergeDamageCounters = function(a, b)
 	c.numUpCrit = a.numUpCrit + b.numUpCrit
 	c.numDnCrit = a.numDnCrit + b.numDnCrit
 	c.firstStrike = math.min(a.firstStrike, b.firstStrike)
+	c.lastStrike = math.max(a.lastStrike, b.lastStrike)
+	if a.lastStrike > b.lastStrike then
+		c.lastHit = a.lastHit
+	else
+		c.lastHit = b.lastHit
+	end
 
 	-- merge rider tables
 	if a.riders then
@@ -369,6 +377,8 @@ this.addDamageToBoss = function(boss, attackerId, damageTypeId, info)
 	end
 
 	amt.firstStrike = STATE.QUEST_DURATION
+	amt.lastStrike = STATE.QUEST_DURATION
+	amt.lastHit = this.getTotalDamageForDamageCounter(amt)
 
 	--CORE.log_debug(string.format('%.0f/%.0f %.0f:%.0f:%.0f:%.0f'
 	--, attackerId, damageTypeId, amtPhysical, amtElemental, amtCondition, amtAilment))

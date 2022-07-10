@@ -104,10 +104,12 @@ this.initializeReportItem = function(id)
 
 	item.numHit = 0
 	item.maxHit = 0
+	item.lastHit = 0
 	item.numUpCrit = 0
 	item.numDnCrit = 0
 
 	item.firstStrike = STATE.HIGH_NUMBER
+	item.lastStrike = 0
 
 	return item
 end
@@ -135,9 +137,11 @@ this.sumDamageCountersList = function(counters, damageTypeFilter)
 
 	sum.numHit = 0
 	sum.maxHit = 0
+	sum.lastHit = 0
 	sum.numUpCrit = 0
 	sum.numDnCrit = 0
 	sum.firstStrike = STATE.HIGH_NUMBER
+	sum.lastStrike = 0
 
 	-- get totals from counters
 	for type,counter in pairs(counters) do
@@ -171,6 +175,10 @@ this.sumDamageCountersList = function(counters, damageTypeFilter)
 			sum.numUpCrit = sum.numUpCrit + counter.numUpCrit
 			sum.numDnCrit = sum.numDnCrit + counter.numDnCrit
 			sum.firstStrike = math.min(sum.firstStrike, counter.firstStrike)
+			if counter.lastStrike > sum.lastStrike then
+				sum.lastStrike = counter.lastStrike
+				sum.lastHit = counter.lastHit
+			end
 		end
 	end
 
@@ -190,9 +198,11 @@ this.sumDamageSourcesList = function(sources)
 
 	sum.numHit = 0
 	sum.maxHit = 0
+	sum.lastHit = 0
 	sum.numUpCrit = 0
 	sum.numDnCrit = 0
 	sum.firstStrike = STATE.HIGH_NUMBER
+	sum.lastStrike = 0
 
 	for _,source in pairs(sources) do
 		local other = this.sumDamageCountersList(source.counters)
@@ -210,6 +220,10 @@ this.sumDamageSourcesList = function(sources)
 		sum.numUpCrit = sum.numUpCrit + other.numUpCrit
 		sum.numDnCrit = sum.numDnCrit + other.numDnCrit
 		sum.firstStrike = math.min(sum.firstStrike, other.firstStrike)
+		if other.lastStrike > sum.lastStrike then
+			sum.lastStrike = other.lastStrike
+			sum.lastHit = other.lastHit
+		end
 	end
 
 	return sum
@@ -423,9 +437,11 @@ this.mergeBossIntoReport = function(report, boss)
 
 		item.numHit = sum.numHit
 		item.maxHit = sum.maxHit
+		item.lastHit = sum.lastHit
 		item.numUpCrit = sum.numUpCrit
 		item.numDnCrit = sum.numDnCrit
 		item.firstStrike = sum.firstStrike
+		item.lastStrike = sum.lastStrike
 
 		if item.numHit > 0 then
 			item.pctUpCrit = item.numUpCrit / item.numHit

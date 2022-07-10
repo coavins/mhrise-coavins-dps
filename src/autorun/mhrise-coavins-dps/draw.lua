@@ -197,6 +197,8 @@ this.drawReportItemColumn = function(item, col, x, y)
 		end
 	elseif col == 21 then --stun
 		text = string.format('%.0f', item.totalStun)
+	elseif col == 22 then -- lasthit
+		text = string.format('%.0f', item.lastHit)
 	end
 
 	this.drawRichText(text, x, y, CORE.COLOR('WHITE'), CORE.COLOR('BLACK'))
