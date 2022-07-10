@@ -689,6 +689,10 @@ this.DrawWindowDebug = function()
 		STATE.DRAW_WINDOW_DEBUG = false
 	end
 
+	this.showCheckboxForSetting('DEBUG_ENABLED')
+
+	imgui.new_line()
+
 	this.showCheckboxForSetting('DEBUG_SHOW_MISSING_DAMAGE')
 	imgui.text('You can use this setting to see how much damage is not being captured.')
 	imgui.text('Shows the result of the following formula: (x-y)')

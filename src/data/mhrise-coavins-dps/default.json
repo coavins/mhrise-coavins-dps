@@ -18,6 +18,9 @@
 			"CONDITION_LIKE_DAMAGE": {
 					"VALUE": false
 			},
+			"DEBUG_ENABLED": {
+					"VALUE": false
+			},
 			"DEBUG_SHOW_ATTACKER_ID": {
 					"VALUE": false
 			},

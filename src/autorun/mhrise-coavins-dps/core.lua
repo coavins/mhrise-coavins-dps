@@ -15,7 +15,7 @@ this.log_error = function(text)
 end
 
 this.log_debug = function(text)
-	if STATE.DPS_DEBUG then
+	if this.CFG('DEBUG_ENABLED') then
 		log.info('mhrise-coavins-dps: ' .. text)
 	end
 end

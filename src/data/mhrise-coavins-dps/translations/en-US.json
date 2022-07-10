@@ -310,6 +310,7 @@
 		"COMBINE_ALL_OTHERS": "Combine everyone except for you",
 		"COMBINE_OTOMO_WITH_HUNTER": "Combine all buddies with their hunters",
 		"CONDITION_LIKE_DAMAGE": "Ailment buildup counts as damage",
+		"DEBUG_ENABLED": "Enable debug output",
 		"DEBUG_SHOW_ATTACKER_ID": "Show attacker IDs instead of HR",
 		"DEBUG_SHOW_MISSING_DAMAGE": "Show in the title bar any damage that is not accounted for in the table",
 		"DRAW_BAR_COLORBLOCK": "Show color block",

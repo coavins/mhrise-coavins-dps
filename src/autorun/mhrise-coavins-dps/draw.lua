@@ -626,7 +626,7 @@ this.dpsDraw = function()
 		-- draw the first report
 		this.drawReport(1)
 
-		if STATE.DPS_DEBUG then
+		if CORE.CFG('DEBUG_ENABLED') then
 			STATE.DEBUG_Y = 0
 			this.drawDebugStats()
 		end

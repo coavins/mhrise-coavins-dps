@@ -25,7 +25,6 @@ end
 
 this.DPS_ENABLED = true
 this.HOOKS_ENABLED = true
-this.DPS_DEBUG = false
 this.LAST_UPDATE_TIME = 0
 this.DRAW_OVERLAY = true
 this.DRAW_WINDOW_SETTINGS = false
