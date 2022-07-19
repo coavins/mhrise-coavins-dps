@@ -36,6 +36,7 @@ MonsterHunterRise/
         colors/
         presets/
         saves/
+        translations/
         default.json
 ```
           
