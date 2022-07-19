@@ -53,24 +53,27 @@ You can configure settings from the UI inside the REFramework window.
 
 The following columns can be chosen to appear on the table for each player:
 
-* Player HR
+* Player HR/MR
 * Player name
 * qDPS (based on elapsed quest duration)
 * mDPS (based on time selected monsters have spent in combat)
 * pDPS (based on time each player has been in the quest with you)
 * Total damage
-* Poison damage (poison ticking damage)
-* Blast damage (blast explosion)
-* Status buildup (paralysis, sleep, poison, blast, stun, etc.)
-* Party % (percent of total party damage)
-* Best % (percent of best damage dealer's output)
-* Hits (number of hits)
-* MaxHit (biggest single hit)
-* Crit % (percent of hits that were critical)
-* Weak % (percent of hits that were weak due to negative affinity)
-* Carts (number of times player was carted/killed)
+* Physical damage
+* Elemental damage
+* Poison damage
+* Blast damage
+* Ailment buildup (paralysis, sleep, poison, blast, stun, etc.)
+* Percent of total party damage
+* Percent of best damage dealer's output
+* Number of hits
+* Damage of biggest attack
+* Damage of last attack
+* Percent of hits that were critical
+* Percent of hits that were weak (due to negative affinity)
+* Number of times each player was carted/killed
 
-Note: Poison and blast damage will be credited proportionately to players based on how much status buildup you contributed.
+Note: Poison and blast damage will be credited proportionally to players based on how much you contributed to the buildup of that ailment.
 
 You can also configure the filters to show all damage dealers, not just players: buddies, monsters, and villager NPCs can appear as separate rows in the table.
 
