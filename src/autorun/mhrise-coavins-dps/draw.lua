@@ -180,9 +180,9 @@ this.drawReportItemColumn = function(item, col, x, y)
 	elseif col == 13 then -- Blast
 		text = string.format('%.0f', item.totalBlast)
 	elseif col == 14 then -- Crit%
-		text = string.format('%.0f%%', item.pctUpCrit * 100.0)
+		text = string.format('%.1f%%', item.pctUpCrit * 100.0)
 	elseif col == 15 then -- Weak%
-		text = string.format('%.0f%%', item.pctDnCrit * 100.0)
+		text = string.format('%.1f%%', item.pctDnCrit * 100.0)
 	elseif col == 16 then -- pDPS
 		text = string.format('%.1f', item.dps.personal)
 	elseif col == 17 then -- physical damage
@@ -199,6 +199,10 @@ this.drawReportItemColumn = function(item, col, x, y)
 		text = string.format('%.0f', item.totalStun)
 	elseif col == 22 then -- lasthit
 		text = string.format('%.0f', item.lastHit)
+	elseif col == 23 then -- phys%
+		text = string.format('%.1f%%', item.pctPhysical * 100.0)
+	elseif col == 24 then -- ele%
+		text = string.format('%.1f%%', item.pctElemental * 100.0)
 	end
 
 	this.drawRichText(text, x, y, CORE.COLOR('WHITE'), CORE.COLOR('BLACK'))

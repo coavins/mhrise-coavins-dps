@@ -457,6 +457,11 @@ this.mergeBossIntoReport = function(report, boss)
 			item.total = sum.total
 		end
 
+		if item.total > 0 then
+			item.pctPhysical = item.totalPhysical / item.total
+			item.pctElemental = item.totalElemental / item.total
+		end
+
 		-- calculate dps
 		if report.time > 0 then
 			item.dps.report = item.total / report.time
