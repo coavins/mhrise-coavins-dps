@@ -70,6 +70,8 @@ end
 this.loadFontForLanguage = function(locale)
 	if locale == 'zh-CN' then
 		STATE.CHANGE_IMGUI_FONT = imgui.load_font(STATE.RE_FONT_NAME_SC, STATE.RE_FONT_SIZE, STATE.CJK_GLYPH_RANGES)
+	elseif locale == 'zh-HK' then
+		STATE.CHANGE_IMGUI_FONT = imgui.load_font(STATE.RE_FONT_NAME_HK, STATE.RE_FONT_SIZE, STATE.CJK_GLYPH_RANGES)
 	else
 		STATE.CHANGE_IMGUI_FONT = imgui.load_font(STATE.RE_FONT_NAME_JP, STATE.RE_FONT_SIZE, STATE.CJK_GLYPH_RANGES)
 	end

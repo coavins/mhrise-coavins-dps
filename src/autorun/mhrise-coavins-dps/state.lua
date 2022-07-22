@@ -5,6 +5,8 @@ local this = {}
 this.USE_PLUGIN_D2D = USER_OPTIONS.USE_PLUGIN_D2D
 this.RE_FONT_NAME_JP = 'NotoSansJP-Regular.otf'
 this.RE_FONT_NAME_SC = 'NotoSansSC-Regular.otf'
+this.RE_FONT_NAME_HK = 'ChironHeiHK-R.otf'
+
 this.RE_FONT_SIZE = 18
 this.CJK_GLYPH_RANGES = {
 	0x0020, 0x00FF, -- Basic Latin + Latin Supplement
