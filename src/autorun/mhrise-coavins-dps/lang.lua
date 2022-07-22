@@ -29,8 +29,13 @@ this.loadLocales = function()
 	for locale,_ in pairs(STATE._LOCALES) do
 		local language,_ = string.match(locale, "(.*)%-(.*)")
 		local text
-		if ENUM.LANGUAGES[language] then
+		-- find name for locale first
+		if ENUM.LANGUAGES[locale] then
+			text = ENUM.LANGUAGES[locale] .. ' (' .. locale .. ')'
+		-- find name for language
+		elseif ENUM.LANGUAGES[language] then
 			text = ENUM.LANGUAGES[language] .. ' (' .. locale .. ')'
+		-- just print the locale string
 		else
 			text = locale
 		end
