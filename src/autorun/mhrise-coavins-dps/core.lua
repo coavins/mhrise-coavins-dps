@@ -471,7 +471,7 @@ end
 
 this.attackerIdIsOtomo = function(attackerId)
 	if attackerId >= STATE.FAKE_OTOMO_RANGE_START
-	and attackerId <= STATE.FAKE_OTOMO_RANGE_START + 6 -- (4 players + SP buddy + 2 servant buddies)
+	and attackerId <= STATE.FAKE_OTOMO_RANGE_START + 8 -- (4 players + SP buddy + 4 servant buddies)
 	then
 		return true
 	else
@@ -480,7 +480,7 @@ this.attackerIdIsOtomo = function(attackerId)
 end
 
 this.attackerIdIsServant = function(attackerId)
-	if attackerId >= 4 and attackerId <= 5
+	if attackerId >= 4 and attackerId <= 7
 	then
 		return true
 	else
@@ -490,7 +490,7 @@ end
 
 this.attackerIdIsServantOtomo = function(attackerId)
 	if attackerId >= STATE.FAKE_OTOMO_RANGE_START + 5
-	and attackerId <= STATE.FAKE_OTOMO_RANGE_START + 6
+	and attackerId <= STATE.FAKE_OTOMO_RANGE_START + 8
 	then
 		return true
 	else
