@@ -328,7 +328,7 @@ this.drawReportItem = function(item, x, y, width, height)
 			local status, retval = pcall(this.drawReportItemColumn, item, col, text_x, text_y)
 			if not status then
 				this.drawRichText('ERR', text_x, text_y, CORE.COLOR('WHITE'), CORE.COLOR('BLACK'))
-				CORE.log_error(retval)
+				CORE.log_debug(retval)
 			end
 
 			local colWidth = STATE._CFG['TABLE_COLS_WIDTH'][col] * CORE.CFG('TABLE_SCALE')
