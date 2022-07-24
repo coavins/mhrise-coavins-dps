@@ -430,6 +430,7 @@ this.mergeBossIntoReport = function(report, boss)
 
 	-- now loop all report items and update the totals after adding this boss
 	for _,item in ipairs(report.items) do
+		-- skip the fake "missing damage" item
 		if item.id ~= STATE.MISSING_ATTACKER_ID then
 			-- calculate the item's own total damage
 			local sum = this.sumDamageCountersList(item.counters, STATE._FILTERS.DAMAGE_TYPES)
