@@ -89,6 +89,9 @@ this.initializeReportItem = function(id)
 	item.totalBlast     = 0.0
 	item.totalOtomo = 0.0
 
+	item.pctPhysical = 0
+	item.pctElemental = 0
+
 	item.seconds = {}
 	item.seconds.quest    = 0.0
 	item.seconds.monster  = 0.0
@@ -107,6 +110,8 @@ this.initializeReportItem = function(id)
 	item.lastHit = 0
 	item.numUpCrit = 0
 	item.numDnCrit = 0
+	item.pctUpCrit = 0
+	item.pctDnCrit = 0
 
 	item.firstStrike = STATE.HIGH_NUMBER
 	item.lastStrike = 0
