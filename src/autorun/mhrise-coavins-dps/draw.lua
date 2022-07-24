@@ -325,7 +325,10 @@ this.drawReportItem = function(item, x, y, width, height)
 	-- now loop through defined columns
 	for _,col in ipairs(STATE._CFG['TABLE_COLS']) do
 		if col > 1 then
-			this.drawReportItemColumn(item, col, text_x, text_y)
+			local status, retval = pcall(this.drawReportItemColumn, item, col, text_x, text_y)
+			if not status then
+				this.drawRichText('ERR', text_x, text_y, CORE.COLOR('WHITE'), CORE.COLOR('BLACK'))
+			end
 
 			local colWidth = STATE._CFG['TABLE_COLS_WIDTH'][col] * CORE.CFG('TABLE_SCALE')
 
