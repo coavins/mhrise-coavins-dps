@@ -425,69 +425,68 @@ this.mergeBossIntoReport = function(report, boss)
 
 	-- now loop all report items and update the totals after adding this boss
 	for _,item in ipairs(report.items) do
-		-- calculate the item's own total damage
-		local sum = this.sumDamageCountersList(item.counters, STATE._FILTERS.DAMAGE_TYPES)
-		item.totalPhysical  = sum.physical
-		item.totalElemental = sum.elemental
-		item.totalCondition = sum.condition
-		item.totalStun      = sum.stun
-		item.totalPoison    = sum.poison
-		item.totalBlast     = sum.blast
-		item.totalOtomo     = sum.otomo
-
-		item.numHit = sum.numHit
-		item.maxHit = sum.maxHit
-		item.lastHit = sum.lastHit
-		item.numUpCrit = sum.numUpCrit
-		item.numDnCrit = sum.numDnCrit
-		item.firstStrike = sum.firstStrike
-		item.lastStrike = sum.lastStrike
-
-		if item.numHit > 0 then
-			item.pctUpCrit = item.numUpCrit / item.numHit
-			item.pctDnCrit = item.numDnCrit / item.numHit
-		else
-			item.pctUpCrit = 0
-			item.pctDnCrit = 0
-		end
-
-		if CORE.CFG('CONDITION_LIKE_DAMAGE') then
-			item.total = sum.total + sum.condition
-		else
-			item.total = sum.total
-		end
-
-		if item.total > 0 then
-			item.pctPhysical = item.totalPhysical / item.total
-			item.pctElemental = item.totalElemental / item.total
-		end
-
-		-- calculate dps
-		if report.time > 0 then
-			item.dps.report = item.total / report.time
-		end
-
-		if report.questTime > 0 then
-			item.dps.quest = item.total / report.questTime
-			local playerTime = STATE.PLAYER_TIMES[item.playerNumber]
-			if CORE.CFG('PDPS_BASED_ON_FIRST_STRIKE') and item.firstStrike < STATE.HIGH_NUMBER then
-				playerTime = item.firstStrike
-			end
-			if playerTime then
-				item.dps.personal = item.total / (report.questTime - playerTime)
-			else
-				item.dps.personal = 0.0
-			end
-		end
-
-		-- remember which combatant has the most damage
-		if item.total > bestDamage then
-			bestDamage = item.total
-		end
-
-		-- accumulate total overall damage
-		-- don't include the fake report item inserted to represent missing damage
 		if item.id ~= STATE.MISSING_ATTACKER_ID then
+			-- calculate the item's own total damage
+			local sum = this.sumDamageCountersList(item.counters, STATE._FILTERS.DAMAGE_TYPES)
+			item.totalPhysical  = sum.physical
+			item.totalElemental = sum.elemental
+			item.totalCondition = sum.condition
+			item.totalStun      = sum.stun
+			item.totalPoison    = sum.poison
+			item.totalBlast     = sum.blast
+			item.totalOtomo     = sum.otomo
+
+			item.numHit = sum.numHit
+			item.maxHit = sum.maxHit
+			item.lastHit = sum.lastHit
+			item.numUpCrit = sum.numUpCrit
+			item.numDnCrit = sum.numDnCrit
+			item.firstStrike = sum.firstStrike
+			item.lastStrike = sum.lastStrike
+
+			if item.numHit > 0 then
+				item.pctUpCrit = item.numUpCrit / item.numHit
+				item.pctDnCrit = item.numDnCrit / item.numHit
+			else
+				item.pctUpCrit = 0
+				item.pctDnCrit = 0
+			end
+
+			if CORE.CFG('CONDITION_LIKE_DAMAGE') then
+				item.total = sum.total + sum.condition
+			else
+				item.total = sum.total
+			end
+
+			if item.total > 0 then
+				item.pctPhysical = item.totalPhysical / item.total
+				item.pctElemental = item.totalElemental / item.total
+			end
+
+			-- calculate dps
+			if report.time > 0 then
+				item.dps.report = item.total / report.time
+			end
+
+			if report.questTime > 0 then
+				item.dps.quest = item.total / report.questTime
+				local playerTime = STATE.PLAYER_TIMES[item.playerNumber]
+				if CORE.CFG('PDPS_BASED_ON_FIRST_STRIKE') and item.firstStrike < STATE.HIGH_NUMBER then
+					playerTime = item.firstStrike
+				end
+				if playerTime then
+					item.dps.personal = item.total / (report.questTime - playerTime)
+				else
+					item.dps.personal = 0.0
+				end
+			end
+
+			-- remember which combatant has the most damage
+			if item.total > bestDamage then
+				bestDamage = item.total
+			end
+
+			-- accumulate total overall damage
 			totalDamage = totalDamage + item.total
 		end
 	end
