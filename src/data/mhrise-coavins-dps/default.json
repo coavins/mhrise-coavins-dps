@@ -91,6 +91,9 @@
 		"FONT_FAMILY": {
 			"VALUE": "Tahoma"
 		},
+		"FORMAT_DPS": {
+			"VALUE": "%.1f"
+		},
 		"HIDE_COMBINED_OTHERS": {
 			"VALUE": false
 		},

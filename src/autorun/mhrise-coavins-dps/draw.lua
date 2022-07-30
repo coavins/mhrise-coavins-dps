@@ -160,7 +160,7 @@ this.drawReportItemColumn = function(item, col, x, y)
 			text = string.format('%s', item.name)
 		end
 	elseif col == 4 then -- dps
-		text = string.format('%.1f', item.dps.report)
+		text = string.format(CORE.CFG('FORMAT_DPS'), item.dps.report)
 	elseif col == 5 then -- damage
 		text = string.format('%.0f', item.total)
 	elseif col == 6 then -- % party
@@ -172,7 +172,7 @@ this.drawReportItemColumn = function(item, col, x, y)
 	elseif col == 9 then -- maxhit
 		text = string.format('%.0f', item.maxHit)
 	elseif col == 10 then -- qDPS
-		text = string.format('%.1f', item.dps.quest)
+		text = string.format(CORE.CFG('FORMAT_DPS'), item.dps.quest)
 	elseif col == 11 then -- Buildup
 		text = string.format('%.0f', item.totalCondition)
 	elseif col == 12 then -- Poison
@@ -184,7 +184,7 @@ this.drawReportItemColumn = function(item, col, x, y)
 	elseif col == 15 then -- Weak%
 		text = string.format('%.1f%%', item.pctDnCrit * 100.0)
 	elseif col == 16 then -- pDPS
-		text = string.format('%.1f', item.dps.personal)
+		text = string.format(CORE.CFG('FORMAT_DPS'), item.dps.personal)
 	elseif col == 17 then -- physical damage
 		text = string.format('%.0f', item.totalPhysical)
 	elseif col == 18 then -- element damage

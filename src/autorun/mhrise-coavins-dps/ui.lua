@@ -399,6 +399,10 @@ this.DrawWindowSettings = function()
 			this.showSliderForIntSetting('TEXT_SHADOW_OFFSET_Y')
 
 			imgui.new_line()
+
+			this.showTextboxForSetting('FORMAT_DPS')
+
+			imgui.new_line()
 		end
 
 	-- Color
