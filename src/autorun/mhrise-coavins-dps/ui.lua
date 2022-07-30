@@ -400,7 +400,12 @@ this.DrawWindowSettings = function()
 
 			imgui.new_line()
 
+			imgui.text(LANG.MESSAGE('msg_format_help'))
 			this.showTextboxForSetting('FORMAT_DPS')
+			
+			if imgui.button(LANG.MESSAGE('btn_reset_default_formats')) then
+				CORE.SetCFG('FORMAT_DPS', '%.1f')
+			end
 
 			imgui.new_line()
 		end
