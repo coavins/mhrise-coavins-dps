@@ -476,7 +476,16 @@ this.mergeBossIntoReport = function(report, boss)
 
 			if report.questTime > 0 then
 				item.dps.quest = item.total / report.questTime
-				local playerTime = STATE.PLAYER_TIMES[item.playerNumber]
+				local playerTime = nil
+				if item.playerNumber then
+					playerTime = STATE.PLAYER_TIMES[item.playerNumber]
+				elseif item.otomoNumber then
+					local number = item.otomoNumber
+					if number == 5 then
+						number = 1
+					end
+					playerTime = STATE.PLAYER_TIMES[number]
+				end
 				if CORE.CFG('PDPS_BASED_ON_FIRST_STRIKE') and item.firstStrike < STATE.HIGH_NUMBER then
 					playerTime = item.firstStrike
 				end
