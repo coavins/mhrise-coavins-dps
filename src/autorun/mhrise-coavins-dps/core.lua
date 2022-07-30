@@ -378,6 +378,11 @@ this.isSettingAllowedForPresets = function(name)
 	or name == 'DEBUG_SHOW_MISSING_DAMAGE'
 	or name == 'DEBUG_SHOW_ATTACKER_ID'
 	or name == 'LOCALE'
+	or name == 'FONT_FAMILY'
+	or name == 'SHOW_OVERLAY_AT_BOOT'
+	or name == 'SHOW_OVERLAY_IN_QUEST'
+	or name == 'SHOW_OVERLAY_IN_VILLAGE'
+	or name == 'SHOW_OVERLAY_POST_QUEST'
 	then
 		return false
 	else

@@ -67,15 +67,9 @@
 			"DRAW_TOTAL": {
 				"VALUE": false
 		},
-			"FONT_FAMILY": {
-					"VALUE": "Source Code Pro"
-			},
 			"HIDE_COMBINED_OTHERS": {
 				"VALUE": true
 		},
-			"HIDE_OVERLAY_IN_VILLAGE": {
-					"VALUE": false
-			},
 			"MARIONETTE_IS_PLAYER_DMG": {
 					"VALUE": true
 			},

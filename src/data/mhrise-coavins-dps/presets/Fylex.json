@@ -67,13 +67,7 @@
         "DRAW_TOTAL": {
             "VALUE": false
         },
-        "FONT_FAMILY": {
-            "VALUE": "Tahoma"
-        },
         "HIDE_COMBINED_OTHERS": {
-            "VALUE": false
-        },
-        "HIDE_OVERLAY_IN_VILLAGE": {
             "VALUE": false
         },
         "MARIONETTE_IS_PLAYER_DMG": {
