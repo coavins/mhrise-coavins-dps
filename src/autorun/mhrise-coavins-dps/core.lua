@@ -657,4 +657,11 @@ this.updatePlayers = function()
 	end
 end
 
+this.changeOverlayVisibility = function(setting)
+	local showIt = this.CFG(setting)
+	if     showIt == 2 then STATE.DRAW_OVERLAY = true
+	elseif showIt == 3 then STATE.DRAW_OVERLAY = false
+	end
+end
+
 return this

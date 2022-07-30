@@ -94,12 +94,6 @@
 			"HIDE_COMBINED_OTHERS": {
 					"VALUE": false
 			},
-			"HIDE_OVERLAY_IN_QUEST": {
-					"VALUE": false
-			},
-			"HIDE_OVERLAY_IN_VILLAGE": {
-					"VALUE": false
-			},
 			"LOCALE": {
 					"VALUE": "en-US"
 			},
@@ -114,6 +108,15 @@
 			},
 			"SHOW_MISSING_DAMAGE": {
 					"VALUE": false
+			},
+			"SHOW_OVERLAY_AT_BOOT": {
+				"VALUE": false
+			},
+			"SHOW_OVERLAY_IN_QUEST": {
+				"VALUE": true
+			},
+			"SHOW_OVERLAY_IN_VILLAGE": {
+				"VALUE": true
 			},
 			"SHOW_OVERLAY_POST_QUEST": {
 					"VALUE": true

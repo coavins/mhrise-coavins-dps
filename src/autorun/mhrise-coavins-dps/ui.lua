@@ -23,6 +23,29 @@ this.showCheckboxForSetting = function(setting)
 	end
 end
 
+this.showDropdownForSetting = function(setting, numberOfOptions, textOverride, minimumOption)
+	if not minimumOption then
+		minimumOption = 1
+	end
+
+	local k=1
+	local options = {}
+	for i=minimumOption, numberOfOptions, 1 do
+		if textOverride then
+			options[k] = LANG.OPTION(textOverride .. '_' .. i)
+		else
+			options[k] = LANG.OPTION(setting .. '_' .. i)
+		end
+		k = k+1
+	end
+
+	local changed, wantsIt = imgui.combo(LANG.OPTION(setting), CORE.CFG(setting), options)
+	if changed then
+		CORE.SetCFG(setting, wantsIt)
+		STATE.NEEDS_UPDATE = true
+	end
+end
+
 this.showSliderForFloatSetting = function(setting)
 	local changed, value = imgui.slider_float(
 		LANG.OPTION(setting), CORE.CFG(setting), CORE.MIN(setting), CORE.MAX(setting), '%.2f'
@@ -319,24 +342,19 @@ this.DrawWindowSettings = function()
 		this.showCheckboxForSetting('DRAW_BAR_TEXT_YOU')
 		this.showCheckboxForSetting('DRAW_BAR_TEXT_NAME_USE_REAL_NAMES')
 
-		local options = {}
-		options[1] = LANG.OPTION('DRAW_BAR_REVEAL_RANK_1') -- Hide
-		options[2] = LANG.OPTION('DRAW_BAR_REVEAL_RANK_2') -- Show HR
-		options[3] = LANG.OPTION('DRAW_BAR_REVEAL_RANK_3') -- Show MR
-		changed, wantsIt = imgui.combo(LANG.OPTION('DRAW_BAR_REVEAL_RANK'), CORE.CFG('DRAW_BAR_REVEAL_RANK'), options)
-		if changed then
-			CORE.SetCFG('DRAW_BAR_REVEAL_RANK', wantsIt)
-			STATE.NEEDS_UPDATE = true
-		end
+		this.showDropdownForSetting('DRAW_BAR_REVEAL_RANK', 3)
 
 		imgui.new_line()
 	end
 
+	-- Visibility
 	if imgui.collapsing_header(LANG.MESSAGE('msg_visibility')) then
 		imgui.text(LANG.MESSAGE('msg_visibility_help'))
-		this.showCheckboxForSetting('HIDE_OVERLAY_IN_VILLAGE')
-		this.showCheckboxForSetting('HIDE_OVERLAY_IN_QUEST')
-		this.showCheckboxForSetting('SHOW_OVERLAY_POST_QUEST')
+
+		this.showDropdownForSetting('SHOW_OVERLAY_AT_BOOT'   , 3, 'SHOW_OVERLAY', 2)
+		this.showDropdownForSetting('SHOW_OVERLAY_IN_QUEST'  , 3, 'SHOW_OVERLAY')
+		this.showDropdownForSetting('SHOW_OVERLAY_POST_QUEST', 3, 'SHOW_OVERLAY')
+		this.showDropdownForSetting('SHOW_OVERLAY_IN_VILLAGE', 3, 'SHOW_OVERLAY')
 
 		imgui.new_line()
 	end

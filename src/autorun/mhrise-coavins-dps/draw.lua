@@ -619,20 +619,7 @@ end
 
 -- main draw function
 this.dpsDraw = function()
-	local drawIt = false
-
 	if STATE.DRAW_OVERLAY or STATE.DRAW_WINDOW_SETTINGS then
-		-- show it in quest, training hall, and when settings window is open
-		if (STATE.IS_IN_QUEST or STATE.IS_POST_QUEST or STATE.IS_IN_TRAININGHALL or STATE.DRAW_WINDOW_SETTINGS) then
-			drawIt = true
-		end
-		-- show it in the village only if the player allows
-		if not CORE.CFG('HIDE_OVERLAY_IN_VILLAGE') then
-			drawIt = true
-		end
-	end
-
-	if drawIt then
 		-- draw the first report
 		this.drawReport(1)
 

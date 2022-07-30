@@ -38,6 +38,7 @@ this.IS_ONLINE = false
 this.QUEST_DURATION = 0.0
 this.IS_IN_QUEST = false
 this.IS_POST_QUEST = false
+this.IS_IN_VILLAGE = false
 this.IS_IN_TRAININGHALL = false
 
 this.NEEDS_UPDATE = false

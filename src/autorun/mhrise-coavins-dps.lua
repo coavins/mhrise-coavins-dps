@@ -100,6 +100,7 @@ local function dpsFrame()
 
 	local wasInQuest = STATE.IS_IN_QUEST
 	local wasPostQuest = STATE.IS_POST_QUEST
+	local wasInVillage = STATE.IS_IN_VILLAGE
 	local wasInTraininghall = STATE.IS_IN_TRAININGHALL
 
 	local villageArea = 0
@@ -112,7 +113,13 @@ local function dpsFrame()
 		STATE.IS_POST_QUEST = (questStatus > 2)
 	end
 
-	if not STATE.IS_IN_QUEST and not STATE.IS_POST_QUEST then
+	if STATE.IS_IN_QUEST or STATE.IS_POST_QUEST then
+		STATE.IS_IN_VILLAGE = false
+	else
+		STATE.IS_IN_VILLAGE = true
+	end
+
+	if STATE.IS_IN_VILLAGE then
 		-- VillageAreaManager is unreliable, not always there, stale references
 		-- get a new reference
 		STATE.MANAGER.AREA = sdk.get_managed_singleton("snow.VillageAreaManager")
@@ -121,27 +128,24 @@ local function dpsFrame()
 		end
 	end
 
-	STATE.IS_IN_TRAININGHALL = (villageArea == 5 and not STATE.IS_IN_QUEST and not STATE.IS_POST_QUEST)
+	STATE.IS_IN_TRAININGHALL = (villageArea == 5 and STATE.IS_IN_VILLAGE)
 
-	-- if we changed places, clear all data
+	-- Handle area transitions
+	-- Entered training hall
 	if STATE.IS_IN_TRAININGHALL and not wasInTraininghall then
 		CORE.cleanUpData('entered training hall')
 
+	-- Entered quest
 	elseif STATE.IS_IN_QUEST and not wasInQuest then
 		CORE.cleanUpData('entered a quest')
 
-		if CORE.CFG('HIDE_OVERLAY_IN_QUEST') then
-			STATE.DRAW_OVERLAY = false
-		end
+		CORE.changeOverlayVisibility('SHOW_OVERLAY_IN_QUEST')
 
+	-- Entered post-quest sequence
 	elseif STATE.IS_POST_QUEST and not wasPostQuest then
-		-- quest complete, export combat data to disk
 		CORE.log_info('quest complete')
 
-		-- show the overlay
-		if CORE.CFG('SHOW_OVERLAY_POST_QUEST') then
-			STATE.DRAW_OVERLAY = true
-		end
+		CORE.changeOverlayVisibility('SHOW_OVERLAY_POST_QUEST')
 
 		-- export data
 		if CORE.CFG('SAVE_RESULTS_TO_DISK') then
@@ -150,6 +154,11 @@ local function dpsFrame()
 
 		-- make sure we do one last update
 		STATE.NEEDS_UPDATE = true
+
+		-- Entered the village
+	elseif STATE.IS_IN_VILLAGE and not wasInVillage then
+		CORE.changeOverlayVisibility('SHOW_OVERLAY_IN_VILLAGE')
+
 	end
 
 	if STATE.IS_IN_QUEST or STATE.IS_POST_QUEST then
@@ -206,6 +215,9 @@ LANG.applySavedLanguage()
 
 -- perform sanity checks
 sanityCheck()
+
+-- show or hide overlay as desired
+CORE.changeOverlayVisibility('SHOW_OVERLAY_AT_BOOT')
 
 -- initialize an empty report
 REPORT.generateReport({})
