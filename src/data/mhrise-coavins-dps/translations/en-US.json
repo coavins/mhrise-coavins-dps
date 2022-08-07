@@ -352,6 +352,7 @@
 		"SHOW_OVERLAY_3": "Hide",
 		"SHOW_OVERLAY_AT_BOOT": "When game starts",
 		"SHOW_OVERLAY_IN_QUEST": "When quest starts",
+		"SHOW_OVERLAY_IN_TRAININGHALL": "When entering training hall",
 		"SHOW_OVERLAY_IN_VILLAGE": "When entering village",
 		"SHOW_OVERLAY_POST_QUEST": "When quest ends",
 		"SHOW_TEST_DATA_WHILE_MENU_IS_OPEN": "Show test data while menu is open",

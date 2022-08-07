@@ -135,6 +135,8 @@ local function dpsFrame()
 	if STATE.IS_IN_TRAININGHALL and not wasInTraininghall then
 		CORE.cleanUpData('entered training hall')
 
+		CORE.changeOverlayVisibility('SHOW_OVERLAY_IN_TRAININGHALL')
+
 	-- Entered quest
 	elseif STATE.IS_IN_QUEST and not wasInQuest then
 		CORE.cleanUpData('entered a quest')
@@ -155,8 +157,12 @@ local function dpsFrame()
 		-- make sure we do one last update
 		STATE.NEEDS_UPDATE = true
 
-		-- Entered the village
+	-- Entered the village
 	elseif STATE.IS_IN_VILLAGE and not wasInVillage then
+		CORE.changeOverlayVisibility('SHOW_OVERLAY_IN_VILLAGE')
+
+	-- Left the training hall
+	elseif STATE.IS_IN_VILLAGE and not STATE.IS_IN_TRAININGHALL and wasInTraininghall then
 		CORE.changeOverlayVisibility('SHOW_OVERLAY_IN_VILLAGE')
 
 	end

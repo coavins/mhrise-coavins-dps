@@ -355,6 +355,7 @@ this.DrawWindowSettings = function()
 		this.showDropdownForSetting('SHOW_OVERLAY_IN_QUEST'  , 3, 'SHOW_OVERLAY')
 		this.showDropdownForSetting('SHOW_OVERLAY_POST_QUEST', 3, 'SHOW_OVERLAY')
 		this.showDropdownForSetting('SHOW_OVERLAY_IN_VILLAGE', 3, 'SHOW_OVERLAY')
+		this.showDropdownForSetting('SHOW_OVERLAY_IN_TRAININGHALL', 3, 'SHOW_OVERLAY')
 
 		imgui.new_line()
 	end
