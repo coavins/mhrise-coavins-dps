@@ -100,6 +100,7 @@ local function dpsFrame()
 
 	local wasInQuest = STATE.IS_IN_QUEST
 	local wasPostQuest = STATE.IS_POST_QUEST
+	local wasResultScreen = STATE.IS_RESULT_SCREEN
 	local wasInVillage = STATE.IS_IN_VILLAGE
 	local wasInTraininghall = STATE.IS_IN_TRAININGHALL
 
@@ -117,6 +118,13 @@ local function dpsFrame()
 		STATE.IS_IN_VILLAGE = false
 	else
 		STATE.IS_IN_VILLAGE = true
+	end
+
+	local isPreSuccess = STATE.MANAGER.QUEST:get_field("_IsPreSuccess")
+	if STATE.IS_POST_QUEST and isPreSuccess == false then
+		STATE.IS_RESULT_SCREEN = true
+	else
+		STATE.IS_RESULT_SCREEN = false
 	end
 
 	if STATE.IS_IN_VILLAGE then
@@ -156,6 +164,12 @@ local function dpsFrame()
 
 		-- make sure we do one last update
 		STATE.NEEDS_UPDATE = true
+	end
+
+	-- Entered results screen
+	if STATE.IS_RESULT_SCREEN and not wasResultScreen then
+		CORE.log_debug('result screen')
+		CORE.changeOverlayVisibility('SHOW_OVERLAY_RESULT_SCREEN')
 
 	-- Entered the village
 	elseif STATE.IS_IN_VILLAGE and not wasInVillage then

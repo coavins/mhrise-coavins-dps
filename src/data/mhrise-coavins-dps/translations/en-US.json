@@ -355,6 +355,7 @@
 		"SHOW_OVERLAY_IN_TRAININGHALL": "When entering training hall",
 		"SHOW_OVERLAY_IN_VILLAGE": "When entering village",
 		"SHOW_OVERLAY_POST_QUEST": "When quest ends",
+		"SHOW_OVERLAY_RESULT_SCREEN": "When quest results appear",
 		"SHOW_TEST_DATA_WHILE_MENU_IS_OPEN": "Show test data while menu is open",
 		"TABLE_GROWS_UPWARD": "Table grows upward instead of down",
 		"TABLE_HEADER_TEXT_OFFSET_X": "Title text offset X",

@@ -127,6 +127,9 @@
 		"SHOW_OVERLAY_POST_QUEST": {
 			"VALUE": true
 		},
+		"SHOW_OVERLAY_RESULT_SCREEN": {
+			"VALUE": true
+		},
 		"SHOW_TEST_DATA_WHILE_MENU_IS_OPEN": {
 			"VALUE": true
 		},
