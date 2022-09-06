@@ -237,6 +237,7 @@ this.DAMAGE_TYPES[125] = 'marionette'
 this.LANGUAGES = {}
 this.LANGUAGES['en'] = 'English'
 this.LANGUAGES['es'] = 'Español'
+this.LANGUAGES['fr'] = 'Français'
 this.LANGUAGES['ja'] = '日本語'
 this.LANGUAGES['zh'] = '汉语'
 this.LANGUAGES['zh-HK'] = '中文（香港）'
