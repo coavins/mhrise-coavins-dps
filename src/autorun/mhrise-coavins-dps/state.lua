@@ -97,6 +97,16 @@ this.PLAYER_RANKS = {}
 this.PLAYER_MASTERRANKS = {}
 this.PLAYER_TIMES = {} -- the time when they entered the quest
 this.PLAYER_DEATHS = {} -- how many times each player carted
+this.MEMBERS_COUNT = {}
+this.MEMBERS_INFO = {}
+this.WEAPON_INFO = {}
+this.QUEST_NO = -1
+this.QUEST_TARGET_ID = {}
+this.WEAPON_ID = {}
+this.PLAYER_SKILL = {}
+this.KITCHEN_SKILL = {}
+this.OTOMO_INFO = {}
+this.SWITCH_ACTION_ID = {}
 
 -- initialized later when they become available
 this.MANAGER = {}
@@ -111,6 +121,7 @@ this.MANAGER.KEYBOARD = nil
 this.MANAGER.SCENE    = nil
 this.MANAGER.PROGRESS = nil
 this.MANAGER.SERVANT  = nil
+this.MANAGER.EQUIP_STATUS_PARAM  = nil
 
 this.SCENE_MANAGER_TYPE = nil
 this.SCENE_MANAGER_VIEW = nil

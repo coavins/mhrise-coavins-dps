@@ -1,4 +1,5 @@
 local STATE = require 'mhrise-coavins-dps.state'
+local ENUM  = require 'mhrise-coavins-dps.enum'
 
 local this = {}
 
@@ -124,6 +125,11 @@ this.hasManagedResources = function()
 
 	if not STATE.MANAGER.SERVANT then
 		STATE.MANAGER.SERVANT = sdk.get_managed_singleton("snow.ai.ServantManager")
+		return false
+	end
+
+	if not STATE.MANAGER.EQUIP_STATUS_PARAM then
+		STATE.MANAGER.EQUIP_STATUS_PARAM = sdk.get_managed_singleton("snow.gui.EquipStatusParamManager")
 		return false
 	end
 
@@ -666,6 +672,333 @@ this.changeOverlayVisibility = function(setting)
 	local showIt = this.CFG(setting)
 	if     showIt == 2 then STATE.DRAW_OVERLAY = true
 	elseif showIt == 3 then STATE.DRAW_OVERLAY = false
+	end
+end
+
+this.getWeaponInfo = function()
+	local weaponInfo = STATE.MANAGER.PLAYER:get_field("PlayerList")
+	if weaponInfo then
+		-- キャンプにて武器変更等した場合にPrevObjectもarrayに入っている為、4固定にクエストクリア時のみ集計している
+		-- ※クリア時に武器変更している場合は集計不可
+		-- Since "PrevObject" is also included in the array when changing weapons etc. at the camp, it is totaled only when clearing the quest at 4 fixed
+		-- *Cannot be counted if you have changed weapons when clearing
+		for idx = 0, ENUM.WEAPON_INFO_COUNT-1 do 
+			local weapon = weaponInfo:call("get_Item", idx)
+			if weapon then
+				local info = {}
+				info.id = idx
+				local type = weapon:get_type_definition()
+
+				if type:is_a("snow.player.GreatSword") then
+					info.name = "GreatSword"
+					info.nameJP = "大剣"
+					info.type = 0
+				elseif type:is_a("snow.player.LongSword") then
+					info.name = "LongSword"
+					info.nameJP = "太刀"
+					info.type = 2
+				elseif type:is_a("snow.player.ShortSword") then
+					info.name = "ShortSword"
+					info.nameJP = "片手剣"
+					info.type = 8
+				elseif type:is_a("snow.player.DualBlades") then
+					info.name = "DualBlades"
+					info.nameJP = "双剣"
+					info.type = 9
+				elseif type:is_a("snow.player.Lance") then
+					info.name = "Lance"
+					info.nameJP = "ランス"
+					info.type = 7
+				elseif type:is_a("snow.player.GunLance") then
+					info.name = "GunLance"
+					info.nameJP = "ガンランス"
+					info.type = 6
+				elseif type:is_a("snow.player.Hammer") then
+					info.name = "Hammer"
+					info.nameJP = "ハンマー"
+					info.type = 5
+				elseif type:is_a("snow.player.Horn") then
+					info.name = "Horn"
+					info.nameJP = "狩猟笛"
+					info.type = 10
+				elseif type:is_a("snow.player.SlashAxe") then
+					info.name = "SlashAxe"
+					info.nameJP = "スラッシュアックス"
+					info.type = 1
+				elseif type:is_a("snow.player.ChargeAxe") then
+					info.name = "ChargeAxe"
+					info.nameJP = "チャージアックス"
+					info.type = 11
+				elseif type:is_a("snow.player.InsectGlaive") then
+					info.name = "InsectGlaive"
+					info.nameJP = "操虫棍"
+					info.type = 12
+				elseif type:is_a("snow.player.LightBowgun") then
+					info.name = "LightBowgun"
+					info.nameJP = "ライトボウガン"
+					info.type = 3
+				elseif type:is_a("snow.player.HeavyBowgun") then
+					info.name = "HeavyBowgun"
+					info.nameJP = "ヘビィボウガン"
+					info.type = 4
+				elseif type:is_a("snow.player.Bow") then
+					info.name = "Bow"
+					info.nameJP = "弓"
+					info.type = 13
+				else
+					info.name = "Failed"
+					info.nameJP = "Failed"
+					info.type = -1
+				end
+				STATE.WEAPON_INFO[idx + 1] = info
+			else
+				STATE.WEAPON_INFO[idx + 1] = "FAILED Get Member"
+			end
+		end
+	end
+end
+
+this.getWeaponId = function()
+	local equipInfo = STATE.MANAGER.EQUIP_STATUS_PARAM:get_field("_questParam")
+	if equipInfo then
+		local equipCount = equipInfo:call("get_Count")
+		if equipCount then
+			for idx=0, equipCount-1 do
+				local questParam = equipInfo:call("get_Item", idx)
+				if questParam then
+					local weaponId = questParam:get_field("_weaponParam"):get_field("WeaponId")
+
+					if weaponId then
+						STATE.WEAPON_ID[idx + 1] = weaponId
+					else
+						STATE.WEAPON_ID[idx + 1] = "FAILED GET weaponId"
+					end
+				end
+			end
+		end
+	else
+		STATE.WEAPON_ID = {-1, -1, -1, -1}
+	end
+end
+
+this.getPlayerSkill = function()
+	local equipInfos = STATE.MANAGER.LOBBY:get_field("_questEquipInfo")
+	if equipInfos then
+		local equipCount = equipInfos:call("get_Count")
+		for idx=0, equipCount-1 do
+			local equipInfo = equipInfos:call("get_Item", idx)
+			if equipInfo then
+				-- playerSkill --
+				-- get skill id
+				local skill = {}
+				for idxSkill=0, ENUM.PLAYER_SKILL_COUNT - 1 do
+					local skillId = equipInfo:get_field("_ArmorSkill"..string.format( "%02d", idxSkill))
+					if skillId and skillId ~= 0 then
+						skill[idxSkill + 1] = string.format( "%03d", skillId)
+					end
+				end
+				-- get skill Lv
+				for idxLv=0, ENUM.PLAYER_SKILL_LV_COUNT - 1 do
+					local skillLvNum = equipInfo:get_field("_ArmorSkillLv"..string.format( "%02d", idxLv * 2).."_"..string.format( "%02d", idxLv * 2 + 1))
+					if skillLvNum and skillLvNum ~= 0 then
+						-- skill one case
+						if skillLvNum < ENUM.SKILL_LV_THRESHOLD then
+							skill[idxLv * 2 + 1] = skill[idxLv * 2 + 1]..string.format( "%02d", skillLvNum)
+						else
+							-- skill two case
+							skill[idxLv * 2 + 1] = skill[idxLv * 2 + 1]..string.format("%02d", skillLvNum % ENUM.SKILL_LV_THRESHOLD)
+							skill[idxLv * 2 + 2] = skill[idxLv * 2 + 2]..string.format("%02d", math.floor(skillLvNum / ENUM.SKILL_LV_THRESHOLD))
+						end
+					end
+				end
+				-- set skill data ex)"001(Id)07(Lv),00206,..."
+				STATE.PLAYER_SKILL[idx + 1] = table.concat(skill,",")
+
+				-- kitchenSkill --
+				-- get skill id
+				local kitchenSkill = {}
+				for idxSkill=0, ENUM.KITCHEN_SKILL_COUNT - 1 do
+					local skillId = equipInfo:get_field("_KitchenSkill"..idxSkill)
+					if skillId and skillId ~= 0 then
+						kitchenSkill[idxSkill + 1] = string.format( "%03d", skillId)
+					end
+				end
+				-- get skill Lv
+				for idxLv=0, ENUM.KITCHEN_SKILL_LV_COUNT - 1 do
+					local skillLvNum = equipInfo:get_field("_KitchenSkillLv"..string.format( "%02d", idxLv * 2).."_"..string.format( "%02d", idxLv * 2 + 1))
+					if skillLvNum and skillLvNum ~= 0 then
+						-- skill one case
+						if skillLvNum < ENUM.SKILL_LV_THRESHOLD then
+							kitchenSkill[idxLv * 2 + 1] = kitchenSkill[idxLv * 2 + 1]..string.format( "%02d", skillLvNum)
+						else
+							-- skill two case
+							kitchenSkill[idxLv * 2 + 1] = kitchenSkill[idxLv * 2 + 1]..string.format("%02d", skillLvNum % ENUM.SKILL_LV_THRESHOLD)
+							kitchenSkill[idxLv * 2 + 2] = kitchenSkill[idxLv * 2 + 2]..string.format("%02d", math.floor(skillLvNum / ENUM.SKILL_LV_THRESHOLD))
+						end
+					end
+				end
+				-- set skill data ex)"001(Id)07(Lv),00206,..."
+				STATE.KITCHEN_SKILL[idx + 1] = table.concat(kitchenSkill,",")
+			else
+				STATE.PLAYER_SKILL[idx + 1] = "FAILED GET playerSkill"
+				STATE.KITCHEN_SKILL[idx + 1] = "FAILED GET kichenSkill"
+			end
+		end
+	else
+		STATE.PLAYER_SKILL = {"FAILED GET questEquipInfo", "FAILED GET questEquipInfo", "FAILED GET questEquipInfo", "FAILED GET questEquipInfo"}
+		STATE.KITCHEN_SKILL = {"FAILED GET questEquipInfo", "FAILED GET questEquipInfo", "FAILED GET questEquipInfo", "FAILED GET questEquipInfo"}
+	end
+end
+
+this.getOtomoInfo = function()
+	local otomoInfos = STATE.MANAGER.LOBBY:get_field("_questOtomoInfo")
+	if otomoInfos then
+		local otomoCount = otomoInfos:call("get_Count")
+		for idx=0, otomoCount-1 do
+			local otomoInfo = otomoInfos:call("get_Item", idx)
+			if otomoInfo then
+				local info = {}
+				info.skill = ""
+				info.equipDogToolType = ""
+				info.isAirou = true
+				-- name --
+				local name = otomoInfo:get_field("_Name")
+				if name then
+					info.name = name
+				end
+				-- supportAction --
+				local supportActionIds = {}
+				for idxSupportAction=0, ENUM.OTOMO_SUPPORT_ACTION_COUNT-1 do
+					local supportAction = otomoInfo:get_field("_EquipAirouSupportAction"..idxSupportAction)
+					if supportAction and supportAction ~= 0 then
+						supportActionIds[idxSupportAction + 1] = string.format( "%03d", supportAction)
+					end
+				end
+				if supportActionIds then
+					-- set supportActionId ex)"001,002,..."
+					info.supportAction = table.concat(supportActionIds,",")
+				end
+				-- skill --
+				local skillIds = {}
+				for idxSkill=0, ENUM.OTOMO_SKILL_COUNT-1 do
+					local skill = otomoInfo:get_field("_EquipOtSkill"..idxSkill)
+					if skill and skill ~= 0 then
+						skillIds[idxSkill + 1] = string.format( "%03d", skill)
+					end
+				end
+				if skillIds then
+					-- set skillId ex)"001,002,..."
+					info.skill = table.concat(skillIds,",")
+				end
+				-- dogTool --
+				local equipDogToolType = {}
+				for idxTool=0, ENUM.DOG_TOOL_TYPE_COUNT-1 do
+					local dogToolType = otomoInfo:get_field("_EquipDogToolType"..idxTool)
+					if dogToolType and dogToolType ~= 0 then
+						equipDogToolType[idxTool + 1] = string.format( "%03d", dogToolType)
+						info.isAirou = false
+					end
+				end
+				-- set dogTool ex)"001,002,..."
+				if equipDogToolType then
+					info.equipDogToolType = table.concat(equipDogToolType,",")
+				end
+				-- get supporttype --
+				local supportType = otomoInfo:get_field("_SupportType")
+				if supportType then
+					info.supportType = supportType
+				end
+				-- get targettype --
+				local targetType = otomoInfo:get_field("_AirouTargetType")
+				if targetType then
+					info.airouTargetType = targetType
+				end
+				-- get posType --
+				local posType = otomoInfo:get_field("_DogPosType")
+				if posType then
+					info.dogPosType = posType
+				end
+				STATE.OTOMO_INFO[idx + 1] = info
+			else
+				STATE.OTOMO_INFO[idx + 1] = "FAILED GET otomoInfo"
+			end
+		end
+	else
+		STATE.OTOMO_INFO = {{}, {}, {}, {}}
+	end
+end
+
+this.getQuestNo = function()
+	-- get QusetNo
+	STATE.QUEST_NO = STATE.MANAGER.QUEST:get_field("_QuestIdentifier"):get_field("_QuestNo") or -1
+end
+
+this.getQuestMainMonsterId = function()
+	-- get MainMonsterId
+	local targetDatas = STATE.MANAGER.QUEST:get_field("_QuestTargetData")
+	if targetDatas then
+		local targetCount = targetDatas:call("get_Count")
+		for idx=0, targetCount-1 do
+			local targetData = targetDatas:call("get_Item", idx)
+			if targetData then
+				local id = targetData:get_field("ID")
+				if id > 0 then
+					STATE.QUEST_TARGET_ID[idx + 1] = id
+				end
+			end
+		end
+	else
+		STATE.QUEST_TARGET_ID = {-1}
+	end
+end
+
+this.getSwitchActionId = function()
+	local questParams = STATE.MANAGER.EQUIP_STATUS_PARAM:get_field("_questParam")
+	if questParams then
+		local questParamsCount = questParams:call("get_Count")
+		for idx=0, questParamsCount-1 do
+			STATE.SWITCH_ACTION_ID[idx+1] = {}
+			STATE.SWITCH_ACTION_ID[idx+1].set1 = "FAILED GET switchActionId"
+			STATE.SWITCH_ACTION_ID[idx+1].set2 = "FAILED GET switchActionId"
+			local questParam = questParams:call("get_Item", idx)
+			if questParam then
+				-- ActionSet1
+				local switchActionSet1 = {}
+				local switchAction1 = questParam:get_field("_equipStatusParam"):get_field("switchActionId_MR_1")
+				if switchAction1 then
+					local switchActionCount = switchAction1:call("get_Count")
+					if switchActionCount then
+						for idxAction=0, switchActionCount-1 do
+							local actionId = switchAction1:call("get_Item", idxAction)
+							if actionId then
+								switchActionSet1[idxAction+1] = string.format( "%03d", actionId)
+							end
+						end
+					end
+					if switchActionSet1 then
+						STATE.SWITCH_ACTION_ID[idx+1].set1 = table.concat(switchActionSet1,",")
+					end
+				end
+				
+				-- ActionSet2
+				local switchActionSet2 = {}
+				local switchAction2 = questParam:get_field("_equipStatusParam"):get_field("switchActionId_MR_2")
+				if switchAction2 then
+					local switchActionCount = switchAction2:call("get_Count")
+					if switchActionCount then
+						for idxAction=0, switchActionCount-1 do
+							local actionId = switchAction2:call("get_Item", idxAction)
+							if actionId then
+								switchActionSet2[idxAction+1] = string.format( "%03d", actionId)
+							end
+						end
+					end
+					if switchActionSet2 then
+						STATE.SWITCH_ACTION_ID[idx+1].set2 = table.concat(switchActionSet2,",")
+					end
+				end
+			end
+		end
 	end
 end
 

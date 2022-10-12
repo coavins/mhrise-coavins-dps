@@ -242,4 +242,29 @@ this.LANGUAGES['ja'] = '日本語'
 this.LANGUAGES['zh'] = '汉语'
 this.LANGUAGES['zh-HK'] = '中文（香港）'
 
+-- ver
+this.VERSION = {
+	"10.0.3.0"
+	, "11.0.1.0"
+	, "11.0.2.0"
+	, "12.0.0.0"
+}
+this.TOOL_VERSION = {
+	"2.11.4"
+	, "2.11.6"
+	, "2.11.7"
+}
+
+-- define count
+this.WEAPON_INFO_COUNT = 4		-- 武器情報取得要素数
+this.PLAYER_SKILL_COUNT = 48	-- プレイヤー装備中スキル枠数
+this.PLAYER_SKILL_LV_COUNT = 24	-- プレイヤー装備中スキルLv枠数
+this.SKILL_LV_THRESHOLD = 16	-- 第一第二スキルのレベル計算に使用する閾値
+this.KITCHEN_SKILL_COUNT = 6	-- キッチンスキル枠数
+this.KITCHEN_SKILL_LV_COUNT = 3	-- キッチンスキルLv枠数
+this.OTOMO_SUPPORT_ACTION_COUNT = 6		-- オトモ装備中サポート行動スキル枠数
+this.OTOMO_SKILL_COUNT = 8		-- オトモ装備中スキル枠数
+this.DOG_TOOL_TYPE_COUNT = 2	-- 猟犬具枠数	
+
+
 return this

@@ -491,8 +491,10 @@ this.mergeBossIntoReport = function(report, boss)
 				end
 				if playerTime then
 					item.dps.personal = item.total / (report.questTime - playerTime)
+					item.dps.time = (report.questTime - playerTime)
 				else
 					item.dps.personal = 0.0
+					item.dps.time = 0.0
 				end
 			end
 

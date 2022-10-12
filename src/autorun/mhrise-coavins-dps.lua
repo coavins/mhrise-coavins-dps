@@ -150,12 +150,19 @@ local function dpsFrame()
 		CORE.cleanUpData('entered a quest')
 
 		CORE.changeOverlayVisibility('SHOW_OVERLAY_IN_QUEST')
+		CORE.getQuestNo()
+		CORE.getQuestMainMonsterId()
 
 	-- Entered post-quest sequence
 	elseif STATE.IS_POST_QUEST and not wasPostQuest then
 		CORE.log_info('quest complete')
 
 		CORE.changeOverlayVisibility('SHOW_OVERLAY_POST_QUEST')
+		CORE.getWeaponInfo()
+		CORE.getWeaponId()
+		CORE.getPlayerSkill()
+		CORE.getOtomoInfo()
+		CORE.getSwitchActionId()
 
 		-- export data
 		if CORE.CFG('SAVE_RESULTS_TO_DISK') then
