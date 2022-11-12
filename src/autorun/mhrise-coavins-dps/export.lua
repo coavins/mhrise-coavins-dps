@@ -4,7 +4,7 @@ local ENUM  = require 'mhrise-coavins-dps.enum'
 
 local this = {}
 
-this.round = function(x, n) 
+this.round = function(x)
     -- simple 2 decimal places
 	if x == 0 then
 		return 0
@@ -119,6 +119,7 @@ this.exportData = function()
 		for idxInfo, info in pairs(STATE.OTOMO_INFO) do
 			-- If the name is covered, the first information will be acquired...low priority!!!
 			if value.name == info.name then
+				CORE.log_debug('exported otomo:' .. idx .. ', info: ' .. idxInfo)
 				otomo.isAirou = info.isAirou
 				otomo.supportAction = info.supportAction
 				otomo.skill = info.skill
@@ -149,7 +150,7 @@ this.exportData = function()
 		CORE.log_error('failed to export combat data to dpsLogs/' .. filename .. '.json')
 	end
 	-- debug file for overwriting
-	json.dump_file(STATE.DATADIR .. 'logs/00_debug_latest_dps.json', DPS_INFO)
+	json.dump_file(STATE.DATADIR .. 'logs/00_latest_dps.json', DPS_INFO)
 end
 
 return this

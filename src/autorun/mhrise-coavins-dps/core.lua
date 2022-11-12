@@ -680,9 +680,10 @@ this.getWeaponInfo = function()
 	if weaponInfo then
 		-- キャンプにて武器変更等した場合にPrevObjectもarrayに入っている為、4固定にクエストクリア時のみ集計している
 		-- ※クリア時に武器変更している場合は集計不可
-		-- Since "PrevObject" is also included in the array when changing weapons etc. at the camp, it is totaled only when clearing the quest at 4 fixed
+		-- Since "PrevObject" is also included in the array when changing weapons etc. at the camp,
+		-- it is totaled only when clearing the quest at 4 fixed
 		-- *Cannot be counted if you have changed weapons when clearing
-		for idx = 0, ENUM.WEAPON_INFO_COUNT-1 do 
+		for idx = 0, ENUM.WEAPON_INFO_COUNT-1 do
 			local weapon = weaponInfo:call("get_Item", idx)
 			if weapon then
 				local info = {}
@@ -792,22 +793,27 @@ this.getPlayerSkill = function()
 				-- get skill id
 				local skill = {}
 				for idxSkill=0, ENUM.PLAYER_SKILL_COUNT - 1 do
-					local skillId = equipInfo:get_field("_ArmorSkill"..string.format( "%02d", idxSkill))
+					local skillId = equipInfo:get_field("_ArmorSkill"..string.format("%02d", idxSkill))
 					if skillId and skillId ~= 0 then
-						skill[idxSkill + 1] = string.format( "%03d", skillId)
+						skill[idxSkill + 1] = string.format("%03d", skillId)
 					end
 				end
 				-- get skill Lv
 				for idxLv=0, ENUM.PLAYER_SKILL_LV_COUNT - 1 do
-					local skillLvNum = equipInfo:get_field("_ArmorSkillLv"..string.format( "%02d", idxLv * 2).."_"..string.format( "%02d", idxLv * 2 + 1))
+					local skillLvNum = equipInfo:get_field("_ArmorSkillLv"
+															..string.format("%02d", idxLv * 2)
+															.."_"
+															..string.format("%02d", idxLv * 2 + 1))
 					if skillLvNum and skillLvNum ~= 0 then
+						local i = idxLv * 2 + 1
 						-- skill one case
 						if skillLvNum < ENUM.SKILL_LV_THRESHOLD then
-							skill[idxLv * 2 + 1] = skill[idxLv * 2 + 1]..string.format( "%02d", skillLvNum)
+							skill[i] = skill[i]..string.format("%02d", skillLvNum)
 						else
 							-- skill two case
-							skill[idxLv * 2 + 1] = skill[idxLv * 2 + 1]..string.format("%02d", skillLvNum % ENUM.SKILL_LV_THRESHOLD)
-							skill[idxLv * 2 + 2] = skill[idxLv * 2 + 2]..string.format("%02d", math.floor(skillLvNum / ENUM.SKILL_LV_THRESHOLD))
+							skill[i] = skill[i]..string.format("%02d", skillLvNum % ENUM.SKILL_LV_THRESHOLD)
+							skill[i + 1] = skill[i + 1]
+											..string.format("%02d", math.floor(skillLvNum / ENUM.SKILL_LV_THRESHOLD))
 						end
 					end
 				end
@@ -816,37 +822,53 @@ this.getPlayerSkill = function()
 
 				-- kitchenSkill --
 				-- get skill id
-				local kitchenSkill = {}
+				local kSkill = {}
 				for idxSkill=0, ENUM.KITCHEN_SKILL_COUNT - 1 do
 					local skillId = equipInfo:get_field("_KitchenSkill"..idxSkill)
 					if skillId and skillId ~= 0 then
-						kitchenSkill[idxSkill + 1] = string.format( "%03d", skillId)
+						kSkill[idxSkill + 1] = string.format( "%03d", skillId)
 					end
 				end
 				-- get skill Lv
 				for idxLv=0, ENUM.KITCHEN_SKILL_LV_COUNT - 1 do
-					local skillLvNum = equipInfo:get_field("_KitchenSkillLv"..string.format( "%02d", idxLv * 2).."_"..string.format( "%02d", idxLv * 2 + 1))
+					local skillLvNum = equipInfo:get_field("_KitchenSkillLv"
+															..string.format( "%02d", idxLv * 2)
+															.."_"
+															..string.format( "%02d", idxLv * 2 + 1))
 					if skillLvNum and skillLvNum ~= 0 then
+						local i = idxLv * 2 + 1
 						-- skill one case
 						if skillLvNum < ENUM.SKILL_LV_THRESHOLD then
-							kitchenSkill[idxLv * 2 + 1] = kitchenSkill[idxLv * 2 + 1]..string.format( "%02d", skillLvNum)
+							kSkill[i] = kSkill[i]..string.format( "%02d", skillLvNum)
 						else
 							-- skill two case
-							kitchenSkill[idxLv * 2 + 1] = kitchenSkill[idxLv * 2 + 1]..string.format("%02d", skillLvNum % ENUM.SKILL_LV_THRESHOLD)
-							kitchenSkill[idxLv * 2 + 2] = kitchenSkill[idxLv * 2 + 2]..string.format("%02d", math.floor(skillLvNum / ENUM.SKILL_LV_THRESHOLD))
+							kSkill[i] = kSkill[i]
+										..string.format("%02d", skillLvNum % ENUM.SKILL_LV_THRESHOLD)
+							kSkill[i + 1] = kSkill[i + 1]
+											..string.format("%02d", math.floor(skillLvNum / ENUM.SKILL_LV_THRESHOLD))
 						end
 					end
 				end
 				-- set skill data ex)"001(Id)07(Lv),00206,..."
-				STATE.KITCHEN_SKILL[idx + 1] = table.concat(kitchenSkill,",")
+				STATE.KITCHEN_SKILL[idx + 1] = table.concat(kSkill,",")
 			else
 				STATE.PLAYER_SKILL[idx + 1] = "FAILED GET playerSkill"
 				STATE.KITCHEN_SKILL[idx + 1] = "FAILED GET kichenSkill"
 			end
 		end
 	else
-		STATE.PLAYER_SKILL = {"FAILED GET questEquipInfo", "FAILED GET questEquipInfo", "FAILED GET questEquipInfo", "FAILED GET questEquipInfo"}
-		STATE.KITCHEN_SKILL = {"FAILED GET questEquipInfo", "FAILED GET questEquipInfo", "FAILED GET questEquipInfo", "FAILED GET questEquipInfo"}
+		STATE.PLAYER_SKILL = {
+			"FAILED GET questEquipInfo"
+			, "FAILED GET questEquipInfo"
+			, "FAILED GET questEquipInfo"
+			, "FAILED GET questEquipInfo"
+		}
+		STATE.KITCHEN_SKILL = {
+			"FAILED GET questEquipInfo"
+			, "FAILED GET questEquipInfo"
+			, "FAILED GET questEquipInfo"
+			, "FAILED GET questEquipInfo"
+		}
 	end
 end
 
@@ -979,7 +1001,7 @@ this.getSwitchActionId = function()
 						STATE.SWITCH_ACTION_ID[idx+1].set1 = table.concat(switchActionSet1,",")
 					end
 				end
-				
+
 				-- ActionSet2
 				local switchActionSet2 = {}
 				local switchAction2 = questParam:get_field("_equipStatusParam"):get_field("switchActionId_MR_2")

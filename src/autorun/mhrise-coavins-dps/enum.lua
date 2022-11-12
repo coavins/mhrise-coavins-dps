@@ -248,6 +248,7 @@ this.VERSION = {
 	, "11.0.1.0"
 	, "11.0.2.0"
 	, "12.0.0.0"
+	, "12.0.1.1"
 }
 this.TOOL_VERSION = {
 	"2.11.4"
@@ -264,7 +265,7 @@ this.KITCHEN_SKILL_COUNT = 6	-- キッチンスキル枠数
 this.KITCHEN_SKILL_LV_COUNT = 3	-- キッチンスキルLv枠数
 this.OTOMO_SUPPORT_ACTION_COUNT = 6		-- オトモ装備中サポート行動スキル枠数
 this.OTOMO_SKILL_COUNT = 8		-- オトモ装備中スキル枠数
-this.DOG_TOOL_TYPE_COUNT = 2	-- 猟犬具枠数	
+this.DOG_TOOL_TYPE_COUNT = 2	-- 猟犬具枠数
 
 
 return this
