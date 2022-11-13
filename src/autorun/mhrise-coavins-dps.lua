@@ -157,7 +157,7 @@ local function dpsFrame()
 	elseif STATE.IS_POST_QUEST and not wasPostQuest then
 		CORE.log_info('quest complete')
 		CORE.changeOverlayVisibility('SHOW_OVERLAY_POST_QUEST')
-		
+
 		-- export data
 		if CORE.CFG('SAVE_RESULTS_TO_DISK') then
 			CORE.getWeaponInfo()
