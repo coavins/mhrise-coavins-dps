@@ -211,16 +211,22 @@ this.initializeBossMonster = function(bossEnemy)
 	if damageParam then
 		local blastParam = damageParam:get_field("_BlastParam")
 		if blastParam then
-			local activateCnt = blastParam:call("get_ActivateCount"):get_element(0):get_field("mValue")
-			if activateCnt > boss.ailment.count[5] then
-				boss.ailment.count[5] = activateCnt
+			local getCnt = blastParam:call("get_ActivateCount")
+			if getCnt then
+				local activateCnt = getCnt:get_element(0):get_field("mValue")
+				if activateCnt > boss.ailment.count[5] then
+					boss.ailment.count[5] = activateCnt
+				end
 			end
 		end
 		local poisonParam = damageParam:get_field("_PoisonParam")
 		if poisonParam then
-			local activateCnt = poisonParam:call("get_ActivateCount"):get_element(0):get_field("mValue")
-			if activateCnt > boss.ailment.count[4] then
-				boss.ailment.count[4] = activateCnt
+			local getCnt = poisonParam:call("get_ActivateCount")
+			if getCnt then
+				local activateCnt = getCnt:get_element(0):get_field("mValue")
+				if activateCnt > boss.ailment.count[4] then
+					boss.ailment.count[4] = activateCnt
+				end
 			end
 		end
 	end
