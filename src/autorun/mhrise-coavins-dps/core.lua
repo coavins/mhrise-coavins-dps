@@ -772,6 +772,7 @@ this.getWeaponId = function()
 					if weaponId then
 						STATE.WEAPON_ID[idx + 1] = weaponId
 					else
+---@diagnostic disable-next-line: assign-type-mismatch
 						STATE.WEAPON_ID[idx + 1] = "FAILED GET weaponId"
 					end
 				end
@@ -942,6 +943,7 @@ this.getOtomoInfo = function()
 				end
 				STATE.OTOMO_INFO[idx + 1] = info
 			else
+---@diagnostic disable-next-line: assign-type-mismatch
 				STATE.OTOMO_INFO[idx + 1] = "FAILED GET otomoInfo"
 			end
 		end
